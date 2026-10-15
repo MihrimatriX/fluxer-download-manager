@@ -60,14 +60,56 @@ public static class Appearance
         w.Background = ui.Mica && _micaWorks ? Brushes.Transparent : null; // null → MainBrush from the Window style
         if (ui.Mica && !w.IsVisible) w.Opened += CheckBackdrop;
 
+        // Content runs up under the title bar; Windows keeps drawing the caption buttons (and Snap Layouts).
+        w.ExtendClientAreaToDecorationsHint = true;
+        w.ExtendClientAreaTitleBarHeightHint = TitleBarHeight;
+
         // Scale everything inside the window; vector rendering keeps it crisp.
-        if (w.Content is Control content && content is not LayoutTransformControl)
+        if (w.Content is Control content && w.Content is not LayoutTransformControl && w.Content is not Panel { Tag: TitleTag })
         {
             w.Content = null;
-            w.Content = new LayoutTransformControl { Child = content };
+            var scaled = new LayoutTransformControl { Child = content };
+            // The main window draws its own title area; the others get a slim strip with the app mark.
+            w.Content = w is Views.MainWindow ? scaled : new Panel { Tag = TitleTag, Children = { WithTop(scaled), TitleStrip() } };
         }
-        if (w.Content is LayoutTransformControl ltc)
+        var ltc = w.Content as LayoutTransformControl ?? (w.Content as Panel)?.Children.OfType<LayoutTransformControl>().FirstOrDefault();
+        if (ltc is not null)
             ltc.LayoutTransform = Math.Abs(ui.Scale - 1) < 0.01 ? null : new ScaleTransform(ui.Scale, ui.Scale);
+    }
+
+    public const double TitleBarHeight = 40;
+    private const string TitleTag = "fluxer-titlebar";
+
+    private static Control WithTop(Control c)
+    {
+        c.Margin = new Thickness(0, TitleBarHeight - 8, 0, 0);
+        return c;
+    }
+
+    /// Drag area across the top: app icon and name, caption buttons sit over its right end.
+    private static Control TitleStrip()
+    {
+        var strip = new Border
+        {
+            Height = TitleBarHeight,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            Background = Brushes.Transparent,
+            Child = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 8,
+                Margin = new Thickness(14, 0, 0, 0),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                IsHitTestVisible = false,
+                Children =
+                {
+                    new Image { Source = new Avalonia.Media.Imaging.Bitmap(Avalonia.Platform.AssetLoader.Open(new Uri("avares://Fluxer/Assets/fluxer.png"))), Width = 16, Height = 16 },
+                    new TextBlock { Text = "Fluxer", FontSize = 12, Opacity = 0.7, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
+                },
+            },
+        };
+        Avalonia.Controls.Chrome.WindowDecorationProperties.SetElementRole(strip, Avalonia.Input.WindowDecorationsElementRole.TitleBar);
+        return strip;
     }
 
     /// Windows 10 (or a disabled effect) has no Mica: fall back to opaque colours once, app-wide.

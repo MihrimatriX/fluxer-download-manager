@@ -90,6 +90,13 @@
       <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
       <Setter Property="FontSize" Value="13" />
     </Style>
+    <!-- Our own title areas show the app mark; drop the drawn title text and the full-screen button -->
+    <Style Selector="WindowDrawnDecorations /template/ TextBlock">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="WindowDrawnDecorations /template/ Button#PART_FullScreenButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
     <!-- checkboxes stay square-ish so they never look like radio buttons -->
     <Style Selector="CheckBox">
       <Setter Property="CornerRadius" Value="4" />

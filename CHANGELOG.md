@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 — 2026-10-15
+
+- **Başlık çubuğu uygulamanın içinde:** Windows'un mavi başlık çubuğu kalktı; kenar çubuğu en üste uzanıyor (☰ ve logo başlıkta), arama kutusu başlığın ortasında. Küçült/büyüt/kapat düğmeleri yerinde; başlıktan sürükleme ve çift tıkla büyütme çalışıyor.
+- İlerleme, ekleme ve iletişim pencerelerinde de aynı ince, Mica'lı başlık şeridi.
+
 ## 0.4.0 — 2026-10-15
 
 ### Daha yumuşak
