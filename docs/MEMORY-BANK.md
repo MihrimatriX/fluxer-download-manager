@@ -16,6 +16,7 @@ Velopack installer. Kurulum yeri ve veri: `%LOCALAPPDATA%\Fluxer` (`current\` = 
 | 0.4.0 | Yumuşak/hızlı/kişiselleştirilebilir UI: Görünüm ayarları (vurgu, Mica, ölçek, sıkı, animasyon, etiketler), daralan kenar çubuğu, sütun menüsü, yerleşim hafızası, ReadyToRun |
 | 0.4.1 | Başlık çubuğu uygulamanın içinde |
 | 0.5.0 | Liste onay kutuları, renkli ikon/durum etiketleri, cam (sistem akrilik) arka plan, kendi çizdiğimiz başlık düğmeleri |
+| 0.6.0 | Çizgisiz yüzey (ayırıcılar, DataGrid çizgileri, pencere çerçevesi yok), neumorfik görünüm stili |
 
 ## Doğrulama notları (0.4)
 - Vurgu rengi, Mica, ölçek %115, sıkı yerleşim, animasyon kapatma, sütun gizleme + yeniden açılışta geri gelme, kenar çubuğu hafızası canlı denendi (dev profil).

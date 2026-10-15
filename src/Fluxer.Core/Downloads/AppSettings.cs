@@ -56,7 +56,7 @@ public sealed class AppSettings
 public sealed class UiSettings
 {
     public string? Accent { get; set; }                 // "#RRGGBB", null = Windows accent
-    public string Backdrop { get; set; } = "glass";     // "glass" (acrylic blur), "mica", "none"
+    public string Backdrop { get; set; } = "glass";     // "glass" (acrylic blur), "mica", "neu" (neumorphic), "none"
     public bool Compact { get; set; }                   // denser rows and controls
     public double Scale { get; set; } = 1.0;            // 0.85 – 1.3
     public bool Animations { get; set; } = true;

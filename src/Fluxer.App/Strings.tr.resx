@@ -161,8 +161,9 @@
   <data name="MediaProbing" xml:space="preserve"><value>Video bilgileri okunuyor…</value></data>
   <data name="MediaTitle" xml:space="preserve"><value>Videoyu kaydet</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video araçları</value></data>
-  <data name="BackdropSetting" xml:space="preserve"><value>Arka plan efekti</value></data>
-  <data name="BackdropDesc" xml:space="preserve"><value>Cam, pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini hafifçe yansıtır.</value></data>
+  <data name="BackdropSetting" xml:space="preserve"><value>Görünüm stili</value></data>
+  <data name="BackdropDesc" xml:space="preserve"><value>Cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini yansıtır; neumorfik, yumuşak gölgelerle kabarık ve çizgisiz yüzeyler oluşturur.</value></data>
+  <data name="BackdropNeu" xml:space="preserve"><value>Neumorfik (yumuşak kabartma)</value></data>
   <data name="BackdropGlass" xml:space="preserve"><value>Cam (bulanık, saydam)</value></data>
   <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
   <data name="BackdropNone" xml:space="preserve"><value>Kapalı (düz)</value></data>

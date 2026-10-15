@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0 — 2026-10-15
+
+### Çizgisiz, tek parça yüzey
+- Kenar çubuğu ile içerik arasındaki dikey çizgi, durum çubuğunun üst çizgisi, araç çubuğu ayırıcıları, liste başlığındaki sütun ayırıcıları ve başlık altı çizgisi kaldırıldı.
+- Pencerenin etrafındaki 1 piksellik Windows çerçevesi kaldırıldı (Windows 11).
+
+### Neumorphism
+- Ayarlar → Görünüm → **Görünüm stili**: Cam / Mica / **Neumorfik** / Düz.
+- Neumorfik: her yüzey aynı taban renginde; kartlar, ayar satırları, butonlar ve filtre çipleri iki yönlü yumuşak gölgeyle kabarık; basılan butonlar, seçili filtre/kategori ve metin kutuları, açılır listeler içe gömük. Açık ve koyu temada ayrı gölge renkleri.
+
+### Düzeltildi
+- Düz (ve yeni neumorfik) stilde pencere arka planı boyanmıyordu (siyah görünüyordu).
+
 ## 0.5.0 — 2026-10-15
 
 ### Liste

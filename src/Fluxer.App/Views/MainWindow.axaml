@@ -81,8 +81,7 @@
 
   <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
     <!-- ============ Sidebar (collapsible), full height: its top row is part of the title bar ============ -->
-    <Border Classes="sidebar" Grid.RowSpan="2" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarBrush}"
-            BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,1,0" ClipToBounds="True">
+    <Border Classes="sidebar" Grid.RowSpan="2" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarBrush}" ClipToBounds="True">
       <DockPanel>
         <StackPanel DockPanel.Dock="Top" Margin="12,2,12,10" Spacing="10">
           <Grid ColumnDefinitions="Auto,*" Height="38" Background="Transparent" WindowDecorationProperties.ElementRole="TitleBar">
@@ -158,14 +157,14 @@
           <Button Classes="tool" Command="{Binding DeleteCommand}" AutomationProperties.Name="{x:Static app:Strings.Delete}" ToolTip.Tip="Delete">
             <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE74D;" /><TextBlock Text="{x:Static app:Strings.Delete}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
-          <Rectangle Width="1" Margin="8,6" Fill="{DynamicResource DividerBrush}" />
+          <Panel Width="14" />
           <Button Classes="tool" Command="{Binding MoveUpCommand}" AutomationProperties.Name="{x:Static app:Strings.MoveUp}" ToolTip.Tip="{x:Static app:Strings.MoveUpTip}">
             <TextBlock Classes="icon" Text="&#xE70E;" />
           </Button>
           <Button Classes="tool" Command="{Binding MoveDownCommand}" AutomationProperties.Name="{x:Static app:Strings.MoveDown}" ToolTip.Tip="{x:Static app:Strings.MoveDownTip}">
             <TextBlock Classes="icon" Text="&#xE70D;" />
           </Button>
-          <Rectangle Width="1" Margin="8,6" Fill="{DynamicResource DividerBrush}" />
+          <Panel Width="14" />
           <Button Classes="tool" Command="{Binding AddTorrentCommand}" AutomationProperties.Name="{x:Static app:Strings.AddTorrent}" ToolTip.Tip="Ctrl+O">
             <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE8E5;" /><TextBlock Text="{x:Static app:Strings.AddTorrent}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
@@ -404,7 +403,7 @@
       </Border>
 
       <!-- Status bar -->
-      <Border Grid.Row="5" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="16,3">
+      <Border Grid.Row="5" Padding="16,3">
         <Grid ColumnDefinitions="*,Auto,Auto">
           <TextBlock Classes="subtle" Text="{Binding Summary}" VerticalAlignment="Center" />
           <Button Grid.Column="1" Classes="tool" Padding="8,3" Margin="0,0,12,0" ToolTip.Tip="{x:Static app:Strings.QuickLimitTip}"

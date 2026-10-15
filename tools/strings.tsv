@@ -155,8 +155,9 @@ MediaDisclaimer	Fluxer uses yt-dlp to save videos from websites. You are respons
 MediaProbing	Reading video information…	Video bilgileri okunuyor…
 MediaTitle	Save video	Videoyu kaydet
 MediaTools	Video tools	Video araçları
-BackdropSetting	Background effect	Arka plan efekti
-BackdropDesc	Glass blurs what is behind the window; Mica tints with your wallpaper colour.	Cam, pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini hafifçe yansıtır.
+BackdropSetting	Style	Görünüm stili
+BackdropDesc	Glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic raises soft, line-free surfaces with gentle shadows.	Cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini yansıtır; neumorfik, yumuşak gölgelerle kabarık ve çizgisiz yüzeyler oluşturur.
+BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
 BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
 BackdropMica	Mica (Windows 11)	Mica (Windows 11)
 BackdropNone	Off (solid)	Kapalı (düz)

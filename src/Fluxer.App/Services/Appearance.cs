@@ -41,7 +41,36 @@ public static partial class Appearance
         ["CardBrush"] = ("#99FFFFFF", "#14FFFFFF"),
     };
 
-    private static bool Translucent(UiSettings ui) => ui.Backdrop != "none" && _backdropWorks;
+    /// Neumorphism: one opaque base colour everywhere; depth comes only from paired soft shadows.
+    private static readonly Dictionary<string, (string Light, string Dark)> Neu = new()
+    {
+        ["SidebarBrush"] = ("#E6E9EF", "#272A30"),
+        ["MainBrush"] = ("#E6E9EF", "#272A30"),
+        ["SurfaceBrush"] = ("#E6E9EF", "#272A30"),
+        ["CardBrush"] = ("#E6E9EF", "#272A30"),
+    };
+
+    /// Raised: light from the top left, shade to the bottom right. Sunken: the same, inset.
+    private static readonly (string Light, string Dark) NeuRaised =
+        ("-5 -5 12 0 #FFFFFFFF, 5 5 12 0 #8CA3B1C6", "-4 -4 10 0 #1AFFFFFF, 5 5 12 0 #B3121417");
+    private static readonly (string Light, string Dark) NeuSunken =
+        ("inset 3 3 6 0 #8CA3B1C6, inset -3 -3 6 0 #FFFFFFFF", "inset 3 3 6 0 #B3121417, inset -3 -3 6 0 #14FFFFFF");
+
+    /// Fluent control fills that would otherwise draw their own (darker/lighter) boxes on the neumorphic base.
+    private static readonly string[] NeuFills =
+    [
+        "ButtonBackground", "ButtonBackgroundPointerOver", "ButtonBackgroundPressed",
+        "TextControlBackground", "TextControlBackgroundPointerOver", "TextControlBackgroundFocused",
+        "ComboBoxBackground", "ComboBoxBackgroundPointerOver", "ComboBoxBackgroundPressed",
+    ];
+    private static readonly string[] NeuNoBorders =
+    [
+        "ButtonBorderBrush", "ButtonBorderBrushPointerOver", "ButtonBorderBrushPressed",
+        "TextControlBorderBrush", "TextControlBorderBrushPointerOver", "TextControlBorderBrushFocused",
+        "ComboBoxBorderBrush", "ComboBoxBorderBrushPointerOver", "ComboBoxBorderBrushPressed",
+    ];
+
+    private static bool Translucent(UiSettings ui) => ui.Backdrop is "glass" or "mica" && _backdropWorks;
 
     public static void Apply(Application app, UiSettings ui)
     {
@@ -56,7 +85,7 @@ public static partial class Appearance
         }
 
         app.Resources["RowHeight"] = ui.Compact ? 32.0 : 42.0;
-        ApplyLayers(app, Translucent(ui) ? ui.Backdrop == "mica" ? OnMica : OnGlass : Solid);
+        ApplyLayers(app, ui.Backdrop == "neu" ? Neu : Translucent(ui) ? ui.Backdrop == "mica" ? OnMica : OnGlass : Solid, neu: ui.Backdrop == "neu");
 
         if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             foreach (var w in desktop.Windows) ApplyTo(w, ui);
@@ -71,7 +100,8 @@ public static partial class Appearance
         w.TransparencyLevelHint = Translucent(ui)
             ? [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.None]
             : [WindowTransparencyLevel.None];
-        w.Background = Translucent(ui) ? Brushes.Transparent : null; // null → MainBrush from the Window style
+        // Clear (not null) to get MainBrush back from the Window style: a local null means no background at all.
+        if (Translucent(ui)) w.Background = Brushes.Transparent; else w.ClearValue(Window.BackgroundProperty);
         if (Translucent(ui))
         {
             var kind = ui.Backdrop == "glass" ? DwmsbtTransientWindow : DwmsbtMainWindow;
@@ -91,7 +121,7 @@ public static partial class Appearance
         w.ExtendClientAreaToDecorationsHint = true;
         w.ExtendClientAreaTitleBarHeightHint = TitleBarHeight;
         w.WindowDecorations = WindowDecorations.BorderOnly;
-        if (w.IsVisible) RestoreSizeBoxes(w); else w.Opened += (_, _) => RestoreSizeBoxes(w);
+        if (w.IsVisible) NativeChrome(w); else w.Opened += (_, _) => NativeChrome(w);
 
         // Scale everything inside the window; vector rendering keeps it crisp.
         if (w.Content is Control content && w.Content is not Panel { Tag: TitleTag })
@@ -187,13 +217,20 @@ public static partial class Appearance
     [System.Runtime.InteropServices.LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
     private static partial nint SetWindowLongPtr(nint hwnd, int index, nint value);
 
-    /// Border-only windows lose the min/max styles, and with them double-click-to-maximize, Win+Up and
-    /// drag-to-top snapping. Put them back on resizable windows.
-    private static void RestoreSizeBoxes(Window w)
+    /// No 1 px frame around the window (Windows 11), so the app reads as one surface. Border-only windows
+    /// also lose the min/max styles, and with them double-click-to-maximize, Win+Up and drag-to-top
+    /// snapping: put those back on resizable windows.
+    private static void NativeChrome(Window w)
     {
-        const int GwlStyle = -16, WsMinimizeBox = 0x20000, WsMaximizeBox = 0x10000;
-        if (!w.CanResize || w.TryGetPlatformHandle()?.Handle is not { } hwnd) return;
-        _ = SetWindowLongPtr(hwnd, GwlStyle, GetWindowLongPtr(hwnd, GwlStyle) | WsMinimizeBox | WsMaximizeBox);
+        const int GwlStyle = -16, WsMinimizeBox = 0x20000, WsMaximizeBox = 0x10000, DwmwaBorderColor = 34;
+        if (w.TryGetPlatformHandle()?.Handle is not { } hwnd) return;
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+        {
+            var none = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
+            _ = DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref none, sizeof(int));
+        }
+        if (w.CanResize)
+            _ = SetWindowLongPtr(hwnd, GwlStyle, GetWindowLongPtr(hwnd, GwlStyle) | WsMinimizeBox | WsMaximizeBox);
     }
 
     private const int DwmwaSystemBackdropType = 38, DwmsbtMainWindow = 2, DwmsbtTransientWindow = 3;
@@ -223,11 +260,11 @@ public static partial class Appearance
         w.Opened -= CheckBackdrop;
         if (w.ActualTransparencyLevel != WindowTransparencyLevel.None || !_backdropWorks) return;
         _backdropWorks = false;
-        if (Application.Current is { } app) ApplyLayers(app, Solid);
-        w.Background = null;
+        if (Application.Current is { } app) ApplyLayers(app, Solid, neu: false);
+        w.ClearValue(Window.BackgroundProperty);
     }
 
-    private static void ApplyLayers(Application app, Dictionary<string, (string Light, string Dark)> table)
+    private static void ApplyLayers(Application app, Dictionary<string, (string Light, string Dark)> table, bool neu)
     {
         foreach (var (variant, light) in new[] { (ThemeVariant.Light, true), (ThemeVariant.Dark, false) })
         {
@@ -238,6 +275,18 @@ public static partial class Appearance
                 // Fluent's expander is solid; give it the card layer so it sits on the glass like the rest.
                 dict["ExpanderHeaderBackground"] = dict["CardBrush"];
                 dict["ExpanderContentBackground"] = dict["CardBrush"];
+
+                // Card edge: the glass highlight, or nothing when shadows do the work.
+                dict["CardEdgeBrush"] = neu ? Brushes.Transparent : dict["GlassBorderBrush"];
+                dict["CardShadow"] = neu ? BoxShadows.Parse(light ? NeuRaised.Light : NeuRaised.Dark) : default(BoxShadows);
+                dict["RaisedShadow"] = dict["CardShadow"];
+                // Shadows need air between cards, or neighbouring shades read as lines.
+                dict["CardGap"] = new Thickness(0, 0, 0, neu ? 12 : 4);
+                dict["SunkenShadow"] = neu ? BoxShadows.Parse(light ? NeuSunken.Light : NeuSunken.Dark) : default(BoxShadows);
+                foreach (var key in NeuFills)
+                    if (neu) dict[key] = dict["CardBrush"]; else dict.Remove(key);
+                foreach (var key in NeuNoBorders)
+                    if (neu) dict[key] = Brushes.Transparent; else dict.Remove(key);
             }
         }
     }
