@@ -1,0 +1,83 @@
+{
+  "extName": {
+    "message": "Fluxer"
+  },
+  "extDescription": {
+    "message": "Tarayıcı indirmelerini, bağlantıları ve sayfa kaynaklarını Fluxer indirme yöneticisine gönderir."
+  },
+  "menuDownload": {
+    "message": "Fluxer ile indir"
+  },
+  "menuGrab": {
+    "message": "Sayfadaki dosyaları/resimleri yakala"
+  },
+  "menuSendPage": {
+    "message": "Bu sayfayı Fluxer'a gönder"
+  },
+  "fallbackUnreachable": {
+    "message": "Fluxer'a ulaşılamadı. İndirme tarayıcıda devam ediyor."
+  },
+  "fallbackFailed": {
+    "message": "Fluxer bu indirmeyi alamadı. İndirme tarayıcıda devam ediyor."
+  },
+  "fallbackIncognito": {
+    "message": "Fluxer bu indirmeyi alamadı. Tarayıcıda indirmek için Alt tuşunu basılı tutup bağlantıya yeniden tıklayın."
+  },
+  "sendUnreachable": {
+    "message": "Fluxer'a ulaşılamadı. Uygulamanın kurulu olduğundan emin olun."
+  },
+  "sendFailed": {
+    "message": "Fluxer bu isteği kabul edemedi."
+  },
+  "updateRequired": {
+    "message": "Fluxer ile bu eklentinin sürümleri uyumsuz. Lütfen eklentiyi veya uygulamayı güncelleyin."
+  },
+  "unsupportedUrl": {
+    "message": "Bu adres Fluxer'a gönderilemez."
+  },
+  "pageNotReady": {
+    "message": "Bu sayfa okunamadı. Sayfayı yenileyip tekrar deneyin."
+  },
+  "nothingFound": {
+    "message": "Bu sayfada dosya veya resim bulunamadı."
+  },
+  "popupChecking": {
+    "message": "Denetleniyor…"
+  },
+  "popupConnected": {
+    "message": "Bağlı"
+  },
+  "popupUnreachable": {
+    "message": "Uygulamaya ulaşılamıyor"
+  },
+  "popupUpdateRequired": {
+    "message": "Güncelleme gerekli"
+  },
+  "popupActive": {
+    "message": "Aktif"
+  },
+  "popupQueued": {
+    "message": "Sırada"
+  },
+  "popupSpeed": {
+    "message": "Hız"
+  },
+  "popupNoDownloads": {
+    "message": "Aktif indirme yok."
+  },
+  "popupSettings": {
+    "message": "Hızlı ayarlar"
+  },
+  "popupCaptureEnabled": {
+    "message": "Tarayıcı indirmelerini yakala"
+  },
+  "popupMinSize": {
+    "message": "Bundan küçük dosyaları tarayıcıya bırak (MiB)"
+  },
+  "popupAltHint": {
+    "message": "Fluxer'ı atlamak için bağlantıya Alt tuşu basılıyken tıklayın."
+  },
+  "perSecond": {
+    "message": "/sn"
+  }
+}

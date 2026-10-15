@@ -1,0 +1,83 @@
+{
+  "extName": {
+    "message": "Fluxer"
+  },
+  "extDescription": {
+    "message": "Send browser downloads, links and page resources to the Fluxer download manager."
+  },
+  "menuDownload": {
+    "message": "Download with Fluxer"
+  },
+  "menuGrab": {
+    "message": "Grab files/images on this page"
+  },
+  "menuSendPage": {
+    "message": "Send this page to Fluxer"
+  },
+  "fallbackUnreachable": {
+    "message": "Fluxer is not reachable. The download continues in the browser."
+  },
+  "fallbackFailed": {
+    "message": "Fluxer couldn't take this download. It continues in the browser."
+  },
+  "fallbackIncognito": {
+    "message": "Fluxer couldn't take this download. Hold Alt and click the link again to download it in the browser."
+  },
+  "sendUnreachable": {
+    "message": "Fluxer is not reachable. Make sure the app is installed."
+  },
+  "sendFailed": {
+    "message": "Fluxer couldn't accept this request."
+  },
+  "updateRequired": {
+    "message": "Fluxer and this extension don't match. Please update the extension or the app."
+  },
+  "unsupportedUrl": {
+    "message": "This address can't be sent to Fluxer."
+  },
+  "pageNotReady": {
+    "message": "Couldn't read this page. Reload it and try again."
+  },
+  "nothingFound": {
+    "message": "No files or images found on this page."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupConnected": {
+    "message": "Connected"
+  },
+  "popupUnreachable": {
+    "message": "App not reachable"
+  },
+  "popupUpdateRequired": {
+    "message": "Update required"
+  },
+  "popupActive": {
+    "message": "Active"
+  },
+  "popupQueued": {
+    "message": "Queued"
+  },
+  "popupSpeed": {
+    "message": "Speed"
+  },
+  "popupNoDownloads": {
+    "message": "No active downloads."
+  },
+  "popupSettings": {
+    "message": "Quick settings"
+  },
+  "popupCaptureEnabled": {
+    "message": "Capture browser downloads"
+  },
+  "popupMinSize": {
+    "message": "Leave files smaller than this to the browser (MiB)"
+  },
+  "popupAltHint": {
+    "message": "Hold Alt while clicking a link to skip Fluxer."
+  },
+  "perSecond": {
+    "message": "/s"
+  }
+}

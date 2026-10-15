@@ -1,0 +1,9 @@
+bin/
+obj/
+node_modules/
+extension/dist/
+artifacts/
+Releases/
+*.user
+.vs/
+*.pem

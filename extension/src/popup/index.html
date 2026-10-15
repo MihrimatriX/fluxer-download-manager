@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <title>Fluxer</title>
+  <link rel="stylesheet" href="./popup.css">
+</head>
+<body>
+  <header>
+    <img src="/icons/icon32.png" alt="" width="20" height="20">
+    <h1 data-i18n="extName"></h1>
+    <span id="status" class="status" role="status" data-i18n="popupChecking"></span>
+  </header>
+
+  <section class="stats">
+    <div><span data-i18n="popupActive"></span><strong id="active">–</strong></div>
+    <div><span data-i18n="popupQueued"></span><strong id="queued">–</strong></div>
+    <div><span data-i18n="popupSpeed"></span><strong id="speed">–</strong></div>
+  </section>
+
+  <ul id="top" class="top"></ul>
+  <p id="empty" class="muted" data-i18n="popupNoDownloads" hidden></p>
+
+  <section class="settings">
+    <h2 data-i18n="popupSettings"></h2>
+    <label class="row">
+      <span data-i18n="popupCaptureEnabled"></span>
+      <input type="checkbox" id="captureEnabled">
+    </label>
+    <label class="row">
+      <span data-i18n="popupMinSize"></span>
+      <input type="number" id="minSizeMiB" min="0" step="0.5">
+    </label>
+    <p class="muted" data-i18n="popupAltHint"></p>
+  </section>
+
+  <script type="module" src="./popup.ts"></script>
+</body>
+</html>
