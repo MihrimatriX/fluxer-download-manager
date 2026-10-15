@@ -43,6 +43,9 @@ public sealed class MediaDownload : IDownload
 
     public DownloadProgress GetProgress()
     {
+        // Live numbers describe the current stream (video, then audio); only meaningful while running.
+        if (Record.State != DownloadState.Downloading)
+            return new(Record.DoneBytes, Record.TotalBytes, 0, null, 0);
         var total = Interlocked.Read(ref _total);
         var eta = Interlocked.Read(ref _eta);
         return new(Interlocked.Read(ref _done), total > 0 ? total : Record.TotalBytes, Interlocked.Read(ref _speed),
@@ -64,7 +67,7 @@ public sealed class MediaDownload : IDownload
             var stem = Record.FileName; // sanitized title; gets its extension only on completion
             var args = new List<string>
             {
-                "--newline", "--no-playlist", "--windows-filenames", "--progress-template", ProgressTemplate,
+                "--newline", "--progress", "--no-playlist", "--windows-filenames", "--progress-template", ProgressTemplate,
                 "--concurrent-fragments", "4", "-f", Info.FormatSpec, "--merge-output-format", "mp4/mkv",
                 "-o", Path.Combine(Record.SaveDirectory, stem + ".%(ext)s"),
                 "--print", "after_move:filepath",
@@ -76,6 +79,7 @@ public sealed class MediaDownload : IDownload
             foreach (var a in args) psi.ArgumentList.Add(a);
 
             using var p = Process.Start(psi)!;
+            Platform.Windows.ChildProcessJob.Assign(p);
             SetState(DownloadState.Downloading, null);
             string? finalPath = null;
 

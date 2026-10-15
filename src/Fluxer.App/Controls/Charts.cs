@@ -82,6 +82,7 @@ public sealed class SpeedGraph : Control
         }
         ctx.DrawGeometry(new SolidColorBrush(accent, 0.25), new Pen(new SolidColorBrush(accent), 1.5), geo);
 
+        if (max < 1024) return;
         var label = new FormattedText(Loc.Speed((long)max), CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
             Typeface.Default, 11, new SolidColorBrush(accent));
         ctx.DrawText(label, new Point(4, 0));

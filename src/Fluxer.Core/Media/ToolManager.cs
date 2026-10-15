@@ -13,7 +13,7 @@ namespace Fluxer.Core.Media;
 /// yt-dlp.exe finds deno.exe automatically when it sits in the same folder.
 public sealed partial class ToolManager(string directory, HttpEngine http)
 {
-    private sealed record Tool(string Name, string Url, string SumsUrl, string AssetName, string[] Extract);
+    internal sealed record Tool(string Name, string Url, string SumsUrl, string AssetName, string[] Extract);
 
     private static readonly Tool YtDlp = new("yt-dlp",
         "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
@@ -80,7 +80,7 @@ public sealed partial class ToolManager(string directory, HttpEngine http)
         return true;
     }
 
-    private async Task InstallAsync(Tool tool, CancellationToken ct)
+    internal async Task InstallAsync(Tool tool, CancellationToken ct)
     {
         var expected = await ExpectedHashAsync(tool, ct);
         var temp = Path.Combine(directory, tool.AssetName + ".download");
@@ -136,17 +136,20 @@ public sealed partial class ToolManager(string directory, HttpEngine http)
         return ParseHash(sums, tool.AssetName) ?? throw new ToolVerificationException(tool.Name);
     }
 
-    /// Accepts "HASH  name" lists and single-hash files.
+    /// Accepts sha256sum-style lists ("HASH  name") and files that describe a single asset
+    /// (a bare hash, or PowerShell Get-FileHash output as deno publishes it).
     internal static string? ParseHash(string sums, string assetName)
     {
         var lines = sums.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         foreach (var l in lines)
         {
             var parts = l.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2 && parts[^1].TrimStart('*').Equals(assetName, StringComparison.OrdinalIgnoreCase))
-                return HexHash().IsMatch(parts[0]) ? parts[0] : null;
+            if (parts.Length >= 2 && HexHash().IsMatch(parts[0])
+                && parts[^1].TrimStart('*').Equals(assetName, StringComparison.OrdinalIgnoreCase))
+                return parts[0];
         }
-        return lines.Length == 1 && HexHash().Match(lines[0]) is { Success: true } m ? m.Value : null;
+        var hashes = HexHash().Matches(sums).Select(m => m.Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        return hashes.Count == 1 ? hashes[0] : null; // several unrelated hashes → refuse to guess
     }
 
     [GeneratedRegex("\\b[0-9a-fA-F]{64}\\b")]

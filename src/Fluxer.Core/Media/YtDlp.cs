@@ -16,6 +16,7 @@ public static class YtDlp
         foreach (var a in new[] { "-J", "--flat-playlist", "--no-warnings", url }) psi.ArgumentList.Add(a);
 
         using var p = Process.Start(psi)!;
+        Platform.Windows.ChildProcessJob.Assign(p);
         var stdout = p.StandardOutput.ReadToEndAsync(ct);
         var stderr = p.StandardError.ReadToEndAsync(ct);
         try { await p.WaitForExitAsync(ct); }

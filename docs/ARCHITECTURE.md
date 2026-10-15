@@ -1,6 +1,6 @@
 # Fluxer — Mimari (Aşama 0)
 
-> Durum: **Onay bekliyor.** Kaynak gereksinimler: `download-manager-prompt.md`.
+> Durum: **Onaylandı ve uygulandı (v0.1.0).** Uygulama sırasındaki sapmalar için §10. Kaynak gereksinimler: `download-manager-prompt.md`.
 > Sürümler 2026-10-15'te NuGet/npm üzerinden kontrol edildi.
 
 ---
@@ -500,3 +500,24 @@ Kabul kriterleri prompt'taki gibidir; her aşama sonunda `CHANGELOG.md` girdisi 
    - (c) uTP'yi kendimiz yazıp MonoTorrent'e eklemek — haftalarca iş, kapsam dışı.
 2. **Stage 1 konsol aracı** `src/Fluxer.Cli` olarak dağıtım dışı tutulacak — itiraz yoksa böyle.
 3. **Git:** Klasör henüz git deposu değil. Aşama 1'e başlarken `git init` + `.gitignore` öneriyorum.
+
+---
+
+## 10. Uygulama Notları (onaydan sonra verilen kararlar)
+
+| Konu | Karar | Neden |
+|---|---|---|
+| uTP | v1'de yok (Açık Soru 1, seçenek a) | MonoTorrent desteklemiyor |
+| Redirect | `AllowAutoRedirect = true`, son URL `response.RequestMessage.RequestUri`'den | Elle takip gereksizdi |
+| Bağlanma | `ConnectCallback` ile IPv6/IPv4 yarışı (RFC 8305, 250 ms) | Bozuk IPv6 rotasında varsayılan handler her isteği ~21 sn bekletiyordu (canlı testte bulundu) |
+| Bağlantı açılışı | 150 ms aralıklı slow start, ilk 429'da durur | Ani 8 bağlantı bazı sunucularda geçici IP yasağına yol açtı |
+| Worker sayımı | `_activeWorkers` yalnızca segment teslimiyle aynı kilit altında değişir | Eşzamanlı 429'larda son worker'ın da çıkması / sahipsiz segment riski |
+| İlerleme | Olay yerine çekme: UI 4 Hz'te yalnızca görünür satırları okur | Tek mekanizma, motor UI'dan bağımsız |
+| `IDownload.RunAsync` | `Start/Pause` yerine tek `RunAsync(ct)`; iptal = duraklat | Daha az durum |
+| Native host | Mesaj başına süreç (`sendNativeMessage`), NativeAOT | Kalıcı port yok; ~20 ms tur |
+| Pipe | `PipeOptions.CurrentUserOnly` + adında kullanıcı SID'i | ACL'yi .NET kurar |
+| Dosya çakışması | "Sor" seçeneği v1'de yok (yeniden adlandır / üzerine yaz) | Motor içinden UI sorusu gerektiriyordu |
+| Video araçları | yt-dlp + **deno** (YouTube için JS runtime; Aşama 7 başında doğrulandı) + ffmpeg (yt-dlp/FFmpeg-Builds) | yt-dlp.exe EJS'yi içerir, deno'yu aynı klasörde bulur |
+| Alt süreçler | yt-dlp/ffmpeg bir Job Object'e (`KILL_ON_JOB_CLOSE`) atanır | Uygulama çökse bile `.part`'a yazan yetim süreç kalmaz |
+| Araç indirme | Motorun paylaşılan `HttpClient`'ı (aynı handler/IPv6 yarışı) kullanılır, kuyruğa eklenmez | Listede görünmesi istenmez |
+| Kayıt | Registry/manifest her açılışta onarılır (Risk 9) | Taşınan kurulum/yeni tarayıcı |

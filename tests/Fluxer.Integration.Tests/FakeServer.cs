@@ -73,8 +73,16 @@ public sealed class FakeServer : IAsyncDisposable
         return sha.GetHashAndReset();
     }
 
+    /// Extra static text responses by path (e.g. checksum files).
+    public Dictionary<string, string> Texts { get; } = [];
+
     private async Task HandleAsync(HttpContext ctx)
     {
+        if (Texts.TryGetValue(ctx.Request.Path.Value ?? "", out var text))
+        {
+            await ctx.Response.WriteAsync(text);
+            return;
+        }
         Interlocked.Increment(ref Requests);
         var c = Interlocked.Increment(ref _concurrent);
         int peak;
