@@ -55,6 +55,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private int _themeIndex;
     [ObservableProperty] private bool _notifications;
     [ObservableProperty] private bool _showAddDialog;
+    [ObservableProperty] private bool _showProgressWindow;
+    [ObservableProperty] private bool _showCompletedCard;
     // Downloads
     [ObservableProperty] private string _downloadDirectory = "";
     [ObservableProperty] private bool _useCategoryFolders;
@@ -105,6 +107,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         ThemeIndex = s.Theme switch { "Light" => 1, "Dark" => 2, _ => 0 };
         Notifications = s.Notifications;
         ShowAddDialog = s.ShowAddDialog;
+        ShowProgressWindow = s.ShowProgressWindow;
+        ShowCompletedCard = s.ShowCompletedCard;
         DownloadDirectory = s.DownloadDirectory;
         UseCategoryFolders = s.UseCategoryFolders;
         ConflictIndex = s.Conflict == ConflictPolicy.Overwrite ? 1 : 0;
@@ -153,6 +157,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" };
         s.Notifications = Notifications;
         s.ShowAddDialog = ShowAddDialog;
+        s.ShowProgressWindow = ShowProgressWindow;
+        s.ShowCompletedCard = ShowCompletedCard;
         if (!string.IsNullOrWhiteSpace(DownloadDirectory)) s.DownloadDirectory = DownloadDirectory.Trim();
         s.UseCategoryFolders = UseCategoryFolders;
         s.Conflict = ConflictIndex == 1 ? ConflictPolicy.Overwrite : ConflictPolicy.Rename;

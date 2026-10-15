@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0 — 2026-10-15
+
+### İndirme pencereleri
+- **İlerleme penceresi** (her indirme için): durum rengine göre ilerleme halkası, kalın ilerleme çubuğu, anlık hız ve kalan süre; ortalama hız, geçen süre, bağlantı, devam desteği, boyut, sunucu ve kayıt yeri kartları; bağlantı başına renkli segment haritası; bağlantı tablosu (bayt aralığı, alınan, anlık hız, durum); hız grafiği; torrentte eşler, videoda parça sayacı. Duraklat/Sürdür, İptal (dosyayı silme seçeneğiyle), Arka plana al, kompakt mod, "bitince dosyayı aç / klasörü aç / pencereyi kapat". Hata durumunda açıklama ve "Bağlantıyı yenile".
+- Pencere tamamlanınca **özet görünüme** geçer (boyut, ortalama hız, süre; Aç / Klasörde göster / Kapat).
+- **Tamamlandı kartı:** ilerleme penceresi açık değilken biten indirme için sağ altta küçük kart; 15 sn sonra kapanır, fare üzerindeyken beklemede kalır. Aynı anda tek kart.
+- Ayarlar: "Yeni indirmelerde ilerleme penceresi" ve "Tamamlandı kartı" anahtarları. Listede çift tık ve sağ tık → "İlerleme penceresi…" her zaman açar.
+
+### Ekleme penceresi (yeniden yazıldı)
+- Tek bağlantıda büyük dosya kartı (türe göre renkli ikon, düzenlenebilir ad, boyut/tür/devam desteği/sunucu); birden çok bağlantıda her biri ayrı yoklanan liste ve toplam boyut.
+- Kategori çipleri (Otomatik, Video, Müzik, Belgeler, Arşivler, Programlar, Kategorisiz); otomatikte çoklu eklemede her dosya kendi kategori klasörüne.
+- Sürücüdeki boş alan ve "yer yetmiyor" uyarısı; panodan yapıştır; son klasörler menüsü.
+- Başlatma: Hemen başlat (kuyruğun başına), Kuyruğa ekle, Duraklatılmış ekle. Gelişmiş: bağlantı sayısı kaydırıcısı, sağlama toplamı.
+
+### Düzeltildi
+- Kuyrukta sıralama, tüm indirmeler için sahte "durum değişti" olayı yayınlıyordu; tamamlanmış indirmeler için tekrar bildirim/kart çıkıyordu. Artık ayrı bir `Reordered` olayı var (testli).
+
 ## 0.2.0 — 2026-10-15
 
 ### Düzeltildi: torrent yerine ".html" inmesi

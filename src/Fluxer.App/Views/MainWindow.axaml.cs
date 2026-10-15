@@ -22,7 +22,7 @@ public sealed partial class MainWindow : Window
             vm.Selection.Clear();
             vm.Selection.AddRange(list.SelectedItems.OfType<DownloadItemViewModel>());
         };
-        list.DoubleTapped += (_, _) => (DataContext as MainViewModel)?.OpenFileCommand.Execute(null);
+        list.DoubleTapped += (_, _) => (DataContext as MainViewModel)?.OpenDetailsCommand.Execute(null);
         // DataGrid consumes Enter/Space itself, so listen to handled events too.
         list.AddHandler(KeyDownEvent, OnListKeyDown, RoutingStrategies.Tunnel);
 

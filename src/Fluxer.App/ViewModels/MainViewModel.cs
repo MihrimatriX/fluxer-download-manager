@@ -154,6 +154,11 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedItem == vm) Detail.Show(vm);
     }
 
+    public void OnReordered()
+    {
+        foreach (var vm in _all.Values) if (vm.Download.State == DownloadState.Queued) vm.Refresh();
+    }
+
     /// ~4 Hz. Only running downloads change between state events, so only they are refreshed.
     public void Tick()
     {
@@ -293,6 +298,13 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (SelectedItem?.Download is { State: DownloadState.Completed } d && (File.Exists(d.Record.FullPath) || Directory.Exists(d.Record.FullPath)))
             Process.Start(new ProcessStartInfo(d.Record.FullPath) { UseShellExecute = true });
+    }
+
+    /// Progress / completion window of the selected download (double-click).
+    [RelayCommand]
+    private void OpenDetails()
+    {
+        if (SelectedItem?.Download is { } d) _host.OpenDownloadWindow(d);
     }
 
     [RelayCommand]

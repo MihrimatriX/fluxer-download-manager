@@ -88,6 +88,12 @@ public sealed class HttpDownload : IDownload
         lock (_lock) return [.. _segments.Select(s => new SegmentRow(s.Index, s.Start, s.End, s.Position))];
     }
 
+    /// Segments with a live connection on them (for the per-connection table).
+    public HashSet<int> GetActiveSegments()
+    {
+        lock (_lock) return [.. _segments.Where(s => s.Active && !s.IsDone).Select(s => s.Index)];
+    }
+
     // ================= run =================
 
     public async Task RunAsync(CancellationToken ct)

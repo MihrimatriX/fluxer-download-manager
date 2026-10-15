@@ -52,6 +52,13 @@
           <ToggleSwitch IsChecked="{Binding ShowAddDialog}" />
         </c:SettingRow>
 
+        <c:SettingRow Title="{x:Static app:Strings.ShowProgressWindow}" Description="{x:Static app:Strings.ShowProgressWindowDesc}">
+          <ToggleSwitch IsChecked="{Binding ShowProgressWindow}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ShowCompletedCard}" Description="{x:Static app:Strings.ShowCompletedCardDesc}">
+          <ToggleSwitch IsChecked="{Binding ShowCompletedCard}" />
+        </c:SettingRow>
+
         <!-- Downloads -->
         <TextBlock Classes="section" Text="{x:Static app:Strings.SecDownloads}" />
         <c:SettingRow Title="{x:Static app:Strings.DownloadFolder}" Description="{Binding DownloadDirectory}">

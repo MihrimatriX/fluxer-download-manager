@@ -70,8 +70,16 @@ public sealed class QueueOrderTests
             .ToList();
         string Order() => string.Join(",", h.Db.LoadAll().OrderBy(r => r.QueueOrder).Select(r => r.Http!.Url[^1]));
 
+        var stateEvents = 0;
+        var reorderEvents = 0;
+        queue.StateChanged += _ => stateEvents++;
+        queue.Reordered += () => reorderEvents++;
+
         queue.Reorder([ids[3], ids[4]], DownloadQueue.Move.Top);
         Assert.Equal("3,4,0,1,2", Order());
+        // Reordering is not a state change: no "completed" toasts/cards for untouched downloads.
+        Assert.Equal(0, stateEvents);
+        Assert.Equal(1, reorderEvents);
         queue.Reorder([ids[0]], DownloadQueue.Move.Up);
         Assert.Equal("3,0,4,1,2", Order());
         queue.Reorder([ids[3]], DownloadQueue.Move.Bottom);

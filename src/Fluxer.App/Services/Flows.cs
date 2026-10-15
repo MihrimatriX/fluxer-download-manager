@@ -20,31 +20,46 @@ public static class Flows
         // Browser captures can skip the dialog when the user turned it off.
         if (ctx is not null && !s.ShowAddDialog && urls.Count > 0)
         {
-            foreach (var u in urls) engine.AddHttp(u, fileName ?? probe?.FileName, ctx, rejectHtml: true);
+            foreach (var u in urls)
+                host.OpenProgressIfEnabled(engine.AddHttp(u, fileName ?? probe?.FileName, ctx, rejectHtml: true), activate: false);
             return;
         }
 
-        var r = await Dialogs.NewDownloadAsync(host.Owner, s, engine.Http, urls, fileName, ctx, probe);
+        var vm = new ViewModels.AddDownloadViewModel(s, engine.Http, urls, fileName, ctx, probe);
+        var r = await AddDownloadWindow.ShowAsync(host.Owner, vm);
         if (r is null) return;
-        ctx = r.Context ?? ctx; // the dialog may have found that our own User-Agent works better
 
-        // Remember the folder (most recent first) unless it is just the default.
-        if (!string.Equals(r.Folder, s.DownloadDirectory, StringComparison.OrdinalIgnoreCase))
-            s.RecentFolders = [r.Folder, .. s.RecentFolders.Where(f => !string.Equals(f, r.Folder, StringComparison.OrdinalIgnoreCase)).Take(5)];
-        await engine.SaveSettingsAsync(s);
-
-        foreach (var url in r.Urls)
+        // Remember the folder (most recent first) unless it is the default or a category folder of it.
+        var isDefault = r.Folder.StartsWith(s.DownloadDirectory, StringComparison.OrdinalIgnoreCase)
+                        && Path.GetDirectoryName(r.Folder.TrimEnd('\\')) is { } parent
+                        && (string.Equals(r.Folder.TrimEnd('\\'), s.DownloadDirectory.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(parent.TrimEnd('\\'), s.DownloadDirectory.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase));
+        if (!isDefault)
         {
-            if (url.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase)) { await TorrentAsync(host, null, url); continue; }
-            if (r.Kind == ProbeKind.Torrent || Path.GetExtension(new Uri(url).AbsolutePath).Equals(".torrent", StringComparison.OrdinalIgnoreCase))
+            s.RecentFolders = [r.Folder, .. s.RecentFolders.Where(f => !string.Equals(f, r.Folder, StringComparison.OrdinalIgnoreCase)).Take(5)];
+            await engine.SaveSettingsAsync(s);
+        }
+
+        var added = new List<IDownload>();
+        foreach (var item in r.Items)
+        {
+            if (item.IsMagnet) { await TorrentAsync(host, null, item.Url); continue; }
+            if (item.Kind == ProbeKind.Torrent || Path.GetExtension(new Uri(item.Url).AbsolutePath).Equals(".torrent", StringComparison.OrdinalIgnoreCase))
             {
-                await TorrentFromUrlAsync(host, url, ctx);
+                await TorrentFromUrlAsync(host, item.Url, item.Context);
                 continue;
             }
-            var folder = string.Equals(r.Folder, s.DownloadDirectory, StringComparison.OrdinalIgnoreCase) ? null : r.Folder;
-            engine.AddHttp(url, r.FileName, ctx, folder, r.Start, r.HashAlgorithm, r.Hash,
-                rejectHtml: ctx is not null || r.Kind == ProbeKind.File, connections: r.Connections);
+            // Several files with "automatic" category: each goes to its own category folder.
+            var folder = r.FolderIsPerFile && item.Category is { } cat ? Path.Combine(s.DownloadDirectory, cat)
+                : r.FolderIsPerFile ? s.DownloadDirectory : r.Folder;
+            added.Add(engine.AddHttp(item.Url, item.UserNamed ? item.Name : null, item.Context, folder, r.Mode != ViewModels.StartMode.Paused,
+                r.HashAlgorithm, r.Hash, rejectHtml: item.Context is not null || item.Kind == ProbeKind.File, connections: r.Connections));
         }
+
+        // "Start now" jumps the queue; "Add to queue" waits its turn at the end.
+        if (r.Mode == ViewModels.StartMode.Now && added.Count > 0)
+            engine.Queue.Reorder([.. added.Select(d => d.Id)], DownloadQueue.Move.Top);
+        if (added.Count == 1 && r.Mode != ViewModels.StartMode.Paused) host.OpenProgressIfEnabled(added[0], activate: true);
     }
 
     /// A .torrent link: fetch it (small) and open the torrent dialog instead of saving the file.
@@ -97,6 +112,7 @@ public static class Flows
         if (choice is null) return;
         var added = host.Engine.AddTorrent(torrentFile, magnet, choice.Deselected, choice.Sequential, choice.Folder);
         if (added is null) await Dialogs.MessageAsync(host.Owner, Strings.AddTorrent, Strings.TorrentDuplicate);
+        else host.OpenProgressIfEnabled(added, activate: true);
     }
 
     /// Manual paste or a matched browser download. Rejects size mismatches, warns on changed validators.
@@ -162,9 +178,9 @@ public static class Flows
         var choice = await Dialogs.MediaAsync(host.Owner, engine.Settings, probe);
         if (choice is null) return;
         var format = YtDlp.FormatFor(choice.MaxHeight, choice.AudioOnly);
-        foreach (var entry in choice.Entries)
-            engine.AddMedia(entry.Url, entry.Title, format, choice.AudioOnly, netscape, choice.Folder);
-        host.ShowMainWindow();
+        var media = choice.Entries.Select(entry => engine.AddMedia(entry.Url, entry.Title, format, choice.AudioOnly, netscape, choice.Folder)).ToList();
+        if (media.Count == 1) host.OpenProgressIfEnabled(media[0], activate: true);
+        else host.ShowMainWindow();
     }
 
     /// First use: one-time disclaimer, then consent + download of yt-dlp/deno/ffmpeg with hash checks.

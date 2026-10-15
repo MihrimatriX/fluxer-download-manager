@@ -170,6 +170,7 @@
                   Background="Transparent" Margin="8,0,8,0">
           <DataGrid.ContextMenu>
             <ContextMenu>
+              <MenuItem Header="{x:Static app:Strings.ProgressWindow}" Command="{Binding OpenDetailsCommand}" FontWeight="SemiBold" />
               <MenuItem Header="{x:Static app:Strings.OpenFile}" Command="{Binding OpenFileCommand}" InputGesture="Enter" />
               <MenuItem Header="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFolderCommand}" />
               <Separator />

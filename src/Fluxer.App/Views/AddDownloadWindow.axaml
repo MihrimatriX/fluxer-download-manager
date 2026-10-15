@@ -1,0 +1,176 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Fluxer.App.ViewModels"
+        xmlns:app="using:Fluxer.App"
+        x:Class="Fluxer.App.Views.AddDownloadWindow"
+        x:DataType="vm:AddDownloadViewModel"
+        Title="{x:Static app:Strings.NewDownload}" Icon="avares://Fluxer/Assets/fluxer.ico"
+        Width="660" SizeToContent="Height" CanResize="False" MaxHeight="860"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+      <Setter Property="Margin" Value="0,14,0,6" />
+    </Style>
+    <Style Selector="ListBox.chips > ListBoxItem">
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+      <Setter Property="Padding" Value="11,5" />
+      <Setter Property="Background" Value="{DynamicResource ChipBrush}" />
+    </Style>
+    <Style Selector="RadioButton.seg">
+      <Setter Property="Margin" Value="0,0,18,0" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="24,20,24,20">
+    <!-- footer -->
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,18,0,0">
+      <TextBlock Text="{Binding TotalText}" Classes="subtle" VerticalAlignment="Center" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <Button Content="{x:Static app:Strings.Cancel}" Click="OnCancel" MinWidth="96" HorizontalContentAlignment="Center" />
+        <Button Classes="accent" Click="OnSubmit" IsDefault="True" IsEnabled="{Binding CanSubmit}" MinWidth="120" HorizontalContentAlignment="Center" AutomationProperties.Name="{Binding SubmitText}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="icon" Text="&#xE896;" />
+            <TextBlock Text="{Binding SubmitText}" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <ScrollViewer>
+      <StackPanel>
+        <TextBlock Text="{x:Static app:Strings.NewDownload}" FontSize="20" FontWeight="SemiBold" />
+
+        <!-- links -->
+        <TextBlock Classes="label" Text="{x:Static app:Strings.Urls}" />
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox x:Name="UrlBox" Text="{Binding UrlsText}" AcceptsReturn="True" TextWrapping="NoWrap"
+                   MinHeight="38" MaxHeight="110" PlaceholderText="{x:Static app:Strings.UrlsWatermark}"
+                   AutomationProperties.Name="{x:Static app:Strings.Urls}" />
+          <Button Grid.Column="1" Classes="icon" Content="&#xE77F;" Margin="6,0,0,0" VerticalAlignment="Top" Height="38" Width="38"
+                  Click="OnPaste" ToolTip.Tip="{x:Static app:Strings.PasteTip}" AutomationProperties.Name="{x:Static app:Strings.PasteTip}" />
+        </Grid>
+
+        <!-- single file card -->
+        <Border IsVisible="{Binding IsSingle}" Background="{DynamicResource CardBrush}" CornerRadius="10" Padding="16,14" Margin="0,14,0,0">
+          <StackPanel DataContext="{Binding Single}" x:DataType="vm:AddItem">
+            <Grid ColumnDefinitions="Auto,*">
+              <Border Width="56" Height="56" CornerRadius="12" Background="{Binding Tile}" VerticalAlignment="Top">
+                <Panel>
+                  <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="26" Foreground="White" HorizontalAlignment="Center" IsVisible="{Binding !Probing}" />
+                  <ProgressBar IsIndeterminate="True" IsVisible="{Binding Probing}" Width="30" MinHeight="3" Height="3" Foreground="White" />
+                </Panel>
+              </Border>
+              <StackPanel Grid.Column="1" Margin="14,0,0,0" Spacing="6">
+                <TextBox Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" PlaceholderText="{x:Static app:Strings.FileNameAuto}"
+                         AutomationProperties.Name="{x:Static app:Strings.FileName}" />
+                <TextBlock Text="{Binding Meta}" Classes="subtle" TextWrapping="Wrap" Margin="2,0,0,0" />
+              </StackPanel>
+            </Grid>
+            <Border IsVisible="{Binding Warning, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" CornerRadius="6" Padding="10,8" Margin="0,12,0,0"
+                    BorderThickness="1" BorderBrush="{Binding WarningBrush}">
+              <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Classes="icon" Text="&#xE7BA;" Foreground="{Binding WarningBrush}" Margin="0,0,8,0" />
+                <TextBlock Grid.Column="1" Text="{Binding Warning}" TextWrapping="Wrap" FontSize="12.5" />
+              </Grid>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <!-- multiple links -->
+        <Border IsVisible="{Binding IsMulti}" Background="{DynamicResource CardBrush}" CornerRadius="10" Padding="8" Margin="0,14,0,0" MaxHeight="260">
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Items}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:AddItem">
+                  <Grid ColumnDefinitions="Auto,*" Margin="6,5">
+                    <Border Width="32" Height="32" CornerRadius="8" Background="{Binding Tile}">
+                      <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="15" Foreground="White" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="13" ToolTip.Tip="{Binding Url}" />
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{x:Static app:Strings.Probing}" Classes="subtle" IsVisible="{Binding Probing}" />
+                        <TextBlock Text="{Binding Meta}" Classes="subtle" IsVisible="{Binding !Probing}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Warning}" Foreground="{Binding WarningBrush}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Border>
+
+        <!-- category -->
+        <TextBlock Classes="label" Text="{x:Static app:Strings.Category}" />
+        <ListBox Classes="chips" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Background="Transparent">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CategoryChip">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="12" />
+                <TextBlock Text="{Binding Title}" FontSize="12.5" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- folder -->
+        <TextBlock Classes="label" Text="{x:Static app:Strings.SaveTo}" Margin="0,8,0,6" />
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <TextBox x:Name="FolderBox" Text="{Binding Folder}" AutomationProperties.Name="{x:Static app:Strings.SaveTo}" />
+          <Button Grid.Column="1" Content="{x:Static app:Strings.Browse}" Margin="6,0,0,0" Click="OnBrowse" />
+          <Button Grid.Column="2" Classes="icon" Content="&#xE81C;" Margin="6,0,0,0" Width="38" IsVisible="{Binding HasRecent}"
+                  ToolTip.Tip="{x:Static app:Strings.RecentFolders}" AutomationProperties.Name="{x:Static app:Strings.RecentFolders}">
+            <Button.Flyout>
+              <MenuFlyout ItemsSource="{Binding RecentFolders}">
+                <MenuFlyout.ItemContainerTheme>
+                  <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
+                    <Setter Property="Header" Value="{Binding}" />
+                    <Setter Property="Command" Value="{Binding $parent[Window].((vm:AddDownloadViewModel)DataContext).PickRecentCommand}" />
+                    <Setter Property="CommandParameter" Value="{Binding}" />
+                  </ControlTheme>
+                </MenuFlyout.ItemContainerTheme>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </Grid>
+        <StackPanel Orientation="Horizontal" Spacing="6" Margin="2,6,0,0">
+          <TextBlock Classes="icon" Text="&#xEDA2;" FontSize="12" Opacity="0.6" />
+          <TextBlock Text="{Binding FreeSpaceText}" Classes="subtle" />
+          <TextBlock Text="{x:Static app:Strings.NotEnoughSpace}" Foreground="#E5484D" FontSize="12" IsVisible="{Binding NotEnoughSpace}" />
+        </StackPanel>
+
+        <!-- start mode -->
+        <TextBlock Classes="label" Text="{x:Static app:Strings.WhenToStart}" />
+        <StackPanel Orientation="Horizontal">
+          <RadioButton Classes="seg" GroupName="mode" Content="{x:Static app:Strings.StartNow}" IsChecked="{Binding ModeIndex, Converter={x:Static vm:IndexIs.Zero}}" />
+          <RadioButton Classes="seg" GroupName="mode" Content="{x:Static app:Strings.AddToQueue}" IsChecked="{Binding ModeIndex, Converter={x:Static vm:IndexIs.One}}" />
+          <RadioButton Classes="seg" GroupName="mode" Content="{x:Static app:Strings.AddPaused}" IsChecked="{Binding ModeIndex, Converter={x:Static vm:IndexIs.Two}}" />
+        </StackPanel>
+
+        <!-- advanced -->
+        <Expander Header="{x:Static app:Strings.AdvancedOptions}" Margin="0,16,0,0" HorizontalAlignment="Stretch">
+          <StackPanel>
+            <TextBlock Classes="label" Text="{x:Static app:Strings.Connections}" Margin="0,0,0,4" />
+            <Grid ColumnDefinitions="*,Auto">
+              <Slider Minimum="1" Maximum="32" Value="{Binding Connections}" TickFrequency="1" IsSnapToTickEnabled="True" />
+              <TextBlock Grid.Column="1" Text="{Binding Connections, StringFormat='{}{0:0}'}" Width="32" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" />
+            </Grid>
+            <TextBlock Classes="label" Text="{x:Static app:Strings.Checksum}" />
+            <Grid ColumnDefinitions="Auto,*">
+              <ComboBox ItemsSource="{Binding HashAlgorithms}" SelectedIndex="{Binding HashIndex}" Width="110" />
+              <TextBox Grid.Column="1" Text="{Binding Hash}" PlaceholderText="{x:Static app:Strings.ChecksumWatermark}" Margin="6,0,0,0" />
+            </Grid>
+          </StackPanel>
+        </Expander>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

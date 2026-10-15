@@ -52,8 +52,9 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
         Main = new MainViewModel(this);
         Engine.Queue.Added += d => Dispatcher.UIThread.Post(() => Main.OnAdded(d));
-        Engine.Queue.Removed += d => Dispatcher.UIThread.Post(() => Main.OnRemoved(d));
+        Engine.Queue.Removed += d => Dispatcher.UIThread.Post(() => { Main.OnRemoved(d); CloseDownloadWindows(d.Id); });
         Engine.Queue.StateChanged += OnStateChanged;
+        Engine.Queue.Reordered += () => Dispatcher.UIThread.Post(Main.OnReordered);
         Engine.Queue.Drained += () => Dispatcher.UIThread.Post(OnDrained);
         Engine.Queue.Load();
         Main.Reload();
@@ -195,8 +196,51 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         else if (action == "Sleep") Process.Start(new ProcessStartInfo("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0") { CreateNoWindow = true });
     }
 
+    // ================= per-download windows =================
+
+    private readonly Dictionary<long, DownloadWindow> _downloadWindows = [];
+    private DownloadWindow? _card;
+
+    /// Opens (or brings forward) the progress window of a download.
+    public void OpenDownloadWindow(IDownload d, bool activate = true)
+    {
+        if (_downloadWindows.TryGetValue(d.Id, out var existing))
+        {
+            if (activate) existing.Activate();
+            return;
+        }
+        if (_card?.DownloadId == d.Id) _card.Close();
+        var w = new DownloadWindow(new DownloadWindowViewModel(this, d, card: false)) { ShowActivated = activate };
+        w.Closed += (_, _) => _downloadWindows.Remove(d.Id);
+        _downloadWindows[d.Id] = w;
+        w.Show();
+    }
+
+    public void OpenProgressIfEnabled(IDownload d, bool activate)
+    {
+        if (Engine.Settings.ShowProgressWindow) OpenDownloadWindow(d, activate);
+    }
+
+    /// Small corner card when a download finishes without its progress window open. One at a time.
+    private void ShowCompletedCard(IDownload d)
+    {
+        if (!Engine.Settings.ShowCompletedCard || _downloadWindows.ContainsKey(d.Id)) return;
+        _card?.Close();
+        var card = new DownloadWindow(new DownloadWindowViewModel(this, d, card: true)) { ShowActivated = false };
+        card.Closed += (_, _) => { if (_card == card) _card = null; };
+        _card = card;
+        card.Show();
+    }
+
+    private void CloseDownloadWindows(long id)
+    {
+        if (_downloadWindows.TryGetValue(id, out var w)) w.Close();
+        if (_card?.DownloadId == id) _card.Close();
+    }
+
     private void OnStateChanged(IDownload d)
     {
+        if (d.State == DownloadState.Completed) Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
         Log.Information("Download {Id} ({Kind}) → {State} {Error}", d.Id, d.Kind, d.State, d.Record.Error);
         Dispatcher.UIThread.Post(() => Main.OnStateChanged(d));
         if (!Engine.Settings.Notifications) return;

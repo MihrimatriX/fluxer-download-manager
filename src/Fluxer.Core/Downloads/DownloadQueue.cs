@@ -15,6 +15,8 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     public event Action<IDownload>? Added;
     public event Action<IDownload>? Removed;
     public event Action<IDownload>? StateChanged;
+    /// Queue order changed (no state changed); listeners refresh queue positions.
+    public event Action? Reordered;
     /// Raised once when the last running/queued download finishes (for "sleep/shutdown when done").
     public event Action? Drained;
 
@@ -128,7 +130,7 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
                 db.Update(rest[i].Record);
             }
         }
-        foreach (var d in Items) StateChanged?.Invoke(d);
+        Reordered?.Invoke();
         Schedule();
     }
 

@@ -23,6 +23,8 @@ public sealed class AppSettings
     public string? ScheduleStop { get; set; }
     public string AfterQueue { get; set; } = "None"; // None | Sleep | Shutdown
     public bool ShowAddDialog { get; set; } = true;
+    public bool ShowProgressWindow { get; set; } = true;
+    public bool ShowCompletedCard { get; set; } = true;
     public List<string> RecentFolders { get; set; } = [];
     public bool Notifications { get; set; } = true;
     public bool RegisterFileAssociations { get; set; } = true;

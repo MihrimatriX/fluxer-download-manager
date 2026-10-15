@@ -6,6 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="Accept" xml:space="preserve"><value>Kabul et</value></data>
   <data name="AddPaused" xml:space="preserve"><value>Duraklatılmış ekle</value></data>
+  <data name="AddToQueue" xml:space="preserve"><value>Kuyruğa ekle</value></data>
   <data name="AddTorrent" xml:space="preserve"><value>Torrent ekle</value></data>
   <data name="AddUrl" xml:space="preserve"><value>Bağlantı ekle…</value></data>
   <data name="AdvancedOptions" xml:space="preserve"><value>Gelişmiş seçenekler</value></data>
@@ -15,6 +16,7 @@
   <data name="AfterShutdown" xml:space="preserve"><value>Bilgisayarı kapat</value></data>
   <data name="AfterSleep" xml:space="preserve"><value>Bilgisayarı uyut</value></data>
   <data name="AudioOnly" xml:space="preserve"><value>Yalnızca ses</value></data>
+  <data name="AvgSpeedIs" xml:space="preserve"><value>ort. {0}</value></data>
   <data name="Back" xml:space="preserve"><value>Geri</value></data>
   <data name="Browse" xml:space="preserve"><value>Gözat…</value></data>
   <data name="BrowserStatus" xml:space="preserve"><value>Tarayıcı entegrasyonu</value></data>
@@ -22,9 +24,12 @@
   <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
   <data name="CatAll" xml:space="preserve"><value>Tüm indirmeler</value></data>
   <data name="CatArchives" xml:space="preserve"><value>Arşivler</value></data>
+  <data name="CatAuto" xml:space="preserve"><value>Otomatik</value></data>
   <data name="CatDocuments" xml:space="preserve"><value>Belgeler</value></data>
   <data name="Categories" xml:space="preserve"><value>KATEGORİLER</value></data>
+  <data name="Category" xml:space="preserve"><value>Kategori</value></data>
   <data name="CatMusic" xml:space="preserve"><value>Müzik</value></data>
+  <data name="CatNone" xml:space="preserve"><value>Kategorisiz</value></data>
   <data name="CatPrograms" xml:space="preserve"><value>Programlar</value></data>
   <data name="CatTorrent" xml:space="preserve"><value>Torrentler</value></data>
   <data name="CatVideo" xml:space="preserve"><value>Video</value></data>
@@ -34,6 +39,8 @@
   <data name="ClearCompleted" xml:space="preserve"><value>Bitenleri temizle</value></data>
   <data name="ClearCompletedConfirm" xml:space="preserve"><value>{0} biten indirme listeden kaldırılsın mı? Dosyalar diskte kalır.</value></data>
   <data name="ClearCompletedTip" xml:space="preserve"><value>Biten indirmeleri listeden kaldır (dosyalar silinmez)</value></data>
+  <data name="Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ClosesIn" xml:space="preserve"><value>{0} sn içinde kapanacak</value></data>
   <data name="ColAdded" xml:space="preserve"><value>Eklenme</value></data>
   <data name="ColEta" xml:space="preserve"><value>Kalan</value></data>
   <data name="ColName" xml:space="preserve"><value>Ad</value></data>
@@ -41,18 +48,25 @@
   <data name="ColSize" xml:space="preserve"><value>Boyut</value></data>
   <data name="ColSpeed" xml:space="preserve"><value>Hız</value></data>
   <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="CompactTip" xml:space="preserve"><value>Ayrıntıları göster/gizle</value></data>
   <data name="Conflict" xml:space="preserve"><value>Aynı adda dosya varsa</value></data>
   <data name="ConflictOverwrite" xml:space="preserve"><value>Üzerine yaz</value></data>
   <data name="ConflictRename" xml:space="preserve"><value>İkisini de tut: "ad (1).uzantı"</value></data>
+  <data name="ConnActive" xml:space="preserve"><value>alınıyor</value></data>
+  <data name="ConnDone" xml:space="preserve"><value>tamam</value></data>
+  <data name="ConnDownloaded" xml:space="preserve"><value>Alınan</value></data>
   <data name="Connections" xml:space="preserve"><value>İndirme başına bağlantı</value></data>
   <data name="ConnectionsDesc" xml:space="preserve"><value>Tek bir HTTP indirmesi için paralel bağlantı (1–32). Sunucu itiraz ederse Fluxer otomatik düşürür.</value></data>
   <data name="ConnectionsShort" xml:space="preserve"><value>bağl.</value></data>
+  <data name="ConnRange" xml:space="preserve"><value>Bayt aralığı</value></data>
+  <data name="ConnWaiting" xml:space="preserve"><value>bekliyor</value></data>
   <data name="ContinueAnyway" xml:space="preserve"><value>Yine de devam et</value></data>
   <data name="Copy" xml:space="preserve"><value>Kopyala</value></data>
   <data name="CopyUrl" xml:space="preserve"><value>Adresi kopyala</value></data>
   <data name="Delete" xml:space="preserve"><value>Sil</value></data>
   <data name="DeleteConfirm" xml:space="preserve"><value>{0} indirme listeden kaldırılsın mı?</value></data>
   <data name="DeleteFilesToo" xml:space="preserve"><value>Dosyaları diskten de sil</value></data>
+  <data name="Details" xml:space="preserve"><value>Ayrıntılar</value></data>
   <data name="Diagnostics" xml:space="preserve"><value>Tanılama</value></data>
   <data name="DiagnosticsDesc" xml:space="preserve"><value>Hata bildirimi için loglar ve ayarlar; cookie'ler ve indirme adresleri asla eklenmez.</value></data>
   <data name="Download" xml:space="preserve"><value>İndir</value></data>
@@ -75,13 +89,16 @@
   <data name="ErrMediaUnsupported" xml:space="preserve"><value>Bu site desteklenmiyor</value></data>
   <data name="ErrNetwork" xml:space="preserve"><value>Ağ hatası</value></data>
   <data name="ErrToolHash" xml:space="preserve"><value>İndirilen araç doğrulanamadı ve silindi</value></data>
+  <data name="EtaLeft" xml:space="preserve"><value>{0} kaldı</value></data>
   <data name="ExportDiagnostics" xml:space="preserve"><value>Tanılama paketini dışa aktar…</value></data>
   <data name="ExtensionFolder" xml:space="preserve"><value>Eklenti klasörü (paketlenmemiş yükle)</value></data>
   <data name="ExtensionHowTo" xml:space="preserve"><value>chrome://extensions → Geliştirici modu → Paketlenmemiş öğe yükle → bu klasör.</value></data>
   <data name="ExtensionId" xml:space="preserve"><value>Eklenti kimliği</value></data>
   <data name="Extensions" xml:space="preserve"><value>Uzantılar</value></data>
+  <data name="FileName" xml:space="preserve"><value>Dosya adı</value></data>
   <data name="FileNameAuto" xml:space="preserve"><value>Otomatik</value></data>
   <data name="Files" xml:space="preserve"><value>Dosyalar</value></data>
+  <data name="FilesTotal" xml:space="preserve"><value>{0} dosya · {1}</value></data>
   <data name="FilterActive" xml:space="preserve"><value>Etkin</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Tümü</value></data>
   <data name="FilterDone" xml:space="preserve"><value>Tamamlanan</value></data>
@@ -89,9 +106,12 @@
   <data name="FilterPaused" xml:space="preserve"><value>Duraklatılan</value></data>
   <data name="FilterQueued" xml:space="preserve"><value>Sırada</value></data>
   <data name="FragmentFormat" xml:space="preserve"><value>Parça {0} / {1}</value></data>
+  <data name="FreeSpace" xml:space="preserve"><value>Bu sürücüde {0} boş</value></data>
   <data name="GrabCount" xml:space="preserve"><value>{1} öğeden {0} seçili</value></data>
   <data name="GrabEmpty" xml:space="preserve"><value>Bu sayfada indirilecek bir şey bulunamadı.</value></data>
   <data name="GrabTitle" xml:space="preserve"><value>Sayfadan indir</value></data>
+  <data name="Hide" xml:space="preserve"><value>Arka plana al</value></data>
+  <data name="HideTip" xml:space="preserve"><value>Pencereyi kapat; indirme sürer</value></data>
   <data name="HttpSlots" xml:space="preserve"><value>Aynı anda HTTP indirmesi</value></data>
   <data name="InfoAdded" xml:space="preserve"><value>Eklenme</value></data>
   <data name="InfoConnections" xml:space="preserve"><value>Bağlantılar</value></data>
@@ -143,16 +163,20 @@
   <data name="MoveUpTip" xml:space="preserve"><value>Daha önce başlat (Ctrl+Yukarı)</value></data>
   <data name="NewDownload" xml:space="preserve"><value>Yeni indirme</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="NotEnoughSpace" xml:space="preserve"><value>— yer yetmiyor</value></data>
   <data name="NotifyCompleted" xml:space="preserve"><value>İndirme tamamlandı</value></data>
   <data name="NotResumable" xml:space="preserve"><value>devam ettirilemez</value></data>
   <data name="Ok" xml:space="preserve"><value>Tamam</value></data>
   <data name="OpenFile" xml:space="preserve"><value>Aç</value></data>
   <data name="OpenFolder" xml:space="preserve"><value>Klasörde göster</value></data>
   <data name="OpenLogs" xml:space="preserve"><value>Logları aç</value></data>
+  <data name="PasteTip" xml:space="preserve"><value>Panodan yapıştır</value></data>
   <data name="Pause" xml:space="preserve"><value>Duraklat</value></data>
   <data name="PauseAll" xml:space="preserve"><value>Tümünü duraklat</value></data>
+  <data name="PeersCount" xml:space="preserve"><value>{0} eş</value></data>
   <data name="PlaylistItems" xml:space="preserve"><value>Oynatma listesi — {0} öğe</value></data>
   <data name="Probing" xml:space="preserve"><value>Adres kontrol ediliyor…</value></data>
+  <data name="ProgressWindow" xml:space="preserve"><value>İlerleme penceresi…</value></data>
   <data name="Proxy" xml:space="preserve"><value>Proxy</value></data>
   <data name="ProxyDesc" xml:space="preserve"><value>Boş bırakılırsa Windows proxy ayarları kullanılır.</value></data>
   <data name="Quality" xml:space="preserve"><value>Kalite</value></data>
@@ -203,25 +227,37 @@
   <data name="SettingsSaved" xml:space="preserve"><value>Kaydedildi</value></data>
   <data name="ShowAddDialog" xml:space="preserve"><value>Tarayıcıdan gelen indirmeleri başlatmadan önce sor</value></data>
   <data name="ShowAddDialogDesc" xml:space="preserve"><value>Tarayıcıdan gelen indirmelerde ekleme penceresini göster; kapalı = hemen başlat.</value></data>
+  <data name="ShowCompletedCard" xml:space="preserve"><value>"Tamamlandı" kartı</value></data>
+  <data name="ShowCompletedCardDesc" xml:space="preserve"><value>İndirme bitince köşede küçük bir kart; kendiliğinden kapanır.</value></data>
   <data name="ShowNotifications" xml:space="preserve"><value>Bildirimleri göster</value></data>
   <data name="ShowNotificationsDesc" xml:space="preserve"><value>İndirme bittiğinde veya başarısız olduğunda Windows bildirimi.</value></data>
+  <data name="ShowProgressWindow" xml:space="preserve"><value>Yeni indirmelerde ilerleme penceresi</value></data>
+  <data name="ShowProgressWindowDesc" xml:space="preserve"><value>Başlattığınız her indirme için ayrıntılı bir pencere açar. Bir satıra çift tıklayarak her zaman açabilirsiniz.</value></data>
   <data name="SlotsDesc" xml:space="preserve"><value>Video indirmeleri de buraya sayılır; kalanlar kuyrukta bekler.</value></data>
   <data name="SpeedGraph" xml:space="preserve"><value>Hız (son dakika)</value></data>
   <data name="SpeedLimitPrompt" xml:space="preserve"><value>Bu indirme için hız sınırı, KB/s (0 = sınırsız):</value></data>
   <data name="SpeedLimitTitle" xml:space="preserve"><value>Hız sınırı…</value></data>
+  <data name="StartNow" xml:space="preserve"><value>Hemen başlat</value></data>
+  <data name="StatAvgSpeed" xml:space="preserve"><value>Ortalama hız</value></data>
+  <data name="StatConnections" xml:space="preserve"><value>Bağlantılar</value></data>
   <data name="StateCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
   <data name="StateDiskFull" xml:space="preserve"><value>Disk dolu</value></data>
   <data name="StateDownloading" xml:space="preserve"><value>İndiriliyor</value></data>
   <data name="StateFailed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="StatElapsed" xml:space="preserve"><value>Geçen süre</value></data>
   <data name="StateNeedsLinkRefresh" xml:space="preserve"><value>Bağlantı yenilenmeli</value></data>
   <data name="StatePaused" xml:space="preserve"><value>Duraklatıldı</value></data>
   <data name="StateQueued" xml:space="preserve"><value>Sırada</value></data>
   <data name="StateSeeding" xml:space="preserve"><value>Paylaşılıyor</value></data>
   <data name="StateStarting" xml:space="preserve"><value>Bağlanıyor…</value></data>
   <data name="StateVerifying" xml:space="preserve"><value>Doğrulanıyor</value></data>
+  <data name="StatResumable" xml:space="preserve"><value>Devam desteği</value></data>
+  <data name="StatServer" xml:space="preserve"><value>Sunucu</value></data>
+  <data name="StatSize" xml:space="preserve"><value>Boyut</value></data>
   <data name="SummaryFormat" xml:space="preserve"><value>{0} indirme · {1} etkin · {2} sırada</value></data>
   <data name="TabActivity" xml:space="preserve"><value>Etkinlik</value></data>
   <data name="TabAdvanced" xml:space="preserve"><value>Gelişmiş</value></data>
+  <data name="TabConnectionsList" xml:space="preserve"><value>Bağlantılar</value></data>
   <data name="TabFiles" xml:space="preserve"><value>Dosyalar</value></data>
   <data name="TabGeneral" xml:space="preserve"><value>Genel</value></data>
   <data name="TabHeaders" xml:space="preserve"><value>Başlıklar</value></data>
@@ -231,6 +267,7 @@
   <data name="ThemeDark" xml:space="preserve"><value>Koyu</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Açık</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>Sistemi izle</value></data>
+  <data name="TookIs" xml:space="preserve"><value>{0} sürdü</value></data>
   <data name="ToolsConsent" xml:space="preserve"><value>Video kaydetmek için Fluxer'ın yt-dlp, deno ve ffmpeg araçlarına ihtiyacı var (yaklaşık 150 MB). Resmi GitHub sürümlerinden bir kez indirilip yayıncıların SHA-256 özetleriyle doğrulanacaklar.</value></data>
   <data name="ToolsDownloading" xml:space="preserve"><value>Video araçları indiriliyor…</value></data>
   <data name="ToolsFailed" xml:space="preserve"><value>Video araçları kurulamadı.</value></data>
@@ -242,6 +279,7 @@
   <data name="TorrentSlots" xml:space="preserve"><value>Aynı anda torrent</value></data>
   <data name="TorrentSlotsDesc" xml:space="preserve"><value>Eş arayan bir torrent HTTP indirmelerini asla bekletmez; paylaşım slot kaplamaz.</value></data>
   <data name="TorrentUpLimitItem" xml:space="preserve"><value>Bu torrent için gönderme sınırı (KB/s)</value></data>
+  <data name="TorrentUpStat" xml:space="preserve"><value>↑ {0} · {1} gönderildi</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Fluxer'dan çık</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Fluxer'ı aç</value></data>
   <data name="Unlimited" xml:space="preserve"><value>Sınırsız</value></data>
@@ -262,6 +300,10 @@
   <data name="WarnHttp" xml:space="preserve"><value>Sunucu HTTP {0} yanıtı verdi.</value></data>
   <data name="WarnTorrent" xml:space="preserve"><value>Bu bir torrent dosyası — torrent olarak açılacak.</value></data>
   <data name="WarnUnreachable" xml:space="preserve"><value>Sunucuya ulaşılamadı.</value></data>
+  <data name="WhenDoneClose" xml:space="preserve"><value>Bu pencereyi kapat</value></data>
+  <data name="WhenDoneOpenFile" xml:space="preserve"><value>Dosyayı aç</value></data>
+  <data name="WhenDoneOpenFolder" xml:space="preserve"><value>Klasörü aç</value></data>
+  <data name="WhenToStart" xml:space="preserve"><value>Başlatma</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="ZeroIsGlobal" xml:space="preserve"><value>0 = yalnızca genel sınır geçerli.</value></data>
 </root>
