@@ -1,8 +1,9 @@
 // Service worker: download capture, context menus, native messaging.
+import { categoryOfName, nameOf, toBatchLinks } from './batch';
 import {
-  DEFAULT_SETTINGS, RecentUrls, buildInterceptMessage, buildTorrentFileMessage, decide, isHttp, outcomeOf,
-  rejectReason, toCookieDto,
-  type Outcome, type Settings,
+  DEFAULT_SETTINGS, RecentUrls, askAnswer, basename, bumpDaily, buildInterceptMessage, buildTorrentFileMessage, canAsk,
+  decide, formatBytes, isAddable, isHttp, localDay, outcomeOf, rejectReason, sentCount, toCookieDto,
+  type DailyCount, type Outcome, type Settings,
 } from './capture';
 import { truncateToFit } from './collector';
 import { classifyMedia, mergeHit, pickForVideo, type MediaHit } from './media';
@@ -49,12 +50,25 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 // ---- helpers ----
 async function trySend(msg: Request): Promise<Reply | undefined> {
+  let reply: Reply | undefined;
   try {
-    return await sendNative(msg);
+    reply = await sendNative(msg);
   } catch (e) {
     console.warn('Fluxer: native messaging failed', e);
-    return undefined;
   }
+  const n = sentCount(msg, reply);
+  if (n) void countSent(n);
+  return reply;
+}
+
+// "Sent to Fluxer today" for the popup: one read-modify-write at a time.
+let sentWrites = Promise.resolve();
+function countSent(n: number): Promise<void> {
+  sentWrites = sentWrites.then(async () => {
+    const { sentToday } = await chrome.storage.local.get('sentToday') as { sentToday?: DailyCount };
+    await chrome.storage.local.set({ sentToday: bumpDaily(sentToday, localDay(new Date()), n) });
+  }).catch((e) => console.warn('Fluxer: sent count', e));
+  return sentWrites;
 }
 
 function notify(messageKey: string): void {
@@ -138,6 +152,9 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
   if (!paused || paused.state !== 'in_progress') return;
 
   const tab = await activeTab(item.incognito);
+  // The toast on the page: "Download with Fluxer" (or the countdown) carries on below, "Leave in browser" hands back.
+  if (canAsk(paused, tab) && (await askOnPage(tab!.id!, paused)) === 'browser') return handBack(item, 'ok');
+
   const msg = buildInterceptMessage(paused, {
     cookies: await cookiesFor([item.url, item.finalUrl], tab?.id),
     userAgent: navigator.userAgent,
@@ -153,10 +170,18 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
 
   const reason = rejectReason(reply);
   if (reason === 'torrent') await pendingTorrents.add(item.id);
+  // 'html'/'torrent' are normal hand-backs; only tell the user when Fluxer could not be reached.
+  await handBack(item, outcome, reason === 'html' || reason === 'torrent');
+}
+
+/**
+ * Lets the browser carry on with a paused download. `outcome` 'ok' means the user chose the browser (no notice);
+ * otherwise Fluxer could not take it and the user is told, unless `quiet` (a normal hand-back).
+ */
+async function handBack(item: chrome.downloads.DownloadItem, outcome: Outcome, quiet = false): Promise<void> {
   try {
     await chrome.downloads.resume(item.id);
-    // 'html'/'torrent' are normal hand-backs; only tell the user when Fluxer could not be reached.
-    if (reason !== 'html' && reason !== 'torrent') notifyOutcome(outcome, 'fallback');
+    if (!quiet) notifyOutcome(outcome, 'fallback');
     return;
   } catch {
     // The paused request died (server timeout): restart it below.
@@ -167,7 +192,7 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
   if (item.incognito) {
     // chrome.downloads.download() would run in the regular profile and leak the URL into normal
     // history, so tell the user how to get it in the browser instead.
-    notify(outcome === 'update' ? 'updateRequired' : 'fallbackIncognito');
+    if (outcome !== 'ok') notify(outcome === 'update' ? 'updateRequired' : 'fallbackIncognito');
     return;
   }
   bypassUrls.add(item.url); // before download(): its onCreated must not capture it again
@@ -177,6 +202,31 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
     console.warn('Fluxer: could not restart download in browser', e);
   }
   notifyOutcome(outcome, 'fallback');
+}
+
+const ASK_SECONDS = 3;
+const sizeFormat = new Intl.NumberFormat(chrome.i18n.getUILanguage(), { maximumFractionDigits: 1 });
+
+/**
+ * Shows the capture toast in the tab's top frame and waits for the answer. No content script (page open since
+ * before an update, restricted page) rejects at once, so the download goes to Fluxer right away as before.
+ */
+async function askOnPage(tabId: number, item: chrome.downloads.DownloadItem): Promise<'send' | 'browser'> {
+  const name = basename(item.filename) || nameOf(item.finalUrl || item.url);
+  const ask = {
+    type: 'capture-ask',
+    name,
+    size: item.totalBytes > 0 ? formatBytes(item.totalBytes, sizeFormat) : '',
+    category: categoryOfName(name),
+    seconds: ASK_SECONDS,
+  };
+  // A page that never answers (frozen, throttled) must not hold the download.
+  const timeout = new Promise((r) => setTimeout(r, (ASK_SECONDS + 10) * 1000));
+  try {
+    return askAnswer(await Promise.race([chrome.tabs.sendMessage(tabId, ask, { frameId: 0 }), timeout]));
+  } catch {
+    return 'send';
+  }
 }
 
 async function onDownloadComplete(id: number): Promise<void> {
@@ -194,6 +244,8 @@ async function onDownloadComplete(id: number): Promise<void> {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({ id: 'download', title: t('menuDownload'), contexts: ['link', 'image', 'video', 'audio'] });
+    chrome.contextMenus.create({ id: 'download-night', title: t('menuNight'), contexts: ['link'] });
+    chrome.contextMenus.create({ id: 'send-links', title: t('menuAllLinks'), contexts: ['link'] });
     chrome.contextMenus.create({ id: 'grab', title: t('menuGrab'), contexts: ['page'] });
     chrome.contextMenus.create({ id: 'send-page', title: t('menuSendPage'), contexts: ['page'] });
   });
@@ -204,21 +256,22 @@ chrome.contextMenus.onClicked.addListener((info, tab) => { void onMenu(info, tab
 async function onMenu(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab): Promise<void> {
   const ctx = { userAgent: navigator.userAgent, incognito: tab?.incognito ?? false };
 
-  if (info.menuItemId === 'download') {
+  if (info.menuItemId === 'download' || info.menuItemId === 'download-night') {
     const url = info.linkUrl || info.srcUrl;
     // blob:/MediaSource players: the same logic as the in-page video button.
     if (tab && !info.linkUrl && (info.mediaType === 'video' || info.mediaType === 'audio') && !isHttp(url))
       return notifyOutcome(await sendVideo(tab, url), 'send');
-    if (!url || !/^(https?|magnet):/i.test(url)) return notify('unsupportedUrl');
-    const msg = envelope<DownloadAdd>('download.add', {
-      ...ctx,
-      url,
-      source: 'context-menu',
-      referrer: info.frameUrl || info.pageUrl,
-      tabUrl: tab?.url,
-      cookies: await cookiesFor([url], tab?.id),
-    });
-    return notifyOutcome(outcomeOf(await trySend(msg), 'download.add.result'), 'send');
+    if (!isAddable(url)) return notify('unsupportedUrl');
+    const queue = info.menuItemId === 'download-night' ? 'night' : undefined;
+    return notifyOutcome(await addUrl(url, tab, info.frameUrl || info.pageUrl, queue), 'send');
+  }
+
+  if (info.menuItemId === 'send-links' && tab?.id !== undefined) {
+    const resources = await collectLinks(tab.id);
+    if (!resources) return notify('pageNotReady');
+    const items = toBatchLinks(resources).map((l) => ({ url: l.url }));
+    if (!items.length) return notify('nothingFound');
+    return notifyOutcome(await sendBatch(tab, items), 'send');
   }
 
   if (info.menuItemId === 'send-page') {
@@ -325,17 +378,22 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 // ---- sending media / pages / batches (popup, video button, context menu) ----
 const browserCtx = (tab: chrome.tabs.Tab) => ({ userAgent: navigator.userAgent, incognito: tab.incognito });
 
-async function sendFile(tab: chrome.tabs.Tab, url: string): Promise<Outcome> {
+/** One URL to Fluxer (context menu, popup paste, captured media). `queue: 'night'` holds it for the night schedule. */
+async function addUrl(url: string, tab: chrome.tabs.Tab | undefined, referrer?: string, queue?: 'night'): Promise<Outcome> {
   const msg = envelope<DownloadAdd>('download.add', {
-    ...browserCtx(tab),
+    userAgent: navigator.userAgent,
+    incognito: tab?.incognito ?? false,
     url,
     source: 'context-menu',
-    referrer: tab.url,
-    tabUrl: tab.url,
-    cookies: await cookiesFor([url, tab.url], tab.id),
+    referrer,
+    tabUrl: tab?.url,
+    cookies: await cookiesFor([url, referrer], tab?.id),
+    ...(queue && { queue }),
   });
   return outcomeOf(await trySend(msg), 'download.add.result');
 }
+
+const sendFile = (tab: chrome.tabs.Tab, url: string) => addUrl(url, tab, tab.url);
 
 /** A page for yt-dlp, or a stream manifest with the page it plays on as referrer. */
 async function sendMediaPage(tab: chrome.tabs.Tab, url: string): Promise<Outcome> {
@@ -389,6 +447,7 @@ type PanelMessage =
   | { type: 'page-video'; tabId: number }
   | { type: 'collect-links'; tabId: number }
   | { type: 'batch'; tabId: number; items: { url: string; fileName?: string }[] }
+  | { type: 'add-url'; url: string }
   | { type: 'video-button'; src?: string };
 
 chrome.runtime.onMessage.addListener((msg: PanelMessage, sender, sendResponse) => {
@@ -410,6 +469,8 @@ function handlePanel(msg: PanelMessage, sender: chrome.runtime.MessageSender): P
       return withTab(msg.tabId, (tab) => (isHttp(tab.url) ? sendMediaPage(tab, tab.url!) : Promise.resolve<Outcome>('failed')));
     case 'collect-links': return collectLinks(msg.tabId).then((resources) => ({ resources }));
     case 'batch': return withTab(msg.tabId, (tab) => sendBatch(tab, msg.items));
+    case 'add-url':
+      return (isAddable(msg.url) ? addUrl(msg.url, undefined) : Promise.resolve<Outcome>('failed')).then((outcome) => ({ outcome }));
     case 'video-button':
       return sender.tab ? sendVideo(sender.tab, msg.src).then((outcome) => ({ outcome })) : undefined;
     default: return undefined;

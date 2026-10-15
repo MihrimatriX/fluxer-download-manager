@@ -18,6 +18,8 @@ Velopack installer. Kurulum yeri ve veri: `%LOCALAPPDATA%\Fluxer` (`current\` = 
 | 0.5.0 | Liste onay kutuları, renkli ikon/durum etiketleri, cam (sistem akrilik) arka plan, kendi çizdiğimiz başlık düğmeleri |
 | 0.6.0 | Çizgisiz yüzey (ayırıcılar, DataGrid çizgileri, pencere çerçevesi yok), neumorfik görünüm stili |
 | 0.7.0 | Eklenti: video yakalama + video düğmesi, 3 sekmeli açılır pencere (indirme yönetimi, toplu indirme), `download.batch`/`command` mesajları, medya referrer (migration 3); 35 maddelik UI denetiminin çoğu düzeltildi; uçtan uca eklenti testi |
+| 0.7.1 | Başlık bandındaki ☰ ve arama tıklanır (ElementRole=User), 44 px bant |
+| 0.8.0 | Nihai tasarım (`docs/d-m.html`): lacivert + turuncu, çizgi ikonlar, sağda ayrıntı paneli, geri alınabilir silme; hız profilleri + haftalık zamanlayıcı, gece kuyruğu (`DownloadState.Scheduled`), tepsi penceresi, torrent ağ ayarları; yeni ekleme penceresi ve sol menülü ayarlar; eklenti açılır penceresi + sayfa içi yakalama kartı |
 
 ## Eklenti uçtan uca testi
 - `node tools/e2e-extension.mjs`: Chrome 154 `--load-extension`'ı yok sayıyor; betik `--remote-debugging-pipe --enable-unsafe-extension-debugging` + CDP `Extensions.loadUnpacked` kullanır. Geçici profil, ekran dışı pencere, kendi test sunucusu.
@@ -52,9 +54,9 @@ Velopack installer. Kurulum yeri ve veri: `%LOCALAPPDATA%\Fluxer` (`current\` = 
 ## Geliştirme akışı
 ```powershell
 $env:FLUXER_INSTANCE="dev"; dotnet run --project src/Fluxer.App   # %LOCALAPPDATA%\Fluxer-dev, ayrı pipe/mutex, registry'ye dokunmaz
-dotnet test --project tests/Fluxer.Core.Tests                      # 34 test
-dotnet test --project tests/Fluxer.Integration.Tests               # 20 test (Kestrel sahte sunucu)
-cd extension; npm test; npm run build                              # 35 test
+dotnet test --project tests/Fluxer.Core.Tests                      # 37 test
+dotnet test --project tests/Fluxer.Integration.Tests               # 26 test (Kestrel sahte sunucu)
+cd extension; npm test; npm run build                              # 71 test
 node tools/gen-resx.mjs                                            # tools/strings.tsv → Strings.resx + Strings.tr.resx
 pwsh build/pack.ps1 -Version x.y.z                                 # artifacts/releases (Setup + delta)
 ```
@@ -66,3 +68,9 @@ pwsh build/pack.ps1 -Version x.y.z                                 # artifacts/r
 ## Kullanıcı
 - Türkçe yazışıyor; soru sorulmadan uçtan uca bitmiş, görülebilir ürün istiyor.
 - Arayüzde "şık, yumuşak, hızlı, kişiselleştirilebilir" his arıyor; düz/teknik görünümü yetersiz buluyor.
+
+## Görsel doğrulama (0.8)
+- Tasarım dosyası `docs/d-m.html` iç içe paketlenmiş bir HTML: `__bundler/manifest` (base64+gzip) içinde 6 sayfa, her sayfa yine paket. Açıp yerelden sunmak için manifest'i çözüp her sayfanın `template`'ini dosyaya yazın.
+- Dev profilini kullanıcının masaüstünü bozmadan sınamak: yerel yavaşlatılmış dosya sunucusu (Range destekli) + `\.\pipe\Fluxer.v1.<SID>.dev` borusuna eklentinin gönderdiği `download.add`/`command` mesajları; ekran görüntüsü PrintWindow (lacivert stil opak olduğu için yeterli), tıklama UIA Invoke ya da pencereye `PostMessage` ile. DataGrid satırları UIA SelectionItem sunmaz → satıra posted tık.
+- Tepsi penceresi sınaması: Avalonia tepsi geri çağrısı `WM_USER+1024` (lParam `WM_LBUTTONUP`), işlemin `AvaloniaSimpleWindow` pencerelerinden birine gider.
+- Dev ayarlarını uygulama kapalıyken `node:sqlite` ile değiştirmek mümkün (`settings` tablosu, anahtar `app`).

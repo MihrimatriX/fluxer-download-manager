@@ -1,5 +1,5 @@
 // Pure capture logic: no chrome.* calls here, so it runs under Vitest.
-import { envelope, type CookieDto, type DownloadAdd, type Reply } from './protocol';
+import { envelope, type CookieDto, type DownloadAdd, type Reply, type Request } from './protocol';
 
 export interface Settings {
   captureEnabled: boolean;
@@ -9,8 +9,10 @@ export interface Settings {
   showVideoButton: boolean;
   /** Count of videos found on the tab, on the toolbar icon. */
   showBadge: boolean;
+  /** Hosts whose downloads stay in the browser ("Turn off on this site" in the popup). */
+  disabledSites: string[];
 }
-export const DEFAULT_SETTINGS: Settings = { captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true };
+export const DEFAULT_SETTINGS: Settings = { captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true, disabledSites: [] };
 
 export type DownloadItemLike = Pick<
   chrome.downloads.DownloadItem,
@@ -27,7 +29,7 @@ export interface CaptureContext {
   ownExtensionId?: string;
 }
 
-export type Decision = 'capture' | 'torrent' | 'disabled' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small';
+export type Decision = 'capture' | 'torrent' | 'disabled' | 'site' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small';
 
 const TORRENT_RE = /\.torrent(?:[?#]|$)/i;
 
@@ -37,8 +39,28 @@ export const isTorrentLike = (item: Pick<DownloadItemLike, 'mime' | 'url' | 'fin
 
 export const isHttp = (url: string | undefined): boolean => !!url && /^https?:\/\//i.test(url);
 
+/** URLs Fluxer can download from a context menu or a pasted link. */
+export const isAddable = (url: string | undefined): url is string => !!url && /^(https?|magnet):/i.test(url);
+
+/** Lower-case host of an http(s) URL. */
+export function hostOf(url: string | undefined): string | undefined {
+  if (!isHttp(url)) return undefined;
+  try { return new URL(url!).hostname.toLowerCase() || undefined; } catch { return undefined; }
+}
+
+// ponytail: the site is the page that linked the download (referrer), else the download's own host. A page
+// with a no-referrer policy is matched by its file host; pass the tab host to decide() if that matters.
+export const siteOf = (item: Pick<DownloadItemLike, 'referrer' | 'url'>): string | undefined =>
+  hostOf(item.referrer) ?? hostOf(item.url);
+
+/** Adds or removes `host` from the per-site exclusion list. */
+export const toggleSite = (sites: readonly string[], host: string): string[] =>
+  sites.includes(host) ? sites.filter((h) => h !== host) : [...sites, host];
+
 export function decide(item: DownloadItemLike, ctx: CaptureContext): Decision {
   if (!ctx.settings.captureEnabled) return 'disabled';
+  const site = siteOf(item);
+  if (site && ctx.settings.disabledSites?.includes(site)) return 'site';
   if (ctx.altHeld) return 'alt';
   if (ctx.bypassed || (ctx.ownExtensionId && item.byExtensionId === ctx.ownExtensionId)) return 'bypass';
   if (!isHttp(item.url) || (item.finalUrl && !isHttp(item.finalUrl))) return 'scheme';
@@ -49,6 +71,19 @@ export function decide(item: DownloadItemLike, ctx: CaptureContext): Decision {
   if (item.totalBytes > 0 && item.totalBytes < ctx.settings.minSizeMiB * 1024 * 1024) return 'small';
   return 'capture';
 }
+
+/**
+ * Ask on the page (the bottom-right toast) before handing a captured download to Fluxer? Only when it came
+ * from the http(s) tab we would show the toast in: a referrer from another origin means another tab or window.
+ */
+export function canAsk(item: Pick<DownloadItemLike, 'referrer'>, tab: { id?: number; url?: string } | undefined): boolean {
+  if (tab?.id === undefined || !isHttp(tab.url)) return false;
+  if (!item.referrer) return true;
+  try { return new URL(item.referrer).origin === new URL(tab.url!).origin; } catch { return false; }
+}
+
+/** The toast's answer: anything but an explicit "leave it in the browser" (countdown, closed page, no reply) sends. */
+export const askAnswer = (reply: unknown): 'send' | 'browser' => (reply === 'browser' ? 'browser' : 'send');
 
 /** URL set whose entries expire after `ttlMs`. Used for POST URLs and our own re-started downloads. */
 export class RecentUrls {
@@ -142,4 +177,33 @@ export function outcomeOf(reply: Reply | undefined, expect?: Reply['type']): Out
   if (expect && reply.type !== expect) return 'failed';
   if (reply.type === 'download.add.result') return reply.payload?.status === 'accepted' ? 'ok' : 'failed';
   return 'ok';
+}
+
+/** Files a request handed to Fluxer, for the popup's "sent today" line (0 when the app did not take them). */
+export function sentCount(msg: Request, reply: Reply | undefined): number {
+  switch (msg.type) {
+    case 'download.add': return outcomeOf(reply, 'download.add.result') === 'ok' ? 1 : 0;
+    case 'download.batch': return outcomeOf(reply, 'download.add.result') === 'ok' ? msg.payload.items.length : 0;
+    case 'page.send': return outcomeOf(reply) === 'ok' ? 1 : 0;
+    default: return 0;
+  }
+}
+
+export interface DailyCount { day: string; count: number }
+/** Local calendar day, e.g. "2026-10-16". */
+export const localDay = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+/** Adds `n` to today's count; a count from an earlier day starts over. */
+export const bumpDaily = (prev: DailyCount | undefined, day: string, n: number): DailyCount =>
+  ({ day, count: (prev?.day === day ? prev.count : 0) + n });
+/** Today's count (0 when the stored one is from an earlier day). */
+export const countToday = (stored: DailyCount | undefined, day: string): number => (stored?.day === day ? stored.count : 0);
+
+/** "8.4 MB" in the given number format (1024-based, like the app). */
+export function formatBytes(n: number | undefined, num: Intl.NumberFormat): string {
+  if (n === undefined || n < 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let v = n, i = 0;
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  return `${num.format(v)} ${units[i]}`;
 }

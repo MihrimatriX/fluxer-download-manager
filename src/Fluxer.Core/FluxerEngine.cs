@@ -22,7 +22,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         Http = new HttpEngine(Settings.Proxy);
         Http.GlobalBucket.BytesPerSecond = Settings.HttpLimit;
         // The torrent engine opens ports and joins DHT; only start it once a torrent exists.
-        _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings.TorrentDownloadLimit, Settings.TorrentUploadLimit));
+        _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings));
         Tools = new ToolManager(Path.Combine(dataDirectory, "tools"), Http);
         Queue = new DownloadQueue(Db, () => Settings, Create);
         _sleep = new SleepBlocker(() => Queue.AnyActive);
@@ -42,9 +42,12 @@ public sealed class FluxerEngine : IAsyncDisposable
         Db.SetSetting("app", s);
         Http.GlobalBucket.BytesPerSecond = s.HttpLimit;
         if (proxyChanged) Http.SetProxy(s.Proxy);
-        if (_torrent.IsValueCreated) await _torrent.Value.SetLimitsAsync(s.TorrentDownloadLimit, s.TorrentUploadLimit);
+        if (_torrent.IsValueCreated) await _torrent.Value.ApplyAsync(s);
         Queue.Schedule();
     }
+
+    /// DHT routing table size; null until the first torrent started the torrent engine.
+    public int? DhtNodes => _torrent.IsValueCreated ? _torrent.Value.DhtNodes : null;
 
     private IDownload Create(DownloadRecord r) => r.Kind switch
     {
@@ -55,7 +58,7 @@ public sealed class FluxerEngine : IAsyncDisposable
     };
 
     public IDownload AddHttp(string url, string? fileName = null, RequestContext? ctx = null, string? saveDirectory = null,
-        bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null)
+        bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null, bool night = false)
     {
         var r = new DownloadRecord
         {
@@ -74,7 +77,7 @@ public sealed class FluxerEngine : IAsyncDisposable
                 HashExpected = hashExpected,
             },
         };
-        return Queue.Add(r, start);
+        return Queue.Add(r, start, night);
     }
 
     /// Returns null when the same torrent is already in the list.

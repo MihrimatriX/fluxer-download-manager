@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.8.0 — 2026-10-16
+
+Nihai tasarım (`docs/d-m.html`) uygulandı: koyu lacivert degrade, turuncu vurgu, çizgi ikonlar, Segoe UI Variable 13 px.
+
+### Ana pencere
+- Üstte 48 px bant: logo, "· N indiriliyor", ortada arama (Ctrl+F), sağda pencere düğmeleri.
+- Kenar çubuğu: turuncu **Yeni indirme**, sayılı kategoriler, **Kuyruklar** (Ana kuyruk · N eşzamanlı, Gece kuyruğu · saat · sayı), disk doluluk göstergesi, Ayarlar. Dar kenar çubuğu artık Ayarlar → Görünüm'de ya da Ctrl+B ile.
+- Araç çubuğu tek panelde: Devam, Duraklat, Sil, sıra yukarı/aşağı, Torrent ekle, Zamanlayıcı, "N seçili", ayrıntı paneli düğmesi (Ctrl+I).
+- Durum hapları sayılarıyla; Tamamlanan seed edenleri de sayar.
+- Liste: ikon + ad + TORRENT etiketi, boyut, ilerleme çubuğu + yüzde, hız (seed'de ↑), renkli durum ("4 dk 10 sn kaldı", "Seed · oran 1,42", "Gece kuyruğu · 01:00", "Hata · …"), "Bugün 13:48". Seçili satırda sol kenarda vurgu çizgisi. Dar listede Eklenme sütunu kendiliğinden gizlenir.
+- **Ayrıntı paneli sağa taşındı:** büyük yüzde, indirilen/toplam, son 60 sn indirme + yükleme grafiği, segmentli sekmeler (torrent: Bilgi / Dosyalar / Eşler / İzleyici / Seçenekler; HTTP: Bilgi / Bağlantılar / Günlük / Başlıklar), hata kutusu (Bağlantıyı yenile / Tarayıcıda aç), Duraklat–Devam–Yeniden dene–Dosyayı aç, klasör ve bağlantı kopyalama.
+- **Sil geri alınabilir:** satırlar listeden hemen kalkar, 6 sn "Geri al" bildirimi; dosyalar diskte kalır. "Dosyalarıyla sil…" bağlam menüsünde. "Bitenleri temizle" de geri alınabilir.
+- Durum çubuğu: özet, ↓ / ↑ toplam hız, DHT düğüm sayısı, **hız profili düğmesi** (tıkla → sıradaki profil).
+
+### Yeni özellikler
+- **Hız profilleri:** Sınırsız / Dengeli / Arka plan; her biri indirme, yükleme ve eşzamanlı indirme sayısı taşır, Ayarlar → Hız ve zamanlayıcı'da düzenlenir.
+- **Haftalık zamanlayıcı:** 7 × 24 ızgara, fırça seçip tıklayarak ya da sürükleyerek boyanır; açıkken saat başı profili değiştirir (elle seçilen profil bir sonraki değişime kadar kalır).
+- **Gece kuyruğu:** yeni indirme penceresinde "Gece kuyruğu", listede bağlam menüsünde "Gece kuyruğuna taşı", eklentide sağ tık "Gece kuyruğuna ekle". Belirlenen saatte (varsayılan 01:00) kuyruğa katılır.
+- **Tepsi penceresi:** tepsi simgesine sol tık → indirme/yükleme hızı ve mini grafik, bağlantı yapıştırıp ekleme, çalışan indirmeler, hata uyarısı, Tümünü duraklat / Pencereyi aç. Sağ tık menüsü aynı.
+- **Torrent ayarları:** dinleme portu, DHT, eş değişimi (PeX), yerel eş keşfi, UPnP/NAT-PMP, şifreleme (tercih et / zorunlu / kapalı), torrent başına en fazla eş.
+
+### Yeni indirme penceresi
+- Tasarımdaki düzen: bağlantı kutusunda HTTP / TORRENT / TOPLU etiketi, altında yeşil/uyarı satırı; tek dosyada Boyut / Sürdürme / Tür kutuları, dosya adı, bağlantı sayısı; çoklu bağlantıda seçilebilir liste (yanıt vermeyenler işaretsiz gelir).
+- Kayıt yeri + Kuyruk (Ana kuyruk (hemen) / Gece kuyruğu / Duraklatılmış), "Kategori: … · uzantıdan" (tıklayınca değiştirilir), **Bir daha sorma**, **Kuyruğa ekle** ve **İndirmeyi başlat**.
+
+### Ayarlar
+- Sol menülü sayfa: Genel, İndirmeler, Hız ve zamanlayıcı, Torrent, Tarayıcı entegrasyonu, Gelişmiş; "‹ İndirmelere dön".
+- Görünüm stili listesinde "Lacivert (varsayılan)" ilk sırada; vurgu renklerinin ilki Fluxer turuncusu. Sıkı satırlar 44 px, kapalıyken 54 px.
+
+### Tarayıcı eklentisi
+- Açılır pencere tasarıma göre yenilendi: bağlantı durumu, yakalama anahtarı + "Bu sitede kapat", İndirmeler / Bu sayfa sekmeleri, satır düğmeleri, "bugün N dosya gönderildi", Bağlantı yapıştır / Fluxer'ı aç. Ayarlar başlıktaki düğmede.
+- **Sayfa içi yakalama bildirimi:** yakalanan indirme için sağ altta kart, 3 sn geri sayım, "Fluxer ile indir" / "Tarayıcıda bırak".
+- Sağ tık: "Gece kuyruğuna ekle", "Sayfadaki tüm bağlantıları Fluxer'a gönder". Yeni izin: `clipboardRead` (bağlantı yapıştırma).
+
+### Yükseltme
+- 0.7 ayarları ilk açılışta bir kez tasarım varsayılanlarına çekilir: koyu tema, turuncu vurgu, lacivert stil, sıkı satırlar, sütun düzeni sıfırlanır, gece kuyruğu saati 01:00. Sonra istediğiniz gibi değiştirebilirsiniz.
+
 ## 0.7.1 — 2026-10-15
 
 ### Düzeltildi

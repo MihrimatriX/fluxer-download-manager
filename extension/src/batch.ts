@@ -37,7 +37,14 @@ export function extOf(url: string): string {
 
 export const categoryOf = (url: string): LinkCategory => BY_EXT[extOf(url)] ?? 'other';
 
-function nameOf(url: string): string {
+/** Category of a bare file name ("setup.exe"). */
+export function categoryOfName(name: string): LinkCategory {
+  const dot = name.lastIndexOf('.');
+  return (dot > 0 && BY_EXT[name.slice(dot + 1).toLowerCase()]) || 'other';
+}
+
+/** Last path segment of a URL, decoded (the host when the path is empty). */
+export function nameOf(url: string): string {
   try {
     const u = new URL(url);
     const last = u.pathname.split('/').filter(Boolean).pop() ?? u.hostname;

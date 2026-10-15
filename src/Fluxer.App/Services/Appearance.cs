@@ -15,46 +15,49 @@ public static partial class Appearance
     /// False once a window opened without the requested backdrop (Windows 10, effects off): stay opaque.
     private static bool _backdropWorks = true;
 
-    /// Opaque palette and the translucent layers used on top of Mica (Windows 11 "layer" colours).
+    /// Design default: the navy gradient (MainBrush "gradient" = NavyGradient) with translucent panels.
     private static readonly Dictionary<string, (string Light, string Dark)> Solid = new()
     {
-        ["SidebarBrush"] = ("#F3F3F5", "#1C1C1F"),
-        ["MainBrush"] = ("#FCFCFD", "#161618"),
-        ["SurfaceBrush"] = ("#FFFFFF", "#1E1E21"),
-        ["CardBrush"] = ("#F6F6F8", "#222226"),
+        ["MainBrush"] = ("gradient", "gradient"),
+        ["CardBrush"] = ("#B8FFFFFF", "#0BFFFFFF"),
+        ["WellBrush"] = ("#0D000000", "#33000000"),
     };
 
     private static readonly Dictionary<string, (string Light, string Dark)> OnMica = new()
     {
-        ["SidebarBrush"] = ("#00FFFFFF", "#00000000"),
-        ["MainBrush"] = ("#B3FFFFFF", "#4C2A2A2E"),
-        ["SurfaceBrush"] = ("#80FFFFFF", "#26FFFFFF"),
-        ["CardBrush"] = ("#B3FFFFFF", "#12FFFFFF"),
+        ["MainBrush"] = ("#B3FFFFFF", "#661C2235"),
+        ["CardBrush"] = ("#B3FFFFFF", "#0FFFFFFF"),
+        ["WellBrush"] = ("#0D000000", "#33000000"),
     };
 
-    /// Frosted glass: the blurred desktop shows through a light tint, so layers carry more of the colour.
+    /// Frosted glass: the blurred desktop shows through a navy tint, so layers carry more of the colour.
     private static readonly Dictionary<string, (string Light, string Dark)> OnGlass = new()
     {
-        ["SidebarBrush"] = ("#00FFFFFF", "#00000000"),
-        ["MainBrush"] = ("#80FBFBFD", "#40141418"),
-        ["SurfaceBrush"] = ("#8CFFFFFF", "#1FFFFFFF"),
-        ["CardBrush"] = ("#99FFFFFF", "#14FFFFFF"),
+        ["MainBrush"] = ("#80FBFBFD", "#8C1C2235"),
+        ["CardBrush"] = ("#99FFFFFF", "#0FFFFFFF"),
+        ["WellBrush"] = ("#0D000000", "#33000000"),
     };
 
     /// Neumorphism: one opaque base colour everywhere; depth comes only from paired soft shadows.
     private static readonly Dictionary<string, (string Light, string Dark)> Neu = new()
     {
-        ["SidebarBrush"] = ("#E6E9EF", "#272A30"),
-        ["MainBrush"] = ("#E6E9EF", "#272A30"),
-        ["SurfaceBrush"] = ("#E6E9EF", "#272A30"),
-        ["CardBrush"] = ("#E6E9EF", "#272A30"),
+        ["MainBrush"] = ("#E6E9EF", "#1D2333"),
+        ["CardBrush"] = ("#E6E9EF", "#1D2333"),
+        ["WellBrush"] = ("#DDE1E8", "#1A1F2E"),
     };
 
-    /// Raised: light from the top left, shade to the bottom right. Sunken: the same, inset.
+    /// Raised: light from the top left, shade to the bottom right. Sunken: the same, inset. (Dark: the design's values.)
     private static readonly (string Light, string Dark) NeuRaised =
-        ("-5 -5 12 0 #FFFFFFFF, 5 5 12 0 #8CA3B1C6", "-4 -4 10 0 #1AFFFFFF, 5 5 12 0 #B3121417");
+        ("-5 -5 12 0 #FFFFFFFF, 5 5 12 0 #8CA3B1C6", "7 7 16 0 #8C060912, -6 -6 14 0 #09FFFFFF");
+    private static readonly (string Light, string Dark) NeuRaisedSmall =
+        ("-3 -3 7 0 #FFFFFFFF, 3 3 8 0 #8CA3B1C6", "3 3 8 0 #8C060912, -3 -3 7 0 #09FFFFFF");
     private static readonly (string Light, string Dark) NeuSunken =
-        ("inset 3 3 6 0 #8CA3B1C6, inset -3 -3 6 0 #FFFFFFFF", "inset 3 3 6 0 #B3121417, inset -3 -3 6 0 #14FFFFFF");
+        ("inset 3 3 6 0 #8CA3B1C6, inset -3 -3 6 0 #FFFFFFFF", "inset 3 3 7 0 #99060912, inset -3 -3 7 0 #08FFFFFF");
+    /// The flat style's only shadow: a soft drop under panels.
+    private static readonly (string Light, string Dark) PanelDrop = ("0 4 18 0 #14000000", "0 4 18 0 #29000000");
+
+    /// Fluxer orange; the accent when the user has not picked one.
+    public const string DefaultAccent = "#F5A623";
 
     /// Fluent control fills that would otherwise draw their own (darker/lighter) boxes on the neumorphic base.
     private static readonly string[] NeuFills =
@@ -72,21 +75,36 @@ public static partial class Appearance
         "TimePickerButtonBorderBrush", "TimePickerButtonBorderBrushPointerOver", "TimePickerButtonBorderBrushPressed",
     ];
 
+    /// Fluent brushes drawn on top of the accent colour.
+    private static readonly string[] OnAccentKeys =
+    [
+        "AccentButtonForeground", "AccentButtonForegroundPointerOver", "AccentButtonForegroundPressed",
+        "CheckBoxCheckGlyphForegroundChecked", "CheckBoxCheckGlyphForegroundCheckedPointerOver", "CheckBoxCheckGlyphForegroundCheckedPressed",
+        "CheckBoxCheckGlyphForegroundIndeterminate", "CheckBoxCheckGlyphForegroundIndeterminatePointerOver", "CheckBoxCheckGlyphForegroundIndeterminatePressed",
+        "ToggleSwitchKnobFillOn", "ToggleSwitchKnobFillOnPointerOver", "ToggleSwitchKnobFillOnPressed",
+        "RadioButtonCheckGlyphFill", "RadioButtonCheckGlyphFillPointerOver", "RadioButtonCheckGlyphFillPressed",
+    ];
+
     private static bool Translucent(UiSettings ui) => ui.Backdrop is "glass" or "mica" && _backdropWorks;
 
     public static void Apply(Application app, UiSettings ui)
     {
         var fluent = app.Styles.OfType<FluentTheme>().First();
-        fluent.DensityStyle = ui.Compact ? DensityStyle.Compact : DensityStyle.Normal;
+        fluent.DensityStyle = DensityStyle.Normal;
 
         fluent.Palettes.Clear();
-        if (ui.Accent is { } hex && Color.TryParse(hex, out var accent))
-        {
-            fluent.Palettes[ThemeVariant.Light] = new ColorPaletteResources { Accent = accent };
-            fluent.Palettes[ThemeVariant.Dark] = new ColorPaletteResources { Accent = accent };
-        }
+        var accent = Color.TryParse(ui.Accent ?? DefaultAccent, out var a) ? a : Color.Parse(DefaultAccent);
+        fluent.Palettes[ThemeVariant.Light] = new ColorPaletteResources { Accent = accent };
+        fluent.Palettes[ThemeVariant.Dark] = new ColorPaletteResources { Accent = accent };
+        // Text on the accent: dark on light accents (orange, green), white on deep ones.
+        var luminance = (0.2126 * accent.R + 0.7152 * accent.G + 0.0722 * accent.B) / 255;
+        var onAccent = new SolidColorBrush(luminance > 0.55 ? Color.Parse("#1D1607") : Colors.White);
+        app.Resources["OnAccentBrush"] = onAccent;
+        foreach (var key in OnAccentKeys) app.Resources[key] = onAccent;
+        // Selected nav item / settings section: a 3 px accent bar on the left edge.
+        app.Resources["AccentBarShadow"] = BoxShadows.Parse($"inset 3 0 0 0 {accent}");
 
-        app.Resources["RowHeight"] = ui.Compact ? 32.0 : 42.0;
+        app.Resources["RowHeight"] = ui.Compact ? 44.0 : 54.0;
         ApplyLayers(app, ui.Backdrop == "neu" ? Neu : Translucent(ui) ? ui.Backdrop == "mica" ? OnMica : OnGlass : Solid,
             neu: ui.Backdrop == "neu", glass: ui.Backdrop == "glass" && Translucent(ui));
 
@@ -132,10 +150,12 @@ public static partial class Appearance
             w.Content = null;
             var scaled = new LayoutTransformControl { Child = content };
             // The main window draws its own title area; the others get a slim strip with the app mark.
+            // Windows with the "ownchrome" class draw their own header and close button (the add dialog).
             var root = new Panel { Tag = TitleTag };
-            if (w is Views.MainWindow) root.Children.Add(scaled);
+            var own = w.Classes.Contains("ownchrome");
+            if (w is Views.MainWindow || own) root.Children.Add(scaled);
             else { root.Children.Add(WithTop(scaled)); root.Children.Add(TitleStrip()); }
-            root.Children.Add(CaptionButtons(w));
+            if (!own) root.Children.Add(CaptionButtons(w));
             w.Content = root;
         }
         var ltc = (w.Content as Panel)?.Children.OfType<LayoutTransformControl>().FirstOrDefault();
@@ -143,7 +163,7 @@ public static partial class Appearance
             ltc.LayoutTransform = Math.Abs(ui.Scale - 1) < 0.01 ? null : new ScaleTransform(ui.Scale, ui.Scale);
     }
 
-    public const double TitleBarHeight = 44;
+    public const double TitleBarHeight = 48;
     private const string TitleTag = "fluxer-titlebar";
 
     private static Control WithTop(Control c)
@@ -274,28 +294,38 @@ public static partial class Appearance
             if (app.Resources.ThemeDictionaries.TryGetValue(variant, out var provider) && provider is IResourceDictionary dict)
             {
                 foreach (var (key, (l, d)) in table)
-                    dict[key] = new SolidColorBrush(Color.Parse(light ? l : d));
-                // Fluent's expander is solid; give it the card layer so it sits on the glass like the rest.
-                dict["ExpanderHeaderBackground"] = dict["CardBrush"];
-                dict["ExpanderContentBackground"] = dict["CardBrush"];
+                {
+                    var v = light ? l : d;
+                    dict[key] = v == "gradient" ? dict["NavyGradient"]! : new SolidColorBrush(Color.Parse(v));
+                }
+                dict["SidebarBrush"] = Brushes.Transparent;
 
-                // Card edge: the glass highlight, or nothing when shadows do the work.
-                dict["CardEdgeBrush"] = glass ? dict["GlassBorderBrush"] : Brushes.Transparent;
+                // Card edge: the glass highlight, a hairline on flat panels, nothing when shadows do the work.
+                dict["CardEdgeBrush"] = glass ? dict["GlassBorderBrush"] : neu ? Brushes.Transparent : dict["PanelEdgeBrush"];
                 dict["ExpanderHeaderBorderBrush"] = Brushes.Transparent;
                 dict["ExpanderContentBorderBrush"] = Brushes.Transparent;
-                dict["CardShadow"] = neu ? BoxShadows.Parse(light ? NeuRaised.Light : NeuRaised.Dark) : default(BoxShadows);
-                dict["RaisedShadow"] = dict["CardShadow"];
+                dict["CardShadow"] = BoxShadows.Parse(neu ? light ? NeuRaised.Light : NeuRaised.Dark : light ? PanelDrop.Light : PanelDrop.Dark);
+                dict["RaisedShadow"] = neu ? BoxShadows.Parse(light ? NeuRaisedSmall.Light : NeuRaisedSmall.Dark) : default(BoxShadows);
                 // Shadows need air between cards, or neighbouring shades read as lines.
                 dict["CardGap"] = new Thickness(0, 0, 0, neu ? 12 : 4);
                 dict["SunkenShadow"] = neu ? BoxShadows.Parse(light ? NeuSunken.Light : NeuSunken.Dark) : default(BoxShadows);
-                foreach (var key in NeuFills)
-                    if (neu) dict[key] = dict["CardBrush"]; else dict.Remove(key);
-                foreach (var key in NeuNoBorders)
-                    if (neu) dict[key] = Brushes.Transparent; else dict.Remove(key);
+                // Neumorphic controls take the base colour; other styles get App.axaml's values back.
+                foreach (var key in NeuFills.Concat(NeuNoBorders))
+                {
+                    if (!Original.ContainsKey((light, key))) Original[(light, key)] = dict.TryGetValue(key, out var o) ? o : null;
+                    var orig = Original[(light, key)];
+                    if (neu) dict[key] = NeuFills.Contains(key) ? dict["CardBrush"] : Brushes.Transparent;
+                    else if (orig is not null) dict[key] = orig;
+                    else dict.Remove(key);
+                }
             }
         }
     }
 
+    /// App.axaml's control colours, kept so leaving the neumorphic style restores them.
+    private static readonly Dictionary<(bool Light, string Key), object?> Original = [];
+
+    /// Fluxer orange first (also what "no choice" means), then the rest.
     public static readonly string[] AccentChoices =
-        ["#0A84FF", "#5E5CE6", "#BF5AF2", "#FF375F", "#FF9F0A", "#30D158", "#40C8E0", "#8E8E93"];
+        [DefaultAccent, "#0A84FF", "#5E5CE6", "#BF5AF2", "#FF375F", "#30D158", "#40C8E0", "#8E8E93"];
 }

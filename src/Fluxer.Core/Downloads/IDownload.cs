@@ -14,6 +14,8 @@ public enum DownloadState
     Seeding = 7,
     Completed = 8,
     Failed = 9,
+    /// Waiting in the night queue; becomes Queued when the night queue starts (or the user resumes it).
+    Scheduled = 10,
 }
 
 /// The single face that HTTP, torrent and media downloads show to the queue and the UI.

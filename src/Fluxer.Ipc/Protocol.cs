@@ -64,7 +64,7 @@ public sealed record CookieDto(string Name, string Value, string Domain, string 
 
 public sealed record DownloadAdd(
     string Url, string? FinalUrl, string? FileName, string? Mime, long? TotalBytes, string Source, string? TabUrl,
-    string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito, string? TorrentPath = null);
+    string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito, string? TorrentPath = null, string? Queue = null);
 
 public sealed record PageSend(string PageUrl, string? Title, string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito);
 

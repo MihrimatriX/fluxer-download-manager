@@ -35,11 +35,15 @@ public sealed partial class AddDownloadWindow : Window
         return w._result;
     }
 
-    private void OnSubmit(object? sender, RoutedEventArgs e)
+    private void OnSubmit(object? sender, RoutedEventArgs e) => Submit(startNow: true);
+
+    private void OnQueue(object? sender, RoutedEventArgs e) => Submit(startNow: false);
+
+    private void Submit(bool startNow)
     {
         _vm.Flush();
         if (_vm.Count == 0) return;
-        _result = _vm.Result();
+        _result = _vm.Result(startNow);
         Close();
     }
 

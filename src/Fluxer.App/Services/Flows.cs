@@ -12,7 +12,8 @@ namespace Fluxer.App.Services;
 public static class Flows
 {
     /// `probe`: what the browser-capture check already learned about a single URL (skips a second probe).
-    public static async Task NewDownloadAsync(AppHost host, IReadOnlyList<string> urls, string? fileName, RequestContext? ctx, ProbeResult? probe = null)
+    /// `night`: the browser asked for the night queue (preselected in the dialog).
+    public static async Task NewDownloadAsync(AppHost host, IReadOnlyList<string> urls, string? fileName, RequestContext? ctx, ProbeResult? probe = null, bool night = false)
     {
         var engine = host.Engine;
         var s = engine.Settings;
@@ -21,13 +22,21 @@ public static class Flows
         if (ctx is not null && !s.ShowAddDialog && urls.Count > 0)
         {
             foreach (var u in urls)
-                host.OpenProgressIfEnabled(engine.AddHttp(u, fileName ?? probe?.FileName, ctx, rejectHtml: true), activate: false);
+            {
+                var d = engine.AddHttp(u, fileName ?? probe?.FileName, ctx, rejectHtml: true, night: night);
+                if (!night) host.OpenProgressIfEnabled(d, activate: false);
+            }
             return;
         }
 
-        var vm = new ViewModels.AddDownloadViewModel(s, engine.Http, urls, fileName, ctx, probe);
+        var vm = new ViewModels.AddDownloadViewModel(s, engine.Http, urls, fileName, ctx, probe) { QueueIndex = night ? 1 : 0 };
         var r = await AddDownloadWindow.ShowAsync(host.Owner, vm);
         if (r is null) return;
+        if (vm.DontAskAgain && s.ShowAddDialog)
+        {
+            s.ShowAddDialog = false;
+            await engine.SaveSettingsAsync(s);
+        }
 
         // Remember the folder (most recent first) unless it is the default or a category folder of it.
         var isDefault = r.Folder.StartsWith(s.DownloadDirectory, StringComparison.OrdinalIgnoreCase)
@@ -53,13 +62,14 @@ public static class Flows
             var folder = r.FolderIsPerFile && item.Category is { } cat ? Path.Combine(s.DownloadDirectory, cat)
                 : r.FolderIsPerFile ? s.DownloadDirectory : r.Folder;
             added.Add(engine.AddHttp(item.Url, item.UserNamed ? item.Name : null, item.Context, folder, r.Mode != ViewModels.StartMode.Paused,
-                r.HashAlgorithm, r.Hash, rejectHtml: item.Context is not null || item.Kind == ProbeKind.File, connections: r.Connections));
+                r.HashAlgorithm, r.Hash, rejectHtml: item.Context is not null || item.Kind == ProbeKind.File, connections: r.Connections,
+                night: r.Mode == ViewModels.StartMode.Night));
         }
 
         // "Start now" jumps the queue; "Add to queue" waits its turn at the end.
         if (r.Mode == ViewModels.StartMode.Now && added.Count > 0)
             engine.Queue.Reorder([.. added.Select(d => d.Id)], DownloadQueue.Move.Top);
-        if (added.Count == 1 && r.Mode != ViewModels.StartMode.Paused) host.OpenProgressIfEnabled(added[0], activate: true);
+        if (added.Count == 1 && r.Mode is ViewModels.StartMode.Now or ViewModels.StartMode.Queue) host.OpenProgressIfEnabled(added[0], activate: true);
     }
 
     /// A .torrent link: fetch it (small) and open the torrent dialog instead of saving the file.

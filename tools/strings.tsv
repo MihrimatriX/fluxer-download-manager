@@ -1,5 +1,5 @@
 AccentColor	Accent colour	Vurgu rengi
-AccentColorDesc	Buttons, progress and highlights. The first one follows Windows.	Butonlar, ilerleme ve vurgular. İlki Windows rengini izler.
+AccentColorDesc	Buttons, progress and highlights. The first one is Fluxer orange.	Butonlar, ilerleme ve vurgular. İlki Fluxer turuncusu.
 AccentSystem	Windows accent	Windows vurgu rengi
 Accept	Accept	Kabul et
 AddPaused	Add paused	Duraklatılmış ekle
@@ -47,8 +47,8 @@ ColProgress	Progress	İlerleme
 ColSize	Size	Boyut
 ColSpeed	Speed	Hız
 ColStatus	Status	Durum
-CompactMode	Compact layout	Sıkı yerleşim
-CompactModeDesc	Smaller rows and controls so more downloads fit on screen.	Daha küçük satırlar ve kontroller; ekrana daha çok indirme sığar.
+CompactMode	Compact rows	Sıkı satırlar
+CompactModeDesc	44 px list rows; off gives roomier 54 px rows.	44 px liste satırları; kapalıyken daha ferah 54 px.
 CompactTip	Show or hide details	Ayrıntıları göster/gizle
 Conflict	If a file with the same name exists	Aynı adda dosya varsa
 ConflictOverwrite	Overwrite it	Üzerine yaz
@@ -156,11 +156,11 @@ MediaProbing	Reading video information…	Video bilgileri okunuyor…
 MediaTitle	Save video	Videoyu kaydet
 MediaTools	Video tools	Video araçları
 BackdropSetting	Style	Görünüm stili
-BackdropDesc	Glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic raises soft, line-free surfaces with gentle shadows.	Cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini yansıtır; neumorfik, yumuşak gölgelerle kabarık ve çizgisiz yüzeyler oluşturur.
+BackdropDesc	Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.	Lacivert standart görünüm; cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdınla renklenir; neumorfik yumuşak kabartmalı yüzeyler kullanır.
 BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
 BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
 BackdropMica	Mica (Windows 11)	Mica (Windows 11)
-BackdropNone	Off (solid)	Kapalı (düz)
+BackdropNone	Navy (default)	Lacivert (varsayılan)
 SelectAll	Select all	Tümünü seç
 SelectRow	Select	Seç
 MinDimension	Min. size (px)	En küçük boyut (px)
@@ -218,7 +218,7 @@ ScheduleStart	Start time	Başlama saati
 ScheduleStartDesc	Resume all paused downloads at this time every day.	Her gün bu saatte duraklatılmış tüm indirmeleri sürdür.
 ScheduleStop	Stop time	Durma saati
 ScheduleStopDesc	Pause all downloads at this time every day.	Her gün bu saatte tüm indirmeleri duraklat.
-Search	Search	Ara
+Search	Search downloads	İndirmelerde ara
 SecAppearance	Appearance	Görünüm
 SecBrowser	Browser	Tarayıcı
 SecDownloads	Downloads	İndirmeler
@@ -329,4 +329,104 @@ Minimize	Minimize	Simge durumuna küçült
 Maximize	Maximize	Ekranı kapla
 CloseWindow	Close	Kapat
 EtaDays	{0}d {1}h	{0}g {1}sa
-AccentNames	Blue|Indigo|Purple|Pink|Orange|Green|Teal|Graphite	Mavi|Çivit|Mor|Pembe|Turuncu|Yeşil|Turkuaz|Grafit
+AccentNames	Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite	Turuncu|Mavi|Çivit|Mor|Pembe|Yeşil|Turkuaz|Grafit
+BackToDownloads	Back to downloads	İndirmelere dön
+Concurrent	{0} at once	{0} eşzamanlı
+DayNames	Mon|Tue|Wed|Thu|Fri|Sat|Sun	Pzt|Sal|Çar|Per|Cum|Cmt|Paz
+DeleteTip	Remove from the list (files stay on disk, undoable)	Listeden kaldır (dosyalar diskte kalır, geri alınabilir)
+DeleteWithFiles	Delete with files…	Dosyalarıyla sil…
+DhtDesc	Find peers without a tracker	İzleyici olmadan eş bul
+DhtNodes	DHT {0} nodes	DHT {0} düğüm
+EncOff	Off	Kapalı
+EncPrefer	Prefer	Tercih et
+EncRequire	Require	Zorunlu
+Encryption	Encryption	Şifreleme
+ErrorKept	{0}. The {1} already downloaded is kept.	{0}. İndirilen {1} korunuyor.
+ErrorShort	Error	Hata
+EtaUnits	s|min|h|d	sn|dk|sa|g
+FreeShort	{0} free	{0} boş
+HeaderDownloading	{0} downloading	{0} indiriliyor
+InfoQueue	Queue	Kuyruk
+KindHttpMulti	HTTP · multiple connections	HTTP · çoklu bağlantı
+KindTorrentFiles	Torrent · {0} files	Torrent · {0} dosya
+Last60s	last 60 s	son 60 sn
+ListenPort	Listening port	Dinleme portu
+ListenPortDesc	Peers connect to this port (TCP and UDP).	Eşler bu porta bağlanır (TCP ve UDP).
+LogAdded	Added	Eklendi
+LsdDesc	Find peers on the same network	Aynı ağdaki eşleri bul
+LsdTitle	Local peer discovery	Yerel eş keşfi
+MainQueue	Main queue	Ana kuyruk
+Manual	manual	elle
+MaxPeers	Max peers per torrent	En fazla eş (torrent başına)
+MoveToNight	Move to night queue	Gece kuyruğuna taşı
+NightQueue	Night queue	Gece kuyruğu
+NightQueueAt	Night queue · {0}	Gece kuyruğu · {0}
+NightQueueManual	Night queue · manual start	Gece kuyruğu · elle başlar
+NightQueueStart	Start the night queue at	Gece kuyruğunu şu saatte başlat
+NightQueueTip	Downloads added to the night queue wait until its start time.	Gece kuyruğuna eklenen indirmeler başlama saatini bekler.
+NoPeers	No peers connected.	Bağlı eş yok.
+OpenInBrowser	Open in browser	Tarayıcıda aç
+PexDesc	Learn new peers from connected peers	Bağlı eşlerden yeni eşler öğren
+PexTitle	Peer exchange (PeX)	Eş değişimi (PeX)
+ProfileDown	Download	İndirme
+ProfileNames	Unlimited|Balanced|Background	Sınırsız|Dengeli|Arka plan
+ProfileSlots	At once	Eşzamanlı
+ProfileTip	Switch speed profile	Hız profilini değiştir
+ProfileUp	Upload	Yükleme
+Queues	QUEUES	KUYRUKLAR
+RemovedToast	{0} removed from the list · files stay on disk	{0} indirme listeden kaldırıldı · dosyalar diskte duruyor
+Retry	Retry	Yeniden dene
+ScheduleStopShort	Pause everything at	Her şeyi şu saatte duraklat
+Scheduler	Scheduler	Zamanlayıcı
+SecBrowserIntegration	Browser integration	Tarayıcı entegrasyonu
+SecSpeedSchedule	Speed and scheduler	Hız ve zamanlayıcı
+SeedAndNetwork	Seeding and network	Seed ve ağ
+SeedRatioFormat	Seeding · ratio {0}	Seed · oran {0}
+SelectedCount	{0} selected	{0} seçili
+SidebarCollapsedDesc	Icons only; Ctrl+B toggles it any time.	Yalnızca simgeler; Ctrl+B ile her an açılıp kapanır.
+SidebarCollapsedSetting	Narrow sidebar	Dar kenar çubuğu
+SpeedProfiles	Speed profiles	Hız profilleri
+SpeedProfilesDesc	Switch with the button in the status bar or by the scheduler. 0 MB/s means unlimited.	Durum çubuğundaki düğmeyle ya da zamanlayıcıyla geçiş yapılır. 0 MB/s sınırsız demektir.
+Start	Start	Başlat
+StateScheduled	Night queue	Gece kuyruğu
+TabInfo	Info	Bilgi
+TabLog	Log	Günlük
+TabTrackers	Trackers	İzleyici
+Today	Today	Bugün
+TorrentConnection	Connection	Bağlantı
+Undo	Undo	Geri al
+UpnpDesc	Open the port on the router automatically	Modemde portu otomatik aç
+WeekSchedule	Weekly scheduler	Haftalık zamanlayıcı
+WeekScheduleDesc	Click or drag over cells to paint a profile. Selected brush:	Hücrelere tıklayarak ya da sürükleyerek profil boya. Seçili fırça:
+Yesterday	Yesterday	Dün
+TrayHeader	{0} active · {1} seeding	{0} etkin · {1} seed
+TrayErrors	{0} download(s) failed · show	{0} indirme hata verdi · görüntüle
+TrayIdle	Nothing is downloading right now.	Şu an çalışan indirme yok.
+PasteLink	Paste a link…	Bağlantı yapıştır…
+QuickAdd	Quick add	Hızlı ekle
+OpenWindow	Open window	Pencereyi aç
+LinkOrMagnet	Link, magnet or file	Bağlantı, magnet ya da dosya
+ResumeTile	Resume	Sürdürme
+TypeTile	Type	Tür
+ConnectionCount	Connections	Bağlantı sayısı
+LinksFound	{0} links found	{0} bağlantı bulundu
+DontAskAgain	Don't ask again	Bir daha sorma
+Supported	Supported	Destekleniyor
+NotSupported	Not supported	Desteklenmiyor
+Ready	Ready	Hazır
+WebPage	Web page	Web sayfası
+NoAnswer	No answer	Yanıt yok
+MainQueueNow	Main queue (now)	Ana kuyruk (hemen)
+NightQueueOption	Night queue ({0})	Gece kuyruğu ({0})
+StartN	Start {0} downloads	{0} indirmeyi başlat
+StartDownload	Start download	İndirmeyi başlat
+AddToNight	Add to night queue	Gece kuyruğuna ekle
+BadgeBatch	BATCH	TOPLU
+MagnetDetected	Magnet link · metadata comes from peers	Magnet bağlantısı · meta veri eşlerden alınacak
+ServerAnswered	Server answered · ready to download	Sunucu yanıt verdi · indirmeye hazır
+LinksChecked	{0} links checked	{0} bağlantı doğrulandı
+LinksCheckedSome	{0} links checked, {1} not answering	{0} bağlantı doğrulandı, {1} bağlantı yanıt vermiyor
+Mixed	Mixed	Karışık
+CategoryAuto	Category: {0} · from the extension	Kategori: {0} · uzantıdan
+CategoryManual	Category: {0}	Kategori: {0}
+Add	Add	Ekle

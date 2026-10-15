@@ -110,8 +110,9 @@ public sealed class TorrentDownload : IDownload
 
     private TorrentSettings BuildSettings() => new TorrentSettingsBuilder
     {
-        AllowDht = true,
-        AllowPeerExchange = true,
+        AllowDht = _settings().Dht,
+        AllowPeerExchange = _settings().PeerExchange,
+        MaximumConnections = Math.Max(5, _settings().MaxPeersPerTorrent),
         CreateContainingDirectory = true,
         MaximumDownloadRate = (int)Math.Min(int.MaxValue, Record.SpeedLimit),
         MaximumUploadRate = (int)Math.Min(int.MaxValue, Info.UploadLimit),

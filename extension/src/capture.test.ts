@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_SETTINGS, RecentUrls, basename, buildInterceptMessage, buildTorrentFileMessage, decide, isTorrentLike,
-  outcomeOf, rejectReason, toCookieDto,
+  DEFAULT_SETTINGS, RecentUrls, askAnswer, basename, bumpDaily, buildInterceptMessage, buildTorrentFileMessage, canAsk, countToday,
+  decide, formatBytes, hostOf, isTorrentLike, localDay, outcomeOf, rejectReason, sentCount, toCookieDto, toggleSite,
   type CaptureContext, type DownloadItemLike,
 } from './capture';
-import { PROTOCOL_VERSION, type Reply } from './protocol';
+import { PROTOCOL_VERSION, type Reply, type Request } from './protocol';
 
 const MiB = 1024 * 1024;
 const item = (o: Partial<DownloadItemLike> = {}): DownloadItemLike => ({
@@ -165,5 +165,73 @@ describe('torrents', () => {
     expect(rejectReason(r('rejected', 'html'))).toBe('html');
     expect(rejectReason(r('accepted'))).toBeUndefined();
     expect(rejectReason(undefined)).toBeUndefined();
+  });
+});
+
+describe('per-site exclusion', () => {
+  const off = (...disabledSites: string[]) => ctx({ settings: { ...DEFAULT_SETTINGS, disabledSites } });
+  it('leaves downloads from an excluded site (the referring page, else the file host)', () => {
+    expect(decide(item(), off('example.com'))).toBe('site');
+    expect(decide(item({ referrer: '' }), off('example.com'))).toBe('site');
+    expect(decide(item({ referrer: 'https://Releases.Example.dev/x' }), off('releases.example.dev'))).toBe('site');
+    expect(decide(item(), off('cdn.example.com', 'other.org'))).toBe('capture');
+    expect(decide(item({ referrer: '' }), off())).toBe('capture');
+  });
+  it('toggles a host in the list', () => {
+    expect(toggleSite([], 'a.com')).toEqual(['a.com']);
+    expect(toggleSite(['a.com', 'b.com'], 'a.com')).toEqual(['b.com']);
+  });
+  it('reads hosts of http(s) URLs only', () => {
+    expect(hostOf('https://WWW.x.com:8080/a')).toBe('www.x.com');
+    expect(hostOf('chrome://extensions')).toBeUndefined();
+    expect(hostOf(undefined)).toBeUndefined();
+  });
+});
+
+describe('capture toast', () => {
+  const tab = { id: 7, url: 'https://releases.example.dev/devtool/2.3' };
+  it('asks only on the http(s) page tab the download came from', () => {
+    expect(canAsk({ referrer: 'https://releases.example.dev/devtool/2.3' }, tab)).toBe(true);
+    expect(canAsk({ referrer: 'https://releases.example.dev/' }, tab)).toBe(true);
+    expect(canAsk({ referrer: '' }, tab)).toBe(true);
+    expect(canAsk({ referrer: 'https://elsewhere.test/' }, tab)).toBe(false);
+    expect(canAsk({ referrer: '' }, { id: 7, url: 'chrome://newtab/' })).toBe(false);
+    expect(canAsk({ referrer: '' }, { url: tab.url })).toBe(false);
+    expect(canAsk({ referrer: '' }, undefined)).toBe(false);
+  });
+  it('sends unless the user chose the browser', () => {
+    expect(askAnswer('browser')).toBe('browser');
+    expect(askAnswer('send')).toBe('send');
+    expect(askAnswer(undefined)).toBe('send');
+  });
+});
+
+describe('sent today', () => {
+  const env = (type: string, payload: object) => ({ protocolVersion: 1, id: 'x', type, payload }) as Reply;
+  const ok = env('download.add.result', { status: 'accepted' });
+  it('counts files the app accepted', () => {
+    const add = buildInterceptMessage(item(), { cookies: [], userAgent: 'UA' });
+    expect(sentCount(add, ok)).toBe(1);
+    expect(sentCount(add, env('download.add.result', { status: 'rejected' }))).toBe(0);
+    expect(sentCount(add, undefined)).toBe(0);
+    const batch = { protocolVersion: 1, id: 'b', type: 'download.batch', payload: { items: [{ url: 'a' }, { url: 'b' }] } } as Request;
+    expect(sentCount(batch, ok)).toBe(2);
+    expect(sentCount({ protocolVersion: 1, id: 'p', type: 'ping', payload: {} }, env('pong', {}))).toBe(0);
+  });
+  it('starts over on a new local day', () => {
+    expect(localDay(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05');
+    const a = bumpDaily(undefined, '2026-10-16', 1);
+    const b = bumpDaily(a, '2026-10-16', 3);
+    expect(b).toEqual({ day: '2026-10-16', count: 4 });
+    expect(bumpDaily(b, '2026-10-17', 1)).toEqual({ day: '2026-10-17', count: 1 });
+    expect(countToday(b, '2026-10-16')).toBe(4);
+    expect(countToday(b, '2026-10-17')).toBe(0);
+    expect(countToday(undefined, '2026-10-17')).toBe(0);
+  });
+  it('formats sizes', () => {
+    const num = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
+    expect(formatBytes(91 * MiB, num)).toBe('91 MB');
+    expect(formatBytes(1536, num)).toBe('1.5 KB');
+    expect(formatBytes(undefined, num)).toBe('');
   });
 });

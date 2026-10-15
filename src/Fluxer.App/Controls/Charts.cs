@@ -59,34 +59,50 @@ public sealed class SegmentMap : Control
         c.TryFindResource("SystemAccentColor", c.ActualThemeVariant, out var v) && v is Color col ? col : Color.Parse("#0A84FF");
 }
 
-/// Area chart of the last minute of download speed.
+/// Area chart of the last minute of download speed, optionally with the upload speed as a second line.
 public sealed class SpeedGraph : Control
 {
     public static readonly StyledProperty<double[]> ValuesProperty =
         AvaloniaProperty.Register<SpeedGraph, double[]>(nameof(Values), []);
+    public static readonly StyledProperty<double[]> UpValuesProperty =
+        AvaloniaProperty.Register<SpeedGraph, double[]>(nameof(UpValues), []);
+    /// Large graph: gradient fill and the peak speed in the corner. Off: the detail panel's flat mini chart.
+    public static readonly StyledProperty<bool> ShowScaleProperty = AvaloniaProperty.Register<SpeedGraph, bool>(nameof(ShowScale), true);
+    /// Line colour; the accent when unset.
+    public static readonly StyledProperty<IBrush?> LineBrushProperty = AvaloniaProperty.Register<SpeedGraph, IBrush?>(nameof(LineBrush));
+    public IBrush? LineBrush { get => GetValue(LineBrushProperty); set => SetValue(LineBrushProperty, value); }
 
-    static SpeedGraph() => AffectsRender<SpeedGraph>(ValuesProperty);
+    static SpeedGraph() => AffectsRender<SpeedGraph>(ValuesProperty, UpValuesProperty, ShowScaleProperty, LineBrushProperty);
 
     public double[] Values { get => GetValue(ValuesProperty); set => SetValue(ValuesProperty, value); }
+    public double[] UpValues { get => GetValue(UpValuesProperty); set => SetValue(UpValuesProperty, value); }
+    public bool ShowScale { get => GetValue(ShowScaleProperty); set => SetValue(ShowScaleProperty, value); }
 
     public int Capacity { get; set; } = 240;
 
     public override void Render(DrawingContext ctx)
     {
         var b = new Rect(Bounds.Size);
-        var accent = SegmentMap.Accent(this);
+        var accent = (LineBrush as ISolidColorBrush)?.Color ?? SegmentMap.Accent(this);
         var values = Values;
         if (values.Length < 2) return;
-        var max = Math.Max(values.Max(), 1);
+        var max = Math.Max(Math.Max(values.Max(), UpValues.Length > 0 ? UpValues.Max() : 0), 1) * 1.05;
         var step = b.Width / (Capacity - 1);
         var x0 = b.Width - (values.Length - 1) * step;
+        var top = ShowScale ? 16 : 4;
 
-        var pts = new Point[values.Length];
-        for (var i = 0; i < values.Length; i++)
-            pts[i] = new Point(x0 + i * step, b.Height - values[i] / max * (b.Height - 16));
+        Point[] Points(double[] v)
+        {
+            var x = b.Width - (v.Length - 1) * step;
+            var p = new Point[v.Length];
+            for (var i = 0; i < v.Length; i++) p[i] = new Point(x + i * step, b.Height - 2 - v[i] / max * (b.Height - 2 - top));
+            return p;
+        }
+        var pts = Points(values);
 
         // Catmull-Rom through the samples → smooth cubic Béziers (no sharp 4 Hz steps).
-        void Curve(StreamGeometryContext g)
+        void Curve(StreamGeometryContext g) => CurveThrough(g, pts);
+        void CurveThrough(StreamGeometryContext g, Point[] pts)
         {
             for (var i = 0; i < pts.Length - 1; i++)
             {
@@ -116,16 +132,32 @@ public sealed class SpeedGraph : Control
             Curve(g);
             g.EndFigure(false);
         }
-        var fill = new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-            EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.FromArgb(90, accent.R, accent.G, accent.B), 0), new GradientStop(Color.FromArgb(0, accent.R, accent.G, accent.B), 1) },
-        };
+        IBrush fill = ShowScale
+            ? new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops = { new GradientStop(Color.FromArgb(90, accent.R, accent.G, accent.B), 0), new GradientStop(Color.FromArgb(0, accent.R, accent.G, accent.B), 1) },
+            }
+            : new SolidColorBrush(accent, 0.12);
         ctx.DrawGeometry(fill, null, area);
-        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(accent), 2, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), line);
+        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(accent), ShowScale ? 2 : 1.5, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), line);
 
-        if (max < 1024) return;
+        if (UpValues is { Length: >= 2 } upValues && upValues.Any(v => v > 0))
+        {
+            var upPts = Points(upValues);
+            var upLine = new StreamGeometry();
+            using (var g = upLine.Open())
+            {
+                g.BeginFigure(upPts[0], false);
+                CurveThrough(g, upPts);
+                g.EndFigure(false);
+            }
+            var blue = this.TryFindResource("InfoBrush", ActualThemeVariant, out var r) && r is IBrush ib ? ib : Brushes.CornflowerBlue;
+            ctx.DrawGeometry(null, new Pen(blue, 1.2, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), upLine);
+        }
+
+        if (!ShowScale || max < 1024) return;
         var label = new FormattedText(Loc.Speed((long)max), CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
             Typeface.Default, 11, new SolidColorBrush(accent));
         ctx.DrawText(label, new Point(4, 0));
@@ -204,5 +236,39 @@ public sealed class ProgressRing : Control
             g.EndFigure(false);
         }
         ctx.DrawGeometry(null, new Pen(brush, t, lineCap: PenLineCap.Round), geo);
+    }
+}
+
+/// Thin rounded progress bar for list rows (lighter than ProgressBar's template). Value 0–100, fill = Foreground;
+/// Indeterminate shows a faint full bar.
+public sealed class Bar : Control
+{
+    public static readonly StyledProperty<double> ValueProperty = AvaloniaProperty.Register<Bar, double>(nameof(Value));
+    public static readonly StyledProperty<bool> IndeterminateProperty = AvaloniaProperty.Register<Bar, bool>(nameof(Indeterminate));
+    public static readonly StyledProperty<IBrush?> ForegroundProperty = AvaloniaProperty.Register<Bar, IBrush?>(nameof(Foreground));
+    public static readonly StyledProperty<IBrush?> BackgroundProperty = AvaloniaProperty.Register<Bar, IBrush?>(nameof(Background));
+
+    static Bar() => AffectsRender<Bar>(ValueProperty, IndeterminateProperty, ForegroundProperty, BackgroundProperty);
+
+    public double Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+    public bool Indeterminate { get => GetValue(IndeterminateProperty); set => SetValue(IndeterminateProperty, value); }
+    public IBrush? Foreground { get => GetValue(ForegroundProperty); set => SetValue(ForegroundProperty, value); }
+    public IBrush? Background { get => GetValue(BackgroundProperty); set => SetValue(BackgroundProperty, value); }
+
+    protected override Size MeasureOverride(Size availableSize) => new(0, double.IsNaN(Height) ? 6 : Height);
+
+    public override void Render(DrawingContext ctx)
+    {
+        var b = new Rect(Bounds.Size);
+        var r = b.Height / 2;
+        if (Background is { } bg) ctx.DrawRectangle(bg, null, b, r, r);
+        if (Foreground is not { } fg) return;
+        if (Indeterminate)
+        {
+            using (ctx.PushOpacity(0.35)) ctx.DrawRectangle(fg, null, b, r, r);
+            return;
+        }
+        var w = b.Width * Math.Clamp(Value, 0, 100) / 100;
+        if (w > 0) ctx.DrawRectangle(fg, null, new Rect(0, 0, Math.Max(w, b.Height), b.Height), r, r);
     }
 }

@@ -48,9 +48,10 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         Schedule();
     }
 
-    public IDownload Add(DownloadRecord record, bool start = true)
+    /// `night`: waits in the night queue until <see cref="StartNight"/>.
+    public IDownload Add(DownloadRecord record, bool start = true, bool night = false)
     {
-        record.State = start ? DownloadState.Queued : DownloadState.Paused;
+        record.State = night ? DownloadState.Scheduled : start ? DownloadState.Queued : DownloadState.Paused;
         db.Insert(record);
         var d = Track(factory(record));
         Added?.Invoke(d);
@@ -76,12 +77,27 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
             if (_running.TryGetValue(id, out var run)) { run.Cts.Cancel(); task = run.Task; }
         }
         if (task is not null) await task;
-        else if (d is { State: DownloadState.Queued }) SetIdleState(d, DownloadState.Paused);
+        else if (d is { State: DownloadState.Queued or DownloadState.Scheduled }) SetIdleState(d, DownloadState.Paused);
     }
 
+    /// The night queue keeps waiting for its own start time.
     public async Task PauseAllAsync()
     {
-        foreach (var d in Items) if (d.State is not (DownloadState.Completed or DownloadState.Failed)) await PauseAsync(d.Id);
+        foreach (var d in Items) if (d.State is not (DownloadState.Completed or DownloadState.Failed or DownloadState.Scheduled)) await PauseAsync(d.Id);
+    }
+
+    /// Moves an idle download to the night queue.
+    public void Defer(long id)
+    {
+        if (Find(id) is { } d && !IsRunning(id) && d.State is not (DownloadState.Completed or DownloadState.Scheduled))
+            SetIdleState(d, DownloadState.Scheduled);
+    }
+
+    /// Night queue start: everything waiting in it joins the normal queue.
+    public void StartNight()
+    {
+        foreach (var d in Items) if (d.State == DownloadState.Scheduled) SetIdleState(d, DownloadState.Queued);
+        Schedule();
     }
 
     public void ResumeAll()

@@ -45,7 +45,7 @@
     "message": "Checking…"
   },
   "popupConnected": {
-    "message": "Connected"
+    "message": "App connected"
   },
   "popupUnreachable": {
     "message": "App not reachable"
@@ -246,6 +246,84 @@
     "message": "Fluxer is not running"
   },
   "appNotRunning": {
-    "message": "Fluxer is not running. Start it from the Start menu, or click the open button at the top right."
+    "message": "Fluxer is not running. Start it from the Start menu or with \"Open Fluxer\" below."
+  },
+  "menuNight": {
+    "message": "Add to night queue"
+  },
+  "menuAllLinks": {
+    "message": "Send all links on the page to Fluxer"
+  },
+  "toastTitle": {
+    "message": "Fluxer caught a download"
+  },
+  "toastClose": {
+    "message": "Close"
+  },
+  "toastSend": {
+    "message": "Download with Fluxer"
+  },
+  "toastKeep": {
+    "message": "Leave in browser"
+  },
+  "toastHint": {
+    "message": "Starts in Fluxer in $1 s · Hold Alt while downloading to keep it in the browser"
+  },
+  "captureTitle": {
+    "message": "Capture downloads"
+  },
+  "captureHintOn": {
+    "message": "Files over $1 MB go to Fluxer"
+  },
+  "captureHintAll": {
+    "message": "All files go to Fluxer"
+  },
+  "captureHintOff": {
+    "message": "Off · the browser downloads itself"
+  },
+  "captureHintSite": {
+    "message": "Off on this site"
+  },
+  "siteOff": {
+    "message": "Turn off on this site"
+  },
+  "siteOn": {
+    "message": "Turn on on this site"
+  },
+  "summary": {
+    "message": "$1 active · $2 queued · $3"
+  },
+  "etaSec": {
+    "message": "$1 s left"
+  },
+  "etaMin": {
+    "message": "$1 min left"
+  },
+  "etaHour": {
+    "message": "$1 h left"
+  },
+  "kindMedia": {
+    "message": "Video"
+  },
+  "sentToday": {
+    "message": "$1 files sent to Fluxer from this browser today."
+  },
+  "pasteLink": {
+    "message": "Paste link"
+  },
+  "clipboardFailed": {
+    "message": "Couldn't read the clipboard."
+  },
+  "clipboardNoLink": {
+    "message": "No link on the clipboard."
+  },
+  "batchDownloadN": {
+    "message": "Download $1 files"
+  },
+  "batchPick": {
+    "message": "Select files"
+  },
+  "back": {
+    "message": "Back"
   }
 }

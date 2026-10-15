@@ -55,7 +55,18 @@ public sealed partial class MainWindow : Window
             var n = list.SelectedItems.Count;
             all.IsChecked = n == 0 ? false : n >= vm.View.Count ? true : null;
             list.Classes.Set("checking", n > 1);
+            vm.SelectionChanged();
         };
+        // Size, speed and date line up on the right; so do their headers.
+        foreach (var col in list.Columns.Where(c => c.Header is string h && (h == Strings.ColSize || h == Strings.ColSpeed || h == Strings.ColAdded)))
+        {
+            var text = new TextBlock { Text = (string)col.Header!, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right };
+            text.AttachedToVisualTree += (_, _) =>
+            {
+                if (text.FindAncestorOfType<DataGridColumnHeader>() is { } h) h.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+            };
+            col.Header = text;
+        }
         list.AddHandler(Button.ClickEvent, (_, e) =>
         {
             if (e.Source is not CheckBox { DataContext: DownloadItemViewModel item } box || !box.Classes.Contains("rowCheck")) return;
@@ -85,16 +96,30 @@ public sealed partial class MainWindow : Window
         Opened += (_, _) => _timer.Start();
         Closed += (_, _) => _timer.Stop();
 
+        // Narrow list (detail panel open, small window): the date column steps aside instead of being cut.
+        list.SizeChanged += (_, e) => ApplyNarrow(e.NewSize.Width);
+
         AddHandler(DragDrop.DragOverEvent, (_, e) => e.DragEffects = DragDropEffects.Copy);
         AddHandler(DragDrop.DropEvent, OnDrop);
     }
 
     // ================= layout the user can change =================
 
-    /// Column keys in XAML order. Name and the action column cannot be hidden.
-    private static readonly string[] ColumnKeys = ["check", "name", "size", "progress", "speed", "eta", "status", "added", "action"];
-    private static readonly HashSet<string> Fixed = ["check", "name", "action"];
-    private static readonly int[] DefaultWidths = [40, 0, 130, 130, 95, 75, 170, 105, 40];
+    /// Column keys in XAML order. The check box and name columns cannot be hidden.
+    private static readonly string[] ColumnKeys = ["check", "name", "size", "progress", "speed", "status", "added"];
+    private static readonly HashSet<string> Fixed = ["check", "name"];
+    private static readonly int[] DefaultWidths = [40, 0, 90, 170, 96, 160, 100];
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Key == Key.F && e.KeyModifiers == KeyModifiers.Control && SearchBox.IsVisible)
+        {
+            SearchBox.Focus();
+            SearchBox.SelectAll();
+            e.Handled = true;
+        }
+    }
 
     /// Always the live object: the settings page replaces Settings with a copy when it saves.
     private static UiSettings? CurrentUi => Services.AppHost.Current?.Engine?.Settings.Ui;
@@ -138,22 +163,29 @@ public sealed partial class MainWindow : Window
         for (var i = 0; i < cols.Count && i < ColumnKeys.Length; i++)
             if (ColumnKeys[i] is not ("name" or "check")) ui.ColumnWidths[ColumnKeys[i]] = cols[i].ActualWidth;
         ui.ColumnOrder = [.. Enumerable.Range(0, Math.Min(cols.Count, ColumnKeys.Length)).OrderBy(i => cols[i].DisplayIndex).Select(i => ColumnKeys[i])];
-        if (DownloadsPage.RowDefinitions[4].Height.IsAbsolute && DownloadsPage.RowDefinitions[4].Height.Value > 80)
-            ui.DetailHeight = DownloadsPage.RowDefinitions[4].Height.Value;
+        if (ListArea.ColumnDefinitions[2].Width.IsAbsolute && ListArea.ColumnDefinitions[2].Width.Value > 200)
+            ui.DetailWidth = ListArea.ColumnDefinitions[2].Width.Value;
     }
 
-    /// The detail row has a remembered pixel height while visible, and no height when hidden.
+    private void ApplyNarrow(double width)
+    {
+        var i = Array.IndexOf(ColumnKeys, "added");
+        if (CurrentUi is null || i >= List.Columns.Count) return;
+        List.Columns[i].IsVisible = !CurrentUi.HiddenColumns.Contains("added") && width >= 900;
+    }
+
+    /// The detail column has a remembered pixel width while visible, and no width when hidden.
     private void ApplyDetailRow()
     {
         if (DataContext is not MainViewModel vm || CurrentUi is null) return;
-        var row = DownloadsPage.RowDefinitions[4];
-        // Never more than 60 % of the page, so a remembered tall panel can't squeeze the list to nothing.
-        var max = DownloadsPage.Bounds.Height > 0 ? Math.Max(120, DownloadsPage.Bounds.Height * 0.6) : 700;
-        if (vm.ShowDetail) row.Height = new GridLength(Math.Clamp(CurrentUi!.DetailHeight, 120, Math.Min(700, max)));
+        var col = ListArea.ColumnDefinitions[2];
+        // Never more than half the list area, so a remembered wide panel can't squeeze the list to nothing.
+        var max = ListArea.Bounds.Width > 0 ? Math.Max(300, ListArea.Bounds.Width * 0.5) : 560;
+        if (vm.ShowDetail) col.Width = new GridLength(Math.Clamp(CurrentUi!.DetailWidth, 300, Math.Min(560, max)));
         else
         {
-            if (row.Height.IsAbsolute && row.Height.Value > 80) CurrentUi!.DetailHeight = row.Height.Value;
-            row.Height = GridLength.Auto;
+            if (col.Width.IsAbsolute && col.Width.Value > 200) CurrentUi!.DetailWidth = col.Width.Value;
+            col.Width = GridLength.Auto;
         }
     }
 
@@ -169,7 +201,7 @@ public sealed partial class MainWindow : Window
             var key = ColumnKeys[i];
             if (Fixed.Contains(key)) continue;
             var col = cols[i];
-            var item = new MenuItem { Header = col.Header, ToggleType = MenuItemToggleType.CheckBox, IsChecked = col.IsVisible };
+            var item = new MenuItem { Header = col.Header is TextBlock tb ? tb.Text : col.Header, ToggleType = MenuItemToggleType.CheckBox, IsChecked = col.IsVisible };
             item.Click += (_, _) =>
             {
                 col.IsVisible = !col.IsVisible;

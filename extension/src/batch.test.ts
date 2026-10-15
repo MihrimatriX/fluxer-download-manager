@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categoryOf, countByCategory, filterLinks, toBatchLinks } from './batch';
+import { categoryOf, categoryOfName, countByCategory, filterLinks, toBatchLinks } from './batch';
 import type { Resource } from './protocol';
 
 const link = (url: string): Resource => ({ url, kind: 'link' });
@@ -57,5 +57,14 @@ describe('filterLinks / countByCategory', () => {
   });
   it('counts per category', () => {
     expect(countByCategory(links)).toEqual({ video: 2, document: 1, archive: 1 });
+  });
+});
+
+describe('categoryOfName', () => {
+  it('maps bare file names', () => {
+    expect(categoryOfName('devtool-2.3.0-x64.EXE')).toBe('program');
+    expect(categoryOfName('a.tar.gz')).toBe('archive');
+    expect(categoryOfName('zip')).toBe('other');
+    expect(categoryOfName('README')).toBe('other');
   });
 });

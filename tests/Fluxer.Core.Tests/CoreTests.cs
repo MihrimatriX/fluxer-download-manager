@@ -179,3 +179,49 @@ public sealed class ProbeClassifyTests
         Assert.False(FileNameResolver.NamesAFile(new Uri("https://x/get.php?id=1")));
     }
 }
+
+public sealed class SpeedProfileTests
+{
+    [Fact]
+    public void UseProfile_CopiesLimitsAndSlots()
+    {
+        var s = new Downloads.AppSettings();
+        s.UseProfile(2);
+        Assert.Equal(2, s.ActiveProfile);
+        Assert.Equal(2 * 1024 * 1024, s.HttpLimit);
+        Assert.Equal(s.HttpLimit, s.TorrentDownloadLimit);
+        Assert.Equal(200 * 1024, s.TorrentUploadLimit);
+        Assert.Equal(1, s.HttpSlots);
+        s.UseProfile(9); // out of range clamps to the last profile
+        Assert.Equal(2, s.ActiveProfile);
+    }
+
+    [Fact]
+    public void ScheduledProfile_ReadsMondayFirstHourCells()
+    {
+        var s = new Downloads.AppSettings { WeekScheduleOn = true };
+        Assert.Equal(168, s.WeekSchedule.Length);
+        Assert.Equal(0, s.ScheduledProfile(new DateTime(2026, 10, 12, 3, 0, 0)));  // Monday 03:00: night
+        Assert.Equal(2, s.ScheduledProfile(new DateTime(2026, 10, 16, 10, 30, 0))); // Friday 10:30: office hours
+        Assert.Equal(1, s.ScheduledProfile(new DateTime(2026, 10, 18, 10, 0, 0)));  // Sunday 10:00: balanced
+        s.WeekSchedule = string.Concat(Enumerable.Repeat("1", 167)) + "2";
+        Assert.Equal(2, s.ScheduledProfile(new DateTime(2026, 10, 18, 23, 0, 0)));  // Sunday 23:00 is the last cell
+        s.WeekScheduleOn = false;
+        Assert.Null(s.ScheduledProfile(DateTime.Now));
+        s.WeekScheduleOn = true;
+        s.WeekSchedule = "broken";
+        Assert.Null(s.ScheduledProfile(DateTime.Now));
+    }
+
+    [Fact]
+    public void UpgradeDesign_RunsOnce()
+    {
+        var s = new Downloads.AppSettings { Theme = "Light", ScheduleStart = null };
+        s.Ui.Backdrop = "neu";
+        Assert.True(s.UpgradeDesign());
+        Assert.Equal(("Dark", "none", "01:00"), (s.Theme, s.Ui.Backdrop, s.ScheduleStart));
+        s.Theme = "Light";
+        Assert.False(s.UpgradeDesign());
+        Assert.Equal("Light", s.Theme);
+    }
+}

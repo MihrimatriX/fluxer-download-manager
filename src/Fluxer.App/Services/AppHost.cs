@@ -28,6 +28,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
     public static AppHost Current { get; private set; } = null!;
 
     private TrayIcon? _tray;
+    private TrayWindow? _trayWindow;
     private PipeServer? _pipe;
     private DispatcherTimer? _timer;
     private bool _exiting;
@@ -48,6 +49,9 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         void Mark(string step) { marks.Add($"{step} {sw.ElapsedMilliseconds}"); sw.Restart(); }
         Mark($"runtime+avalonia {(int)(DateTime.Now - Process.GetCurrentProcess().StartTime).TotalMilliseconds}");
         Engine = new FluxerEngine(Program.DataDirectory);
+        if (Engine.Settings.UpgradeDesign()) Engine.Db.SetSetting("app", Engine.Settings);
+        Engine.Settings.UseProfile(Engine.Settings.ActiveProfile); // limits always match the active profile
+        _ = Engine.SaveSettingsAsync(Engine.Settings);
         Mark("engine");
         Loc.Apply(Engine.Settings.Language);
         ApplyTheme();
@@ -115,6 +119,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Loc.Apply(Engine.Settings.Language);
         ApplyTheme();
         BuildTray();
+        _trayWindow?.Close(); // captured strings; rebuilt on the next click
+        _trayWindow = null;
         Main.RefreshTexts();
         if (Window is not { } old) return;
         var wasVisible = old.IsVisible;
@@ -131,6 +137,18 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         "Dark" => ThemeVariant.Dark,
         _ => ThemeVariant.Default,
     };
+
+    /// Left click on the tray icon: the small status window (right click keeps the menu).
+    private void ToggleTrayWindow()
+    {
+        if (_trayWindow is null)
+        {
+            _trayWindow = new TrayWindow { DataContext = Main };
+            _trayWindow.Classes.Set("motion", Engine.Settings.Ui.Animations);
+        }
+        Main.UpdateTotals();
+        _trayWindow.Toggle();
+    }
 
     private void BuildTray()
     {
@@ -152,7 +170,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             Menu = menu,
             IsVisible = true,
         };
-        _tray.Clicked += (_, _) => ShowMainWindow();
+        _tray.Clicked += (_, _) => ToggleTrayWindow();
         TrayIcon.SetIcons(app, [_tray]);
 
         static NativeMenuItem Item(string header, Action action)
@@ -177,6 +195,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         SaveLayout();
         _exiting = true;
         _timer?.Stop();
+        await Main.CommitPendingRemovalsAsync();
         Window?.Close();
         _pipe?.Dispose();
         await Engine.DisposeAsync();  // pauses everything → final checkpoints
@@ -196,8 +215,9 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var speed = active.Sum(d => d.GetProgress().BytesPerSecond);
         if (_tray is not null)
             _tray.ToolTipText = active.Count == 0 ? "Fluxer" : $"Fluxer — {active.Count} · {Loc.Speed(speed)}";
-        Main.UpdateTotals(active.Count, items.Count(d => d.State == DownloadState.Queued), speed);
+        Main.UpdateTotals();
         RunScheduler();
+        RunWeekSchedule();
     }
 
     private void RunScheduler()
@@ -206,8 +226,36 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var now = DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
         var key = DateTime.Now.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture);
         if (key == _lastScheduleFire) return;
-        if (s.ScheduleStart == now) { _lastScheduleFire = key; Engine.Queue.ResumeAll(); Log.Information("Scheduler: start"); }
+        if (s.ScheduleStart == now) { _lastScheduleFire = key; Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
         else if (s.ScheduleStop == now) { _lastScheduleFire = key; _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+    }
+
+    private int? _lastScheduledProfile;
+
+    /// The weekly grid switches profiles only when its cell changes, so a profile picked by hand from the
+    /// status bar holds until the next change in the grid.
+    private void RunWeekSchedule()
+    {
+        var want = Engine.Settings.ScheduledProfile(DateTime.Now);
+        if (want is null) { _lastScheduledProfile = null; return; }
+        if (want == _lastScheduledProfile) return;
+        _lastScheduledProfile = want;
+        if (want != Engine.Settings.ActiveProfile)
+        {
+            Log.Information("Schedule: profile {Profile}", want);
+            _ = UseProfileAsync(want.Value);
+        }
+    }
+
+    /// Status bar pill, weekly schedule, settings page.
+    public async Task UseProfileAsync(int index)
+    {
+        var s = Engine.Settings;
+        s.UseProfile(index);
+        await Engine.SaveSettingsAsync(s);
+        Main.UpdateProfileText();
+        Main.UpdateTotals();
+        Main.Settings.ProfileApplied();
     }
 
     private void OnDrained()
@@ -402,7 +450,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         {
             DownloadState.Starting or DownloadState.Downloading or DownloadState.Verifying => 0,
             DownloadState.Seeding => 1,
-            DownloadState.Queued => 2,
+            DownloadState.Queued or DownloadState.Scheduled => 2,
             DownloadState.Paused => 3,
             DownloadState.Completed => 5,
             _ => 4,
@@ -411,7 +459,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         {
             DownloadState.Starting or DownloadState.Downloading or DownloadState.Verifying => "downloading",
             DownloadState.Seeding => "seeding",
-            DownloadState.Queued => "queued",
+            DownloadState.Queued or DownloadState.Scheduled => "queued",
             DownloadState.Paused => "paused",
             DownloadState.Completed => "completed",
             _ => "failed",
@@ -563,7 +611,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             break;
         }
 
-        await Flows.NewDownloadAsync(this, [add.Url], add.FileName, ctx, probe);
+        await Flows.NewDownloadAsync(this, [add.Url], add.FileName, ctx, probe, night: add.Queue == "night");
     }
 
     [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16)]

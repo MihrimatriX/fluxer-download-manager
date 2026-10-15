@@ -43,6 +43,17 @@ public sealed partial class AddItem : ObservableObject
     private static readonly IBrush Red = new SolidColorBrush(Color.Parse("#E5484D")), Gray = new SolidColorBrush(Color.Parse("#64748B"));
     [ObservableProperty] private bool _probing;
     [ObservableProperty] private string? _category;
+    // design tiles and batch rows
+    [ObservableProperty] private string _sizeText = "—";
+    [ObservableProperty] private string _resumeText = "—";
+    [ObservableProperty] private IBrush _resumeBrush = Brushes.Gray;
+    [ObservableProperty] private string _typeText = "";
+    [ObservableProperty] private string _stateText = "";
+    [ObservableProperty] private IBrush _stateBrush = Brushes.Gray;
+    /// Batch: unticked links are left out (failing ones start unticked).
+    [ObservableProperty] private bool _isIncluded = true;
+    public bool Ok => Kind is ProbeKind.File or ProbeKind.Torrent || IsMagnet;
+    partial void OnProbingChanged(bool value) { if (value) (StateText, StateBrush) = (Strings.Probing, Theme.Brush("SubtleBrush")); }
 
     public void Apply(ProbeResult? p)
     {
@@ -58,6 +69,7 @@ public sealed partial class AddItem : ObservableObject
         {
             Name = MonoTorrent.MagnetLink.TryParse(Url, out var m) && m.Name is { } n ? n : "magnet";
             (Glyph, Tile, Meta, Category) = ("", Brush("#06B6D4"), Strings.KindMagnet, "Torrent");
+            (StateText, StateBrush, TypeText) = (Strings.Ready, Theme.Brush("OkBrush"), "Torrent");
             return;
         }
         if (!UserNamed && p?.FileName is { } fn) Name = fn;
@@ -90,6 +102,24 @@ public sealed partial class AddItem : ObservableObject
             ProbeKind.Error => (p.Status > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.WarnHttp, p.Status) : Strings.WarnUnreachable, Red),
             _ => ("", Red),
         };
+
+        SizeText = Loc.Bytes(p?.Size);
+        (ResumeText, ResumeBrush) = p?.Kind != ProbeKind.File ? ("—", Theme.Brush("SubtleBrush"))
+            : p.Resumable ? (Strings.Supported, Theme.Brush("OkBrush")) : (Strings.NotSupported, Theme.Brush("WarnTextBrush"));
+        TypeText = Category switch
+        {
+            "Video" => Strings.CatVideo, "Music" => Strings.CatMusic, "Documents" => Strings.CatDocuments,
+            "Archives" => Strings.CatArchives, "Programs" => Strings.CatPrograms, "Torrent" => "Torrent",
+            _ => Path.GetExtension(Name) is { Length: > 1 } e ? e[1..].ToUpperInvariant() : "—",
+        };
+        if (p is null) return;
+        (StateText, StateBrush) = p.Kind switch
+        {
+            ProbeKind.File or ProbeKind.Torrent => (Strings.Ready, Theme.Brush("OkBrush")),
+            ProbeKind.Html => (Strings.WebPage, Theme.Brush("WarnTextBrush")),
+            _ => (p.Status > 0 ? $"HTTP {p.Status}" : Strings.NoAnswer, Theme.Brush("ErrBrush")),
+        };
+        IsIncluded = p.Kind != ProbeKind.Error;
     }
 
     private bool _applying;
@@ -103,7 +133,8 @@ public sealed record CategoryChip(string Key, string Title, string Glyph)
     public override string ToString() => Title;
 }
 
-public enum StartMode { Now, Queue, Paused }
+/// Now: jumps to the front of the main queue; Queue: waits its turn; Night: waits for the night queue.
+public enum StartMode { Now, Queue, Paused, Night }
 
 /// What the add window returns to Flows.
 public sealed record AddResult(IReadOnlyList<AddItem> Items, string Folder, bool FolderIsPerFile, StartMode Mode, int Connections, string? HashAlgorithm, string? Hash);
@@ -153,19 +184,41 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [ObservableProperty] private string _freeSpaceText = "";
     [ObservableProperty] private bool _notEnoughSpace;
     [ObservableProperty] private string _totalText = "";
-    [ObservableProperty] private int _modeIndex;
+    /// 0 main queue, 1 night queue, 2 paused.
+    [ObservableProperty] private int _queueIndex;
     [ObservableProperty] private double _connections;
     [ObservableProperty] private int _hashIndex;
     [ObservableProperty] private string _hash = "";
+    [ObservableProperty] private bool _dontAskAgain;
+    [ObservableProperty] private string _badge = "";
+    [ObservableProperty] private IBrush _badgeBrush = Brushes.Gray;
+    [ObservableProperty] private IBrush _badgeBackground = Brushes.Transparent;
+    [ObservableProperty] private string _detected = "";
+    [ObservableProperty] private IBrush _detectedBrush = Brushes.Gray;
+    [ObservableProperty] private string _categoryText = "";
 
     public bool IsSingle => Count == 1;
     public bool IsMulti => Count > 1;
+    public bool IsSingleHttp => Count == 1 && !Items[0].IsMagnet;
     public AddItem? Single => Items.Count == 1 ? Items[0] : null;
     public bool CanSubmit => Count > 0;
-    public string SubmitText => ModeIndex switch { 1 => Strings.AddToQueue, 2 => Strings.AddPaused, _ => Strings.Download };
+    public string[] Queues => [Strings.MainQueueNow, string.Format(CultureInfo.CurrentCulture, Strings.NightQueueOption,
+        _settings.ScheduleStart ?? Strings.Manual), Strings.AddPaused];
+    public string SubmitText => QueueIndex switch
+    {
+        1 => Strings.AddToNight,
+        2 => Strings.AddPaused,
+        _ => Count > 1 ? string.Format(CultureInfo.CurrentCulture, Strings.StartN, Items.Count(i => i.IsIncluded)) : Strings.StartDownload,
+    };
+    /// Night queue / paused: one button says what will happen.
+    public bool ShowQueueButton => QueueIndex == 0;
 
     partial void OnUrlsTextChanged(string value) { _debounce.Stop(); _debounce.Start(); }
-    partial void OnModeIndexChanged(int value) => OnPropertyChanged(nameof(SubmitText));
+    partial void OnQueueIndexChanged(int value)
+    {
+        OnPropertyChanged(nameof(ShowQueueButton));
+        OnPropertyChanged(nameof(SubmitText));
+    }
     partial void OnSelectedCategoryChanged(CategoryChip value) { _folderTouched = false; UpdateFolder(); }
     partial void OnFolderChanged(string value) => UpdateSpace();
 
@@ -179,6 +232,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         Items.Clear();
         foreach (var u in urls) Items.Add(keep.TryGetValue(u, out var old) ? old : new AddItem(u, _ctx));
         Count = Items.Count;
+        foreach (var i in Items) { i.PropertyChanged -= OnItemChanged; i.PropertyChanged += OnItemChanged; }
         OnPropertyChanged(nameof(Single)); // one link swapped for another keeps Count at 1
 
         _probeCts?.Cancel();
@@ -187,6 +241,11 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         if (known is not null && pending.Count == 1) { pending[0].Apply(known); pending.Clear(); }
         _ = ProbeAllAsync(pending, cts.Token);
         UpdateFolder();
+    }
+
+    private void OnItemChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AddItem.IsIncluded)) OnPropertyChanged(nameof(SubmitText));
     }
 
     private async Task ProbeAllAsync(List<AddItem> items, CancellationToken ct)
@@ -214,8 +273,9 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     {
         var total = Items.Sum(i => i.Size ?? 0);
         TotalText = Items.Count > 1
-            ? string.Format(CultureInfo.CurrentCulture, Strings.FilesTotal, Items.Count, Loc.Bytes(total))
+            ? string.Format(CultureInfo.CurrentCulture, Strings.FilesTotal, Items.Count(i => i.Ok), Loc.Bytes(total))
             : "";
+        UpdateSummary();
         if (!_folderTouched)
         {
             var key = SelectedCategory.Key;
@@ -241,6 +301,47 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         }
     }
 
+    /// Badge in the link box, the green/red line under it and the category note.
+    private void UpdateSummary()
+    {
+        OnPropertyChanged(nameof(IsSingleHttp));
+        OnPropertyChanged(nameof(SubmitText));
+        var torrent = Items.Count == 1 && (Items[0].IsMagnet || Items[0].Kind == ProbeKind.Torrent);
+        (Badge, BadgeBrush, BadgeBackground) = Items.Count switch
+        {
+            0 => ("", Brushes.Transparent, Brushes.Transparent),
+            > 1 => (Strings.BadgeBatch, Theme.Brush("WarnTextBrush"), new SolidColorBrush(Color.Parse("#1FF5A623"))),
+            _ when torrent => ("TORRENT", Theme.Brush("InfoTextBrush"), new SolidColorBrush(Color.Parse("#246EA8FE"))),
+            _ => ("HTTP", Theme.Brush("TextBrush"), Theme.Brush("SelectedBrush")),
+        };
+
+        if (Items.Count == 0) (Detected, DetectedBrush) = ("", Brushes.Transparent);
+        else if (Items.Any(i => i.Probing)) (Detected, DetectedBrush) = (Strings.Probing, Theme.Brush("SubtleBrush"));
+        else if (Items.Count == 1)
+            (Detected, DetectedBrush) = Items[0] switch
+            {
+                { IsMagnet: true } => (Strings.MagnetDetected, Theme.Brush("OkBrush")),
+                { Kind: ProbeKind.File or ProbeKind.Torrent } => (Strings.ServerAnswered, Theme.Brush("OkBrush")),
+                { Warning.Length: > 0 } i => (i.Warning, i.WarningBrush),
+                _ => ("", Brushes.Transparent),
+            };
+        else
+        {
+            int ok = Items.Count(i => i.Ok), bad = Items.Count - ok;
+            Detected = bad > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.LinksCheckedSome, ok, bad)
+                : string.Format(CultureInfo.CurrentCulture, Strings.LinksChecked, ok);
+            DetectedBrush = Theme.Brush(bad > 0 ? "WarnTextBrush" : "OkBrush");
+        }
+
+        var key = SelectedCategory.Key;
+        var cat = key == "auto" ? Items.Count == 1 ? Items[0].Category : null : key == "none" ? null : key;
+        var title = Categories.FirstOrDefault(c => c.Key == cat)?.Title ?? (cat == "Torrent" ? Strings.CatTorrent : Items.Count > 1 && key == "auto" ? Strings.Mixed : Strings.CatNone);
+        CategoryText = string.Format(CultureInfo.CurrentCulture, key == "auto" ? Strings.CategoryAuto : Strings.CategoryManual, title);
+    }
+
+    [RelayCommand]
+    private void PickCategory(CategoryChip chip) => SelectedCategory = chip;
+
     /// Applies a pending URL edit right away (submit before the debounce fired).
     public void Flush()
     {
@@ -259,11 +360,12 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [RelayCommand]
     private void PickRecent(string path) => SetFolderByUser(path);
 
-    public AddResult Result() => new(
-        [.. Items],
+    /// `startNow`: the primary button (front of the queue) rather than "Add to queue".
+    public AddResult Result(bool startNow) => new(
+        [.. Items.Where(i => i.IsIncluded || Items.Count == 1)],
         Folder,
         SelectedCategory.Key == "auto" && Items.Count > 1 && !_folderTouched,
-        (StartMode)ModeIndex,
+        QueueIndex switch { 1 => StartMode.Night, 2 => StartMode.Paused, _ => startNow ? StartMode.Now : StartMode.Queue },
         (int)Connections,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? HashAlgorithms[HashIndex] : null,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? Hash.Trim() : null);

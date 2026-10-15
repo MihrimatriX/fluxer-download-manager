@@ -45,7 +45,7 @@
     "message": "Denetleniyor…"
   },
   "popupConnected": {
-    "message": "Bağlı"
+    "message": "Uygulama bağlı"
   },
   "popupUnreachable": {
     "message": "Uygulamaya ulaşılamıyor"
@@ -246,6 +246,84 @@
     "message": "Fluxer çalışmıyor"
   },
   "appNotRunning": {
-    "message": "Fluxer çalışmıyor. Başlat menüsünden açın ya da sağ üstteki aç düğmesine tıklayın."
+    "message": "Fluxer çalışmıyor. Başlat menüsünden ya da aşağıdaki \"Fluxer'ı aç\" düğmesiyle açın."
+  },
+  "menuNight": {
+    "message": "Gece kuyruğuna ekle"
+  },
+  "menuAllLinks": {
+    "message": "Sayfadaki tüm bağlantıları Fluxer'a gönder"
+  },
+  "toastTitle": {
+    "message": "Fluxer bir indirme yakaladı"
+  },
+  "toastClose": {
+    "message": "Kapat"
+  },
+  "toastSend": {
+    "message": "Fluxer ile indir"
+  },
+  "toastKeep": {
+    "message": "Tarayıcıda bırak"
+  },
+  "toastHint": {
+    "message": "$1 sn içinde Fluxer'da otomatik başlar · Alt tuşuna basılı tutarak indirirsen tarayıcıda kalır"
+  },
+  "captureTitle": {
+    "message": "İndirmeleri yakala"
+  },
+  "captureHintOn": {
+    "message": "$1 MB üstü dosyalar Fluxer'a gider"
+  },
+  "captureHintAll": {
+    "message": "Tüm dosyalar Fluxer'a gider"
+  },
+  "captureHintOff": {
+    "message": "Kapalı · tarayıcı kendi indirir"
+  },
+  "captureHintSite": {
+    "message": "Bu sitede kapalı"
+  },
+  "siteOff": {
+    "message": "Bu sitede kapat"
+  },
+  "siteOn": {
+    "message": "Bu sitede aç"
+  },
+  "summary": {
+    "message": "$1 etkin · $2 sırada · $3"
+  },
+  "etaSec": {
+    "message": "$1 sn kaldı"
+  },
+  "etaMin": {
+    "message": "$1 dk kaldı"
+  },
+  "etaHour": {
+    "message": "$1 sa kaldı"
+  },
+  "kindMedia": {
+    "message": "Video"
+  },
+  "sentToday": {
+    "message": "Bu tarayıcıdan bugün $1 dosya Fluxer'a gönderildi."
+  },
+  "pasteLink": {
+    "message": "Bağlantı yapıştır"
+  },
+  "clipboardFailed": {
+    "message": "Pano okunamadı."
+  },
+  "clipboardNoLink": {
+    "message": "Panoda bağlantı yok."
+  },
+  "batchDownloadN": {
+    "message": "$1 dosyayı indir"
+  },
+  "batchPick": {
+    "message": "Dosya seç"
+  },
+  "back": {
+    "message": "Geri"
   }
 }

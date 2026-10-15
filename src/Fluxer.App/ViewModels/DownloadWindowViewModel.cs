@@ -250,7 +250,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         Peers.Clear();
         foreach (var peer in peers.OrderByDescending(p => p.Monitor.DownloadRate).Take(100))
             Peers.Add(new PeerRow(peer.Uri.ToString(), peer.ClientApp.Client.ToString(), Loc.Speed(peer.Monitor.DownloadRate),
-                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100)));
+                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100), peer.BitField.PercentComplete));
     }
 
     // ================= commands =================

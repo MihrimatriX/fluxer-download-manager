@@ -30,8 +30,24 @@ public static class Loc
         DownloadState.Seeding => Strings.StateSeeding,
         DownloadState.Completed => Strings.StateCompleted,
         DownloadState.Failed => Strings.StateFailed,
+        DownloadState.Scheduled => Strings.StateScheduled,
         _ => s.ToString(),
     };
+
+    /// "4 min 10 s" / "4 dk 10 sn": the two largest units.
+    public static string EtaWords(TimeSpan t)
+    {
+        var u = Strings.EtaUnits.Split('|'); // s, min, h, d
+        if (t.TotalDays >= 1) return $"{(int)t.TotalDays} {u[3]} {t.Hours} {u[2]}";
+        if (t.TotalHours >= 1) return $"{(int)t.TotalHours} {u[2]} {t.Minutes} {u[1]}";
+        if (t.TotalMinutes >= 1) return $"{t.Minutes} {u[1]} {t.Seconds} {u[0]}";
+        return $"{Math.Max(1, t.Seconds)} {u[0]}";
+    }
+
+    /// "Today 13:48", "Yesterday 21:12", "12 Oct 09:02".
+    public static string When(DateTime t) => t.Date == DateTime.Today ? $"{Strings.Today} {t:HH:mm}"
+        : t.Date == DateTime.Today.AddDays(-1) ? $"{Strings.Yesterday} {t:HH:mm}"
+        : t.ToString("d MMM HH:mm", CultureInfo.CurrentCulture);
 
     public static string Error(string? code)
     {

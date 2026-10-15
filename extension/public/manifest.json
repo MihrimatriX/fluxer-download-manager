@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extName__",
   "description": "__MSG_extDescription__",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "default_locale": "en",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqr4vhSgDnaRfcCoJEl2wM5MoZXMn83GfBe1asNxkqocEvvP/dRkE5vB082nMajQ+uidEU+xl88EIf5gAN9sjbZzVfMdNlkDYPMeOdlUWBsqNuZt0ypGrwk2njzVd402wRLRdc+nhnKJM0UwIKOcz70IxzJfjZ8rvUaLhWHdrm+37/I15GX+N/2/heFgw12LvzUFAXwd1UtJ0mRAUf0wYp3ZRzJCA9/GOzxsqSdikChLpjBgOG2MESNugen6k2YdqQwHFjkCwsqY94flXemT3kM43sxICaT+a11PtdaZdjCWk3PfQAWDRfn1MaaotTenPmHX3ZLXw+qRd0lEg6kdGlQIDAQAB",
   "minimum_chrome_version": "116",
@@ -13,7 +13,8 @@
     "nativeMessaging",
     "storage",
     "webRequest",
-    "notifications"
+    "notifications",
+    "clipboardRead"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {

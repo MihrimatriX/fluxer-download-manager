@@ -17,10 +17,59 @@ public sealed class AppSettings
     public ConflictPolicy Conflict { get; set; } = ConflictPolicy.Rename;
     public string? Proxy { get; set; }             // "http://host:port", null = system
     public string Language { get; set; } = "";     // "" = system, "tr", "en"
-    public string Theme { get; set; } = "System";  // System | Light | Dark
+    public string Theme { get; set; } = "Dark";    // System | Light | Dark
     public bool UseCategoryFolders { get; set; } = true;
-    public string? ScheduleStart { get; set; }     // "HH:mm" or null
+    public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
+
+    /// Unlimited, balanced, background. The active one is copied into the limits above (UseProfile).
+    public List<SpeedProfile> Profiles { get; set; } =
+    [
+        new() { Slots = 5 },
+        new() { Down = 10 * MB, Up = 1 * MB, Slots = 3 },
+        new() { Down = 2 * MB, Up = 200 * KB, Slots = 1 },
+    ];
+    public int ActiveProfile { get; set; }
+    public bool WeekScheduleOn { get; set; }
+    /// 7 days (Monday first) × 24 hours, one profile index digit per hour.
+    public string WeekSchedule { get; set; } = DefaultWeek();
+
+    // Torrent network
+    public int ListenPort { get; set; } = 51413;
+    public bool Dht { get; set; } = true;
+    public bool PeerExchange { get; set; } = true;
+    public bool LocalPeerDiscovery { get; set; } = true;
+    public bool PortForwarding { get; set; } = true;
+    public string Encryption { get; set; } = "prefer"; // prefer | require | off
+    public int MaxPeersPerTorrent { get; set; } = 100;
+
+    private const long KB = 1024, MB = 1024 * 1024;
+
+    /// Nights unlimited, office hours in the background, the rest balanced.
+    public static string DefaultWeek() => string.Concat(Enumerable.Range(0, 7 * 24).Select(i =>
+    {
+        int day = i / 24, hour = i % 24;
+        return hour is >= 1 and < 7 ? '0' : day < 5 && hour is >= 9 and < 18 ? '2' : '1';
+    }));
+
+    /// Makes a speed profile current: its limits and slot count become the global ones.
+    public void UseProfile(int index)
+    {
+        ActiveProfile = Math.Clamp(index, 0, Profiles.Count - 1);
+        var p = Profiles[ActiveProfile];
+        HttpLimit = TorrentDownloadLimit = p.Down;
+        TorrentUploadLimit = p.Up;
+        HttpSlots = Math.Max(1, p.Slots);
+    }
+
+    /// The profile the weekly schedule wants at `now`; null when the schedule is off or unreadable.
+    public int? ScheduledProfile(DateTime now)
+    {
+        if (!WeekScheduleOn || WeekSchedule.Length != 7 * 24) return null;
+        var monday0 = ((int)now.DayOfWeek + 6) % 7; // DayOfWeek starts on Sunday
+        var digit = WeekSchedule[monday0 * 24 + now.Hour] - '0';
+        return digit >= 0 && digit < Profiles.Count ? digit : null;
+    }
     public string AfterQueue { get; set; } = "None"; // None | Sleep | Shutdown
     public bool ShowAddDialog { get; set; } = true;
     public UiSettings Ui { get; set; } = new();
@@ -50,20 +99,47 @@ public sealed class AppSettings
             if (exts.Contains(ext)) return cat;
         return null;
     }
+
+    /// Settings saved by an older version get the 0.8 design defaults once (dark navy, orange, gradient,
+    /// fresh column layout). Returns true when something changed and should be saved.
+    public bool UpgradeDesign()
+    {
+        if (Ui.DesignRevision >= 1) return false;
+        Ui.DesignRevision = 1;
+        Theme = "Dark";
+        Ui.Accent = null;
+        Ui.Backdrop = "none";
+        Ui.Compact = true;
+        Ui.ColumnOrder.Clear();
+        Ui.ColumnWidths.Clear();
+        Ui.HiddenColumns.Clear();
+        ScheduleStart ??= "01:00";
+        return true;
+    }
+}
+
+/// One speed profile; 0 = unlimited.
+public sealed class SpeedProfile
+{
+    public long Down { get; set; }
+    public long Up { get; set; }
+    public int Slots { get; set; } = 3;
 }
 
 /// Look and layout the user can change; remembered between sessions.
 public sealed class UiSettings
 {
-    public string? Accent { get; set; }                 // "#RRGGBB", null = Windows accent
-    public string Backdrop { get; set; } = "glass";     // "glass" (acrylic blur), "mica", "neu" (neumorphic), "none"
-    public bool Compact { get; set; }                   // denser rows and controls
+    public string? Accent { get; set; }                 // "#RRGGBB", null = Fluxer orange
+    public string Backdrop { get; set; } = "none";      // "none" (navy gradient), "glass" (acrylic blur), "mica", "neu" (neumorphic)
+    public bool Compact { get; set; } = true;           // 44 px rows (design "sıkı"); off = 54 px
     public double Scale { get; set; } = 1.0;            // 0.85 – 1.3
     public bool Animations { get; set; } = true;
     public bool ToolbarLabels { get; set; } = true;
     public bool SidebarCollapsed { get; set; }
-    public bool DetailVisible { get; set; } = true;
-    public double DetailHeight { get; set; } = 290;
+    public bool DetailVisible { get; set; }
+    public double DetailHeight { get; set; } = 290;     // unused since 0.8 (the panel sits on the right)
+    public double DetailWidth { get; set; } = 340;
+    public int DesignRevision { get; set; }
     public List<string> HiddenColumns { get; set; } = [];
     public Dictionary<string, double> ColumnWidths { get; set; } = [];
     public List<string> ColumnOrder { get; set; } = [];

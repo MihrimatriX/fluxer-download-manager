@@ -35,6 +35,7 @@ export type DownloadAdd = Envelope<'download.add', BrowserContext & {
   source: 'intercept' | 'context-menu' | 'torrent-file';
   torrentPath?: string;     // torrent-file: the .torrent the browser just saved (absolute path)
   tabUrl?: string;
+  queue?: 'night';          // context menu "Add to night queue": the app holds it for its night schedule
 }>;
 
 export type StatusGet = Envelope<'status.get', {}>;

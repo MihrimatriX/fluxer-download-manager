@@ -1,6 +1,6 @@
 // Content script (built as a classic IIFE script). Tracks the Alt key for the capture bypass
-// (the service worker can't see keyboard state), collects page resources on request, and shows a
-// "Download with Fluxer" button over videos.
+// (the service worker can't see keyboard state), collects page resources on request, shows a
+// "Download with Fluxer" button over videos and the capture toast (top frame only, on request).
 import { collectResources } from './collector';
 
 let alt = false;
@@ -18,9 +18,13 @@ addEventListener('click', (e) => setAlt(e.altKey), true);
 // Window blur only (not element blur): Alt released while another window/app has focus.
 addEventListener('blur', (e) => { if (e.target === window) setAlt(false); });
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === 'collect') {
     sendResponse({ pageUrl: location.href, resources: collectResources(document) });
+  }
+  if (msg?.type === 'capture-ask' && sender.id === chrome.runtime.id) {
+    askToast(msg, sendResponse);
+    return true; // answered when the user picks or the countdown ends
   }
 });
 
@@ -29,7 +33,25 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 // subject to the page's CSP) and built without innerHTML (Trusted Types pages).
 
 const MIN_W = 200, MIN_H = 110;
-const t = (key: string) => chrome.i18n.getMessage(key);
+const t = (key: string, ...subs: string[]) => chrome.i18n.getMessage(key, subs);
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgIcon(d: string, viewBox = '0 0 24 24'): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', viewBox);
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', d);
+  svg.append(path);
+  return svg;
+}
+
+/** Fullscreen elements live in the top layer: our hosts have to be inside them to show. */
+function overlayParent(): Element {
+  // A <video> that is itself fullscreen renders no children, so then nothing can follow it.
+  const fs = document.fullscreenElement;
+  return fs && fs.tagName !== 'VIDEO' ? fs : document.documentElement;
+}
 
 let enabled = true;
 void chrome.storage.local.get({ showVideoButton: true }).then((s) => { enabled = s.showVideoButton !== false; });
@@ -72,12 +94,7 @@ function build(): void {
   sheet.replaceSync(CSS);
   root.adoptedStyleSheets = [sheet];
 
-  const svgNs = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNs, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  const path = document.createElementNS(svgNs, 'path');
-  path.setAttribute('d', 'M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14');
-  svg.append(path);
+  const svg = svgIcon('M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14');
 
   button = document.createElement('button');
   button.type = 'button';
@@ -95,9 +112,7 @@ function build(): void {
 /** Fullscreen players live in the top layer: the button has to be inside the fullscreen element. */
 function attach(): void {
   if (!host) return;
-  // A <video> that is itself fullscreen renders no children, so then the button can't follow it.
-  const fs = document.fullscreenElement;
-  const parent = fs && fs.tagName !== 'VIDEO' ? fs : document.documentElement;
+  const parent = overlayParent();
   if (parent && host.parentNode !== parent) parent.append(host);
 }
 document.addEventListener('fullscreenchange', () => { attach(); place(); });
@@ -179,4 +194,125 @@ async function send(): Promise<void> {
     label.textContent = t('videoButton');
     scheduleHide(1500);
   }, 2200);
+}
+
+// ---- capture toast ----
+// The service worker paused a browser download and asks here before handing it to Fluxer: "Download with
+// Fluxer" or the countdown answers 'send', "Leave in browser" or × answers 'browser'. Same rules as the button.
+
+const TOAST_CSS = `
+  :host { all: initial; }
+  .card {
+    box-sizing: border-box; width: 360px; border-radius: 8px; overflow: hidden;
+    background: rgba(36, 42, 62, .92); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, .1);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .35); color: #E8EBF2;
+    font: 13px/1.35 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-variant-numeric: tabular-nums;
+    animation: in .18s ease;
+  }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } }
+  .body { padding: 14px 14px 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .logo { width: 18px; height: 18px; border-radius: 5px; background: #3B82F6; display: grid; place-items: center; flex: none; }
+  .logo svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 3; }
+  .title { flex: 1; font-size: 12px; color: #A3AABB; }
+  button {
+    all: initial; box-sizing: border-box; cursor: pointer; font: inherit; color: inherit;
+    display: grid; place-items: center; border-radius: 5px; transition: background-color .15s ease;
+  }
+  button:focus-visible { outline: 2px solid #9CC3FF; outline-offset: 1px; }
+  .close { width: 28px; height: 28px; }
+  .close svg { width: 10px; height: 10px; stroke: #C9CEDA; stroke-width: 1.5; }
+  .close:hover, .keep:hover { background: rgba(255, 255, 255, .08); }
+  .file { display: flex; align-items: center; gap: 12px; }
+  .tile { width: 36px; height: 36px; border-radius: 6px; background: rgba(255, 255, 255, .06); display: grid; place-items: center; flex: none; }
+  .tile svg { width: 18px; height: 18px; stroke: #C9CEDA; stroke-width: 1.7; }
+  .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub { font-size: 12px; color: #A3AABB; }
+  .acts { display: flex; gap: 8px; }
+  .send { flex: 1; height: 34px; background: #F5A623; color: #1D1607; font-weight: 600; }
+  .send:hover { background: #FFB840; }
+  .keep { height: 34px; padding: 0 12px; border: 1px solid rgba(255, 255, 255, .1); background: rgba(255, 255, 255, .05); }
+  .hint { font-size: 11px; color: #8790A3; }
+  .track { height: 2px; background: rgba(255, 255, 255, .08); }
+  .bar { height: 2px; background: #F5A623; transform-origin: left; }
+  svg { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+`;
+let toastSheet: CSSStyleSheet | undefined;
+let closeToast: ((answer: 'send' | 'browser') => void) | undefined;
+
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: string): HTMLElementTagNameMap[K] {
+  const e = document.createElement(tag);
+  e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function askToast(
+  msg: { name: string; size: string; category: string; seconds: number },
+  reply: (answer: 'send' | 'browser') => void,
+): void {
+  // ponytail: one toast at a time; a second capture sends the first one now (its countdown default).
+  closeToast?.('send');
+
+  const host = document.createElement('fluxer-capture-toast');
+  host.style.cssText = 'all: initial; position: fixed; z-index: 2147483647; right: 20px; bottom: 20px;';
+  const root = host.attachShadow({ mode: 'closed' });
+  if (!toastSheet) {
+    toastSheet = new CSSStyleSheet();
+    toastSheet.replaceSync(TOAST_CSS);
+  }
+  root.adoptedStyleSheets = [toastSheet];
+
+  const card = el('div', 'card');
+  card.setAttribute('role', 'dialog');
+  card.ariaLabel = t('toastTitle');
+
+  const logo = el('span', 'logo');
+  logo.append(svgIcon('M12 4v11M7 10l5 5 5-5M6 20h12'));
+  const close = el('button', 'close');
+  close.type = 'button';
+  close.title = close.ariaLabel = t('toastClose');
+  close.append(svgIcon('M2 2l8 8M10 2l-8 8', '0 0 12 12'));
+  const head = el('div', 'row');
+  head.append(logo, el('span', 'title', t('toastTitle')), close);
+
+  const tile = el('span', 'tile');
+  tile.append(svgIcon('M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10'));
+  const info = el('span', 'info');
+  const name = el('span', 'name', msg.name);
+  name.title = msg.name;
+  info.append(name, el('span', 'sub', [msg.size, t(`cat_${msg.category}`)].filter(Boolean).join(' · ')));
+  const file = el('div', 'file');
+  file.append(tile, info);
+
+  const send = el('button', 'send', t('toastSend'));
+  send.type = 'button';
+  const keep = el('button', 'keep', t('toastKeep'));
+  keep.type = 'button';
+  const acts = el('div', 'acts');
+  acts.append(send, keep);
+
+  const body = el('div', 'body');
+  body.append(head, file, acts, el('div', 'hint', t('toastHint', String(msg.seconds))));
+  const bar = el('div', 'bar');
+  const track = el('div', 'track');
+  track.append(bar);
+  card.append(body, track);
+  root.append(card);
+  overlayParent().append(host);
+
+  bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: msg.seconds * 1000, easing: 'linear', fill: 'forwards' });
+  const timer = setTimeout(() => finish('send'), msg.seconds * 1000);
+  function finish(answer: 'send' | 'browser'): void {
+    if (closeToast !== finish) return;
+    closeToast = undefined;
+    clearTimeout(timer);
+    host.remove();
+    reply(answer);
+  }
+  closeToast = finish;
+  for (const [b, answer] of [[send, 'send'], [keep, 'browser'], [close, 'browser']] as const) {
+    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); finish(answer); });
+  }
 }

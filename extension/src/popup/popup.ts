@@ -1,5 +1,8 @@
 import { CATEGORIES, countByCategory, filterLinks, toBatchLinks, type BatchLink, type LinkCategory } from '../batch';
-import { DEFAULT_SETTINGS, isHttp, outcomeOf, type Outcome, type Settings } from '../capture';
+import {
+  DEFAULT_SETTINGS, countToday, formatBytes, hostOf, isAddable, isHttp, localDay, outcomeOf, toggleSite,
+  type DailyCount, type Outcome, type Settings,
+} from '../capture';
 import type { MediaHit } from '../media';
 import {
   envelope, sendNative,
@@ -18,15 +21,15 @@ for (const el of document.querySelectorAll<HTMLInputElement>('[data-i18n-placeho
 
 const num = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
 const pct = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
-
-function bytes(n: number | undefined): string {
-  if (n === undefined || n < 0) return '';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let v = n, i = 0;
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-  return `${num.format(v)} ${units[i]}`;
-}
+const bytes = (n: number | undefined) => formatBytes(n, num);
 const speed = (bps: number) => `${bytes(bps)}${t('perSecond')}`;
+
+/** "4 dk kaldı": seconds, minutes or hours left. */
+function eta(seconds: number): string {
+  if (seconds < 60) return t('etaSec', String(Math.max(1, Math.round(seconds))));
+  if (seconds < 3600) return t('etaMin', String(Math.round(seconds / 60)));
+  return t('etaHour', num.format(Math.round(seconds / 360) / 10));
+}
 
 // ---- small DOM helpers ----
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -40,19 +43,16 @@ function icon(d: string): SVGSVGElement {
   return svg;
 }
 const ICONS = {
-  pause: 'M8 5v14M16 5v14',
-  play: 'M7 4.5v15l12-7.5z',
+  pause: 'M9 5v14M15 5v14',
+  play: 'M7 4.5l12 7.5-12 7.5z',
   folder: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
   open: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   remove: 'M6 6l12 12M18 6 6 18',
-  file: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5',
-  video: 'M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 10l5-3v10l-5-3',
-  torrent: 'M12 3v10m0 0-4-4m4 4 4-4M5 15v2a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4v-2',
 };
-function iconButton(d: string, label: string, onClick: () => void): HTMLButtonElement {
+function iconButton(d: string, label: string, onClick: () => void, cls = 'icon-btn'): HTMLButtonElement {
   const b = document.createElement('button');
   b.type = 'button';
-  b.className = 'icon-btn';
+  b.className = cls;
   b.title = b.ariaLabel = label;
   b.append(icon(d));
   b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
@@ -79,17 +79,25 @@ function toastOutcome(outcome: Outcome, okText: string): void {
   else toast(t(outcome === 'update' ? 'updateRequired' : outcome === 'unreachable' ? 'sendUnreachable' : 'sendFailed'), 'bad');
 }
 
-// ---- tabs ----
+// ---- views: two tabs, plus settings behind the header button ----
 type TabName = 'downloads' | 'page' | 'settings';
+let view: TabName = 'downloads';
+let lastTab: Exclude<TabName, 'settings'> = 'downloads';
 const tabButtons = [...document.querySelectorAll<HTMLButtonElement>('.tabs [role="tab"]')];
 function selectTab(name: TabName): void {
+  view = name;
+  if (name !== 'settings') lastTab = name;
   for (const b of tabButtons) b.setAttribute('aria-selected', String(b.dataset.tab === name));
   for (const n of ['downloads', 'page', 'settings'] as TabName[]) $(`tab-${n}`).hidden = n !== name;
-  $('batchBar').hidden = name !== 'page' || !links.length;
+  $('home').hidden = name === 'settings';
+  $('openSettings').setAttribute('aria-pressed', String(name === 'settings'));
+  $('paste').hidden = name !== 'downloads';
+  $('batchGo').hidden = name !== 'page';
   void chrome.storage.local.set({ popupTab: name });
-  if (name === 'page') void loadPage();
 }
 for (const b of tabButtons) b.addEventListener('click', () => selectTab(b.dataset.tab as TabName));
+$('openSettings').addEventListener('click', () => selectTab(view === 'settings' ? lastTab : 'settings'));
+$('back').addEventListener('click', () => selectTab(lastTab));
 
 // ---- native commands ----
 async function native(msg: Parameters<typeof sendNative>[0]): Promise<Reply | undefined> {
@@ -104,53 +112,70 @@ $('openApp').addEventListener('click', () => void command('show'));
 $('pauseAll').addEventListener('click', () => void command('pauseAll'));
 $('resumeAll').addEventListener('click', () => void command('resumeAll'));
 
+// "Paste link": the clipboard's URL as a download.
+$('paste').addEventListener('click', async () => {
+  let text = '';
+  try {
+    text = (await navigator.clipboard.readText()).trim();
+  } catch {
+    return toast(t('clipboardFailed'), 'bad');
+  }
+  if (!isAddable(text)) return toast(t('clipboardNoLink'), 'bad');
+  const r = await chrome.runtime.sendMessage({ type: 'add-url', url: text }).catch(() => undefined);
+  toastOutcome(r?.outcome ?? 'failed', t('sentOk'));
+});
+
 // ---- downloads tab (polled; rows are reused by id so hover/focus survive the refresh) ----
-const STATE_COLOR: Record<StatusEntry['state'], string> = {
-  downloading: 'var(--accent)', seeding: '#8e4ec6', queued: 'var(--warn)', paused: 'var(--muted)',
-  completed: 'var(--ok)', failed: 'var(--bad)',
-};
 const rows = new Map<number, { li: HTMLLIElement; key: string }>();
+const kindLabel = (k: StatusEntry['kind']) => (k === 'torrent' ? 'Torrent' : k === 'media' ? t('kindMedia') : 'HTTP');
+
+/** "Torrent · 8,4 MB/s · 4 dk kaldı" while running; the state (and size when done) otherwise. */
+function metaOf(e: StatusEntry): string {
+  const parts: string[] = [];
+  if (e.state === 'downloading') {
+    parts.push(kindLabel(e.kind));
+    if (e.bytesPerSecond > 0) parts.push(speed(e.bytesPerSecond));
+    if (e.totalBytes && e.bytesPerSecond > 0) parts.push(eta((e.totalBytes - e.doneBytes) / e.bytesPerSecond));
+    else parts.push(e.totalBytes ? `${bytes(e.doneBytes)} / ${bytes(e.totalBytes)}` : bytes(e.doneBytes));
+  } else {
+    parts.push(t(`state_${e.state}`));
+    if (e.state === 'seeding' && e.bytesPerSecond > 0) parts.push(speed(e.bytesPerSecond));
+    if (e.state === 'completed') parts.push(bytes(e.totalBytes ?? e.doneBytes));
+  }
+  return parts.filter(Boolean).join(' · ');
+}
 
 function renderEntry(e: StatusEntry): HTMLLIElement {
   const li = el('li', 'dl');
   li.dataset.state = e.state;
-  const tile = el('span', 'tile');
-  const color = STATE_COLOR[e.state];
-  tile.style.background = `color-mix(in srgb, ${color} 16%, transparent)`;
-  tile.style.color = color;
-  tile.append(icon(e.kind === 'torrent' ? ICONS.torrent : e.kind === 'media' ? ICONS.video : ICONS.file));
+  const known = e.state === 'completed' || !!e.totalBytes;
 
-  const name = el('div', 'name', e.name);
+  const name = el('span', 'name', e.name);
   name.title = `${e.name}\n${t('actDetails')}`;
   name.addEventListener('click', () => void command('details', e.id));
+  const line = el('div', 'line');
+  line.append(name, el('span', 'pct', known ? pct.format(e.progress) : ''));
 
+  const bar = el('div', 'bar');
+  const fill = el('div');
+  if (e.state === 'downloading' && !known) fill.className = 'ind'; // size unknown: pulsing full bar
+  else fill.style.width = `${Math.round(e.progress * 1000) / 10}%`;
+  bar.append(fill);
+
+  const body = el('div', 'body');
+  body.append(line, bar, el('div', 'meta', metaOf(e)));
+
+  // Main action (design): pause / resume / show in folder. Open and remove show on hover or focus.
   const acts = el('div', 'acts');
+  if (e.state === 'completed') acts.append(iconButton(ICONS.open, t('actOpen'), () => void command('open', e.id), 'icon-btn more'));
+  acts.append(iconButton(ICONS.remove, t('actRemove'), () => void command('remove', e.id), 'icon-btn more'));
   if (e.state === 'downloading' || e.state === 'queued' || e.state === 'seeding')
     acts.append(iconButton(ICONS.pause, t('actPause'), () => void command('pause', e.id)));
-  if (e.state === 'paused' || e.state === 'failed')
+  else if (e.state === 'paused' || e.state === 'failed')
     acts.append(iconButton(ICONS.play, t('actResume'), () => void command('resume', e.id)));
-  if (e.state === 'completed') {
-    acts.append(iconButton(ICONS.open, t('actOpen'), () => void command('open', e.id)));
-    acts.append(iconButton(ICONS.folder, t('actFolder'), () => void command('folder', e.id)));
-  }
-  acts.append(iconButton(ICONS.remove, t('actRemove'), () => void command('remove', e.id)));
+  else acts.append(iconButton(ICONS.folder, t('actFolder'), () => void command('folder', e.id)));
 
-  const meta = el('div', 'meta');
-  const pill = el('span', 'state-pill', t(`state_${e.state}`));
-  pill.style.background = `color-mix(in srgb, ${color} 16%, transparent)`;
-  pill.style.color = color;
-  meta.append(pill);
-  const parts: string[] = [];
-  if (e.state === 'downloading' && e.totalBytes) parts.push(pct.format(e.progress));
-  if (e.state === 'downloading' && e.bytesPerSecond > 0) parts.push(speed(e.bytesPerSecond));
-  parts.push(e.state === 'completed' || !e.totalBytes ? bytes(e.totalBytes ?? e.doneBytes) : `${bytes(e.doneBytes)} / ${bytes(e.totalBytes)}`);
-  meta.append(el('span', undefined, parts.filter(Boolean).join(' · ')));
-
-  const bar = document.createElement('progress');
-  bar.max = 1;
-  if (e.state !== 'downloading' || e.totalBytes) bar.value = e.progress; // no value = indeterminate
-
-  li.append(tile, name, acts, meta, bar);
+  li.append(body, acts);
   return li;
 }
 
@@ -179,20 +204,19 @@ function renderList(items: StatusEntry[]): void {
 async function refresh(): Promise<void> {
   const reply = await native(envelope<StatusGet>('status.get', {}));
   const outcome = outcomeOf(reply, 'status');
-  const status = $('status');
-  status.dataset.state = outcome;
-  status.textContent = t(outcome === 'ok' ? 'popupConnected' : outcome === 'update' ? 'popupUpdateRequired' : 'popupUnreachable');
+  $('status').dataset.state = outcome;
+  $('statusText').textContent = t(outcome === 'ok' ? 'popupConnected' : outcome === 'update' ? 'popupUpdateRequired' : 'popupUnreachable');
 
   const s = reply?.type === 'status' ? reply.payload : undefined;
-  $('active').textContent = s ? num.format(s.active) : '–';
-  $('queued').textContent = s ? num.format(s.queued) : '–';
-  $('speed').textContent = s ? speed(s.bytesPerSecond) : '–';
+  $('summaryRow').hidden = !s;
+  if (s) $('summary').textContent = t('summary', num.format(s.active), num.format(s.queued), speed(s.bytesPerSecond));
   // Apps before 0.7 only send `top`: show those as running rows without actions.
   const items: StatusEntry[] = s?.items ?? s?.top.map((x, i) => ({
     id: -1 - i, name: x.name, state: 'downloading', kind: 'http', progress: x.progress,
     bytesPerSecond: x.bytesPerSecond, doneBytes: 0,
   })) ?? [];
   renderList(items);
+  $('dlCount').textContent = s ? String(items.length) : '';
   // Not reachable: say how to get going instead of showing an empty list.
   $('empty').textContent = t(s ? 'emptyDownloads' : outcome === 'update' ? 'updateRequired' : 'appNotRunning');
   $('empty').hidden = !!s && items.length > 0;
@@ -204,12 +228,18 @@ async function refresh(): Promise<void> {
   setTimeout(poll, 1000);
 })();
 
-// ---- this page: captured media + batch links ----
+// "Sent to Fluxer from this browser today" (counted by the service worker).
+function renderSentToday(stored: DailyCount | undefined): void {
+  $('sentToday').textContent = t('sentToday', num.format(countToday(stored, localDay(new Date()))));
+}
+void chrome.storage.local.get('sentToday').then((r) => renderSentToday(r.sentToday as DailyCount | undefined));
+
+// ---- this page: captured media + batch links (loaded at open: the tab shows their count) ----
 let currentTab: chrome.tabs.Tab | undefined;
 let links: BatchLink[] = [];
+let mediaCount = 0;
 let category: LinkCategory | 'all' = 'all';
 const selected = new Set<string>();
-let pageLoaded = false;
 
 async function activeTab(): Promise<chrome.tabs.Tab | undefined> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -217,19 +247,22 @@ async function activeTab(): Promise<chrome.tabs.Tab | undefined> {
 }
 
 async function loadPage(): Promise<void> {
-  if (pageLoaded) return;
-  pageLoaded = true;
   currentTab = await activeTab();
   const ok = !!currentTab?.id && isHttp(currentTab.url);
   $('pageUnsupported').hidden = ok;
   $('pageContent').hidden = !ok;
+  renderSite();
   if (!ok) return;
   await Promise.all([loadMedia(), loadLinks()]);
 }
 
+const updatePageCount = () => { $('pageCount').textContent = mediaCount + links.length ? String(mediaCount + links.length) : ''; };
+
 async function loadMedia(): Promise<void> {
   const res = await chrome.runtime.sendMessage({ type: 'media-list', tabId: currentTab!.id }).catch(() => undefined);
   const hits: MediaHit[] = res?.hits ?? [];
+  mediaCount = hits.length;
+  updatePageCount();
   $('mediaCount').textContent = hits.length ? String(hits.length) : '';
   $('mediaEmpty').hidden = hits.length > 0;
   $('media').replaceChildren(...hits.map((h) => {
@@ -241,7 +274,7 @@ async function loadMedia(): Promise<void> {
     name.title = h.url;
     const sub = el('small', undefined, [h.kind === 'file' ? t('mediaFile') : t('mediaStream'), bytes(h.size)].filter(Boolean).join(' · '));
     info.append(name, sub);
-    const go = el('button', 'primary', t('mediaDownload'));
+    const go = el('button', 'ghost', t('mediaDownload'));
     go.type = 'button';
     go.addEventListener('click', async () => {
       go.disabled = true;
@@ -265,21 +298,11 @@ $('pageVideo').addEventListener('click', async () => {
 async function loadLinks(): Promise<void> {
   const res = await chrome.runtime.sendMessage({ type: 'collect-links', tabId: currentTab!.id }).catch(() => undefined);
   const resources: Resource[] | undefined = res?.resources;
-  if (!resources) {
-    links = [];
-    $('linksEmpty').textContent = t('pageNotReady');
-    renderLinks();
-    return;
-  }
-  links = toBatchLinks(resources);
-  $('linksEmpty').textContent = t('batchEmpty');
+  links = resources ? toBatchLinks(resources) : [];
+  $('linksEmpty').textContent = t(resources ? 'batchEmpty' : 'pageNotReady');
+  updatePageCount();
   renderLinks();
 }
-
-const CAT_COLOR: Record<LinkCategory, string> = {
-  video: '#8b5cf6', audio: '#ec4899', archive: '#f59e0b', document: '#3b82f6',
-  program: '#10b981', image: '#06b6d4', torrent: '#14b8a6', other: '#64748b',
-};
 
 function renderLinks(): void {
   const counts = countByCategory(links);
@@ -312,13 +335,10 @@ function renderLinks(): void {
     };
     box.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
     li.addEventListener('click', toggle);
-    const ext = el('span', 'ext', l.ext || '—');
-    ext.style.background = `color-mix(in srgb, ${CAT_COLOR[l.category]} 16%, transparent)`;
-    ext.style.color = CAT_COLOR[l.category];
     const info = el('div', 'info');
-    info.append(el('div', undefined, l.name), el('small', undefined, l.url));
+    info.append(el('div', undefined, l.name), el('small', undefined, t(`cat_${l.category}`)));
     info.title = l.url;
-    li.append(box, ext, info);
+    li.append(box, info, el('span', 'ext', l.ext));
     return li;
   }));
   $('linksEmpty').hidden = shown.length > 0;
@@ -330,9 +350,8 @@ function updateSelection(shown: BatchLink[]): void {
   const inView = shown.filter((l) => selected.has(l.url)).length;
   all.checked = shown.length > 0 && inView === shown.length;
   all.indeterminate = inView > 0 && inView < shown.length;
-  $('selCount').textContent = t('selectedCount', String(selected.size));
+  $('selCount').textContent = selected.size ? t('batchDownloadN', String(selected.size)) : t('batchPick');
   $<HTMLButtonElement>('batchGo').disabled = selected.size === 0;
-  $('batchBar').hidden = $('tab-page').hidden || !links.length;
 }
 
 $('query').addEventListener('input', renderLinks);
@@ -352,23 +371,47 @@ $('batchGo').addEventListener('click', async () => {
   b.disabled = selected.size === 0;
 });
 
-// Badge on the "This page" tab: captured media count, visible from any tab.
-void activeTab().then(async (tab) => {
-  if (!tab?.id || !isHttp(tab.url)) return;
-  const res = await chrome.runtime.sendMessage({ type: 'media-list', tabId: tab.id }).catch(() => undefined);
-  const n = res?.hits?.length ?? 0;
-  $('pageBadge').hidden = n === 0;
-  $('pageBadge').textContent = String(n);
+// ---- capture card + settings (one storage read; kept live through storage.onChanged) ----
+let settings: Settings = DEFAULT_SETTINGS;
+
+function renderSite(): void {
+  const host = hostOf(currentTab?.url);
+  $('siteRow').hidden = !host;
+  if (!host) return;
+  $('siteHost').textContent = $('siteHost').title = host;
+  $('siteToggle').textContent = t(settings.disabledSites.includes(host) ? 'siteOn' : 'siteOff');
+}
+
+function renderSettings(): void {
+  const host = hostOf(currentTab?.url);
+  $<HTMLInputElement>('captureEnabled').checked = settings.captureEnabled;
+  $('captureHint').textContent = !settings.captureEnabled ? t('captureHintOff')
+    : host && settings.disabledSites.includes(host) ? t('captureHintSite')
+    : settings.minSizeMiB > 0 ? t('captureHintOn', num.format(settings.minSizeMiB)) : t('captureHintAll');
+  renderSite();
+  const size = $<HTMLInputElement>('minSizeMiB');
+  if (document.activeElement !== size) size.value = String(settings.minSizeMiB);
+  $<HTMLInputElement>('showVideoButton').checked = settings.showVideoButton;
+  $<HTMLInputElement>('showBadge').checked = settings.showBadge;
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
+  if (changes.sentToday) renderSentToday(changes.sentToday.newValue as DailyCount | undefined);
+  for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
+    if (changes[key]) settings = { ...settings, [key]: changes[key].newValue ?? DEFAULT_SETTINGS[key] };
+  }
+  renderSettings();
 });
 
-// ---- settings ----
 void (chrome.storage.local.get({ ...DEFAULT_SETTINGS, popupTab: 'downloads' }) as Promise<Settings & { popupTab: TabName }>).then((s) => {
-  $<HTMLInputElement>('captureEnabled').checked = s.captureEnabled;
-  $<HTMLInputElement>('minSizeMiB').value = String(s.minSizeMiB);
-  $<HTMLInputElement>('showVideoButton').checked = s.showVideoButton;
-  $<HTMLInputElement>('showBadge').checked = s.showBadge;
-  selectTab(s.popupTab);
+  const { popupTab, ...rest } = s;
+  settings = rest;
+  renderSettings();
+  selectTab(popupTab);
 });
+void loadPage().then(renderSettings);
+
 for (const key of ['captureEnabled', 'showVideoButton', 'showBadge'] as const) {
   $<HTMLInputElement>(key).addEventListener('change', (e) => void chrome.storage.local.set({ [key]: (e.target as HTMLInputElement).checked }));
 }
@@ -377,4 +420,8 @@ $('minSizeMiB').addEventListener('change', () => {
   const v = Math.max(0, Number(input.value) || 0);
   input.value = String(v);
   void chrome.storage.local.set({ minSizeMiB: v });
+});
+$('siteToggle').addEventListener('click', () => {
+  const host = hostOf(currentTab?.url);
+  if (host) void chrome.storage.local.set({ disabledSites: toggleSite(settings.disabledSites, host) });
 });

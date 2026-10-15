@@ -5,24 +5,20 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="AccentColor" xml:space="preserve"><value>Accent colour</value></data>
-  <data name="AccentColorDesc" xml:space="preserve"><value>Buttons, progress and highlights. The first one follows Windows.</value></data>
-  <data name="AccentSystem" xml:space="preserve"><value>Windows accent</value></data>
+  <data name="AccentColorDesc" xml:space="preserve"><value>Buttons, progress and highlights. The first one is Fluxer orange.</value></data>
   <data name="Accept" xml:space="preserve"><value>Accept</value></data>
   <data name="AddPaused" xml:space="preserve"><value>Add paused</value></data>
   <data name="AddToQueue" xml:space="preserve"><value>Add to queue</value></data>
   <data name="AddTorrent" xml:space="preserve"><value>Add torrent</value></data>
   <data name="AddUrl" xml:space="preserve"><value>Add URL…</value></data>
-  <data name="AdvancedOptions" xml:space="preserve"><value>Advanced options</value></data>
   <data name="AfterNothing" xml:space="preserve"><value>Do nothing</value></data>
   <data name="AfterQueue" xml:space="preserve"><value>When the queue finishes</value></data>
-  <data name="AfterQueueDesc" xml:space="preserve"><value>Runs once, then switches back to "Do nothing".</value></data>
   <data name="AfterShutdown" xml:space="preserve"><value>Shut down the computer</value></data>
   <data name="AfterSleep" xml:space="preserve"><value>Put the computer to sleep</value></data>
   <data name="AnimationsDesc" xml:space="preserve"><value>Smooth transitions and progress. Turn off to reduce motion.</value></data>
   <data name="AnimationsSetting" xml:space="preserve"><value>Animations</value></data>
   <data name="AudioOnly" xml:space="preserve"><value>Audio only</value></data>
   <data name="AvgSpeedIs" xml:space="preserve"><value>avg. {0}</value></data>
-  <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="Browse" xml:space="preserve"><value>Browse…</value></data>
   <data name="BrowserStatus" xml:space="preserve"><value>Browser integration</value></data>
   <data name="BrowserStatusDesc" xml:space="preserve"><value>Native messaging registration per browser. Opera and Vivaldi use Chrome's.</value></data>
@@ -42,19 +38,17 @@
   <data name="Checksum" xml:space="preserve"><value>Checksum (optional)</value></data>
   <data name="ChecksumWatermark" xml:space="preserve"><value>Expected hash, hex</value></data>
   <data name="ClearCompleted" xml:space="preserve"><value>Clear finished</value></data>
-  <data name="ClearCompletedConfirm" xml:space="preserve"><value>Remove {0} finished download(s) from the list? The files stay on disk.</value></data>
   <data name="ClearCompletedTip" xml:space="preserve"><value>Remove finished downloads from the list (files are kept)</value></data>
   <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="ClosesIn" xml:space="preserve"><value>Closes in {0} s</value></data>
   <data name="ColAdded" xml:space="preserve"><value>Added</value></data>
-  <data name="ColEta" xml:space="preserve"><value>Time left</value></data>
   <data name="ColName" xml:space="preserve"><value>Name</value></data>
   <data name="ColProgress" xml:space="preserve"><value>Progress</value></data>
   <data name="ColSize" xml:space="preserve"><value>Size</value></data>
   <data name="ColSpeed" xml:space="preserve"><value>Speed</value></data>
   <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
-  <data name="CompactMode" xml:space="preserve"><value>Compact layout</value></data>
-  <data name="CompactModeDesc" xml:space="preserve"><value>Smaller rows and controls so more downloads fit on screen.</value></data>
+  <data name="CompactMode" xml:space="preserve"><value>Compact rows</value></data>
+  <data name="CompactModeDesc" xml:space="preserve"><value>44 px list rows; off gives roomier 54 px rows.</value></data>
   <data name="CompactTip" xml:space="preserve"><value>Show or hide details</value></data>
   <data name="Conflict" xml:space="preserve"><value>If a file with the same name exists</value></data>
   <data name="ConflictOverwrite" xml:space="preserve"><value>Overwrite it</value></data>
@@ -64,7 +58,6 @@
   <data name="ConnDownloaded" xml:space="preserve"><value>Received</value></data>
   <data name="Connections" xml:space="preserve"><value>Connections per download</value></data>
   <data name="ConnectionsDesc" xml:space="preserve"><value>Parallel connections for one HTTP download (1–32). Fluxer lowers it automatically if the server pushes back.</value></data>
-  <data name="ConnectionsShort" xml:space="preserve"><value>conn.</value></data>
   <data name="ConnRange" xml:space="preserve"><value>Byte range</value></data>
   <data name="ConnWaiting" xml:space="preserve"><value>waiting</value></data>
   <data name="ContinueAnyway" xml:space="preserve"><value>Continue anyway</value></data>
@@ -119,7 +112,6 @@
   <data name="GrabTitle" xml:space="preserve"><value>Download from page</value></data>
   <data name="Hide" xml:space="preserve"><value>Hide</value></data>
   <data name="HideTip" xml:space="preserve"><value>Close this window; the download continues</value></data>
-  <data name="HttpSlots" xml:space="preserve"><value>Simultaneous HTTP downloads</value></data>
   <data name="InfoAdded" xml:space="preserve"><value>Added</value></data>
   <data name="InfoConnections" xml:space="preserve"><value>Connections</value></data>
   <data name="InfoError" xml:space="preserve"><value>Error</value></data>
@@ -129,7 +121,6 @@
   <data name="InfoResumable" xml:space="preserve"><value>Resumable</value></data>
   <data name="InfoSavedTo" xml:space="preserve"><value>Saved to</value></data>
   <data name="InfoSize" xml:space="preserve"><value>Size</value></data>
-  <data name="InfoStatus" xml:space="preserve"><value>Status</value></data>
   <data name="InfoUploaded" xml:space="preserve"><value>Uploaded</value></data>
   <data name="InfoUrl" xml:space="preserve"><value>Address</value></data>
   <data name="IntegrationMissing" xml:space="preserve"><value>not registered</value></data>
@@ -145,10 +136,6 @@
   <data name="LangSystem" xml:space="preserve"><value>System language</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="LayoutTip" xml:space="preserve"><value>Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.</value></data>
-  <data name="LimitHttp" xml:space="preserve"><value>HTTP downloads</value></data>
-  <data name="LimitHttpDesc" xml:space="preserve"><value>Shared by all HTTP and video downloads.</value></data>
-  <data name="LimitTorrentDown" xml:space="preserve"><value>Torrent download</value></data>
-  <data name="LimitTorrentUp" xml:space="preserve"><value>Torrent upload</value></data>
   <data name="LinkMatchAttach" xml:space="preserve"><value>Attach and resume</value></data>
   <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" is waiting for a new link. Use this download to resume it?</value></data>
   <data name="LinkMatchNew" xml:space="preserve"><value>Start a new download</value></data>
@@ -162,11 +149,11 @@
   <data name="MediaTitle" xml:space="preserve"><value>Save video</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video tools</value></data>
   <data name="BackdropSetting" xml:space="preserve"><value>Style</value></data>
-  <data name="BackdropDesc" xml:space="preserve"><value>Glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic raises soft, line-free surfaces with gentle shadows.</value></data>
+  <data name="BackdropDesc" xml:space="preserve"><value>Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.</value></data>
   <data name="BackdropNeu" xml:space="preserve"><value>Neumorphic (soft, raised)</value></data>
   <data name="BackdropGlass" xml:space="preserve"><value>Glass (blurred, translucent)</value></data>
   <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
-  <data name="BackdropNone" xml:space="preserve"><value>Off (solid)</value></data>
+  <data name="BackdropNone" xml:space="preserve"><value>Navy (default)</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
   <data name="MinDimension" xml:space="preserve"><value>Min. size (px)</value></data>
@@ -199,7 +186,6 @@
   <data name="QualityBest" xml:space="preserve"><value>Best available</value></data>
   <data name="Queue" xml:space="preserve"><value>Queue</value></data>
   <data name="QueuedAt" xml:space="preserve"><value>Queued (#{0})</value></data>
-  <data name="QuickLimitTip" xml:space="preserve"><value>Speed limit for HTTP and torrent downloads</value></data>
   <data name="RecentFolders" xml:space="preserve"><value>Recent folders</value></data>
   <data name="RefreshLink" xml:space="preserve"><value>Refresh link…</value></data>
   <data name="RefreshLinkPrompt" xml:space="preserve"><value>Paste the new address of the same file:</value></data>
@@ -216,19 +202,11 @@
   <data name="Resumable" xml:space="preserve"><value>resumable</value></data>
   <data name="Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="ResumeAll" xml:space="preserve"><value>Resume all</value></data>
-  <data name="RowAction" xml:space="preserve"><value>Pause / resume / open folder</value></data>
   <data name="SaveTo" xml:space="preserve"><value>Save to</value></data>
-  <data name="ScheduleStart" xml:space="preserve"><value>Start time</value></data>
-  <data name="ScheduleStartDesc" xml:space="preserve"><value>Resume all paused downloads at this time every day.</value></data>
-  <data name="ScheduleStop" xml:space="preserve"><value>Stop time</value></data>
-  <data name="ScheduleStopDesc" xml:space="preserve"><value>Pause all downloads at this time every day.</value></data>
-  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Search" xml:space="preserve"><value>Search downloads</value></data>
   <data name="SecAppearance" xml:space="preserve"><value>Appearance</value></data>
-  <data name="SecBrowser" xml:space="preserve"><value>Browser</value></data>
   <data name="SecDownloads" xml:space="preserve"><value>Downloads</value></data>
   <data name="SecGeneral" xml:space="preserve"><value>General</value></data>
-  <data name="SecSchedule" xml:space="preserve"><value>Schedule</value></data>
-  <data name="SecSpeed" xml:space="preserve"><value>Speed limits</value></data>
   <data name="SecTorrent" xml:space="preserve"><value>Torrent</value></data>
   <data name="SecVideo" xml:space="preserve"><value>Video sites</value></data>
   <data name="SeedMinutes" xml:space="preserve"><value>Seeding time (minutes)</value></data>
@@ -250,11 +228,9 @@
   <data name="ShowNotificationsDesc" xml:space="preserve"><value>Windows notifications when a download finishes or fails.</value></data>
   <data name="ShowProgressWindow" xml:space="preserve"><value>Progress window for new downloads</value></data>
   <data name="ShowProgressWindowDesc" xml:space="preserve"><value>Opens a detailed window for each download you start. Double-click a row to open it any time.</value></data>
-  <data name="SlotsDesc" xml:space="preserve"><value>Video downloads count here too; the rest wait in the queue.</value></data>
   <data name="SpeedGraph" xml:space="preserve"><value>Speed (last minute)</value></data>
   <data name="SpeedLimitPrompt" xml:space="preserve"><value>Speed limit for this download in KB/s (0 = unlimited):</value></data>
   <data name="SpeedLimitTitle" xml:space="preserve"><value>Speed limit…</value></data>
-  <data name="StartNow" xml:space="preserve"><value>Start now</value></data>
   <data name="StatAvgSpeed" xml:space="preserve"><value>Average speed</value></data>
   <data name="StatConnections" xml:space="preserve"><value>Connections</value></data>
   <data name="StateCompleted" xml:space="preserve"><value>Completed</value></data>
@@ -272,11 +248,9 @@
   <data name="StatServer" xml:space="preserve"><value>Server</value></data>
   <data name="StatSize" xml:space="preserve"><value>Size</value></data>
   <data name="SummaryFormat" xml:space="preserve"><value>{0} downloads · {1} active · {2} queued</value></data>
-  <data name="TabActivity" xml:space="preserve"><value>Activity</value></data>
   <data name="TabAdvanced" xml:space="preserve"><value>Advanced</value></data>
   <data name="TabConnectionsList" xml:space="preserve"><value>Connections</value></data>
   <data name="TabFiles" xml:space="preserve"><value>Files</value></data>
-  <data name="TabGeneral" xml:space="preserve"><value>General</value></data>
   <data name="TabHeaders" xml:space="preserve"><value>Headers</value></data>
   <data name="TabPeers" xml:space="preserve"><value>Peers</value></data>
   <data name="TabTorrentOptions" xml:space="preserve"><value>Options</value></data>
@@ -285,7 +259,6 @@
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>Follow system</value></data>
   <data name="ToggleDetail" xml:space="preserve"><value>Show or hide the detail panel</value></data>
-  <data name="ToggleSidebar" xml:space="preserve"><value>Collapse or expand the sidebar</value></data>
   <data name="TookIs" xml:space="preserve"><value>took {0}</value></data>
   <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Show text next to toolbar icons.</value></data>
   <data name="ToolbarLabelsSetting" xml:space="preserve"><value>Toolbar labels</value></data>
@@ -305,7 +278,6 @@
   <data name="TrayOpen" xml:space="preserve"><value>Open Fluxer</value></data>
   <data name="UiScale" xml:space="preserve"><value>Interface size</value></data>
   <data name="UiScaleDesc" xml:space="preserve"><value>Makes text and controls larger or smaller in every window.</value></data>
-  <data name="Unlimited" xml:space="preserve"><value>Unlimited</value></data>
   <data name="UpdateFeed" xml:space="preserve"><value>Update source</value></data>
   <data name="UpdateFeedDesc" xml:space="preserve"><value>Folder, share or URL where releases are published; empty turns updates off.</value></data>
   <data name="UpdateFeedWatermark" xml:space="preserve"><value>https://… or \\server\share\fluxer</value></data>
@@ -326,12 +298,111 @@
   <data name="WhenDoneClose" xml:space="preserve"><value>Close this window</value></data>
   <data name="WhenDoneOpenFile" xml:space="preserve"><value>Open the file</value></data>
   <data name="WhenDoneOpenFolder" xml:space="preserve"><value>Open the folder</value></data>
-  <data name="WhenToStart" xml:space="preserve"><value>Start</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="ZeroIsGlobal" xml:space="preserve"><value>0 = only the global limit applies.</value></data>
   <data name="Minimize" xml:space="preserve"><value>Minimize</value></data>
   <data name="Maximize" xml:space="preserve"><value>Maximize</value></data>
   <data name="CloseWindow" xml:space="preserve"><value>Close</value></data>
   <data name="EtaDays" xml:space="preserve"><value>{0}d {1}h</value></data>
-  <data name="AccentNames" xml:space="preserve"><value>Blue|Indigo|Purple|Pink|Orange|Green|Teal|Graphite</value></data>
+  <data name="AccentNames" xml:space="preserve"><value>Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite</value></data>
+  <data name="BackToDownloads" xml:space="preserve"><value>Back to downloads</value></data>
+  <data name="Concurrent" xml:space="preserve"><value>{0} at once</value></data>
+  <data name="DayNames" xml:space="preserve"><value>Mon|Tue|Wed|Thu|Fri|Sat|Sun</value></data>
+  <data name="DeleteTip" xml:space="preserve"><value>Remove from the list (files stay on disk, undoable)</value></data>
+  <data name="DeleteWithFiles" xml:space="preserve"><value>Delete with files…</value></data>
+  <data name="DhtDesc" xml:space="preserve"><value>Find peers without a tracker</value></data>
+  <data name="DhtNodes" xml:space="preserve"><value>DHT {0} nodes</value></data>
+  <data name="EncOff" xml:space="preserve"><value>Off</value></data>
+  <data name="EncPrefer" xml:space="preserve"><value>Prefer</value></data>
+  <data name="EncRequire" xml:space="preserve"><value>Require</value></data>
+  <data name="Encryption" xml:space="preserve"><value>Encryption</value></data>
+  <data name="ErrorKept" xml:space="preserve"><value>{0}. The {1} already downloaded is kept.</value></data>
+  <data name="ErrorShort" xml:space="preserve"><value>Error</value></data>
+  <data name="EtaUnits" xml:space="preserve"><value>s|min|h|d</value></data>
+  <data name="FreeShort" xml:space="preserve"><value>{0} free</value></data>
+  <data name="HeaderDownloading" xml:space="preserve"><value>{0} downloading</value></data>
+  <data name="InfoQueue" xml:space="preserve"><value>Queue</value></data>
+  <data name="KindHttpMulti" xml:space="preserve"><value>HTTP · multiple connections</value></data>
+  <data name="KindTorrentFiles" xml:space="preserve"><value>Torrent · {0} files</value></data>
+  <data name="Last60s" xml:space="preserve"><value>last 60 s</value></data>
+  <data name="ListenPort" xml:space="preserve"><value>Listening port</value></data>
+  <data name="ListenPortDesc" xml:space="preserve"><value>Peers connect to this port (TCP and UDP).</value></data>
+  <data name="LogAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="LsdDesc" xml:space="preserve"><value>Find peers on the same network</value></data>
+  <data name="LsdTitle" xml:space="preserve"><value>Local peer discovery</value></data>
+  <data name="MainQueue" xml:space="preserve"><value>Main queue</value></data>
+  <data name="Manual" xml:space="preserve"><value>manual</value></data>
+  <data name="MaxPeers" xml:space="preserve"><value>Max peers per torrent</value></data>
+  <data name="MoveToNight" xml:space="preserve"><value>Move to night queue</value></data>
+  <data name="NightQueue" xml:space="preserve"><value>Night queue</value></data>
+  <data name="NightQueueAt" xml:space="preserve"><value>Night queue · {0}</value></data>
+  <data name="NightQueueManual" xml:space="preserve"><value>Night queue · manual start</value></data>
+  <data name="NightQueueStart" xml:space="preserve"><value>Start the night queue at</value></data>
+  <data name="NightQueueTip" xml:space="preserve"><value>Downloads added to the night queue wait until its start time.</value></data>
+  <data name="NoPeers" xml:space="preserve"><value>No peers connected.</value></data>
+  <data name="OpenInBrowser" xml:space="preserve"><value>Open in browser</value></data>
+  <data name="PexDesc" xml:space="preserve"><value>Learn new peers from connected peers</value></data>
+  <data name="PexTitle" xml:space="preserve"><value>Peer exchange (PeX)</value></data>
+  <data name="ProfileDown" xml:space="preserve"><value>Download</value></data>
+  <data name="ProfileNames" xml:space="preserve"><value>Unlimited|Balanced|Background</value></data>
+  <data name="ProfileSlots" xml:space="preserve"><value>At once</value></data>
+  <data name="ProfileTip" xml:space="preserve"><value>Switch speed profile</value></data>
+  <data name="ProfileUp" xml:space="preserve"><value>Upload</value></data>
+  <data name="Queues" xml:space="preserve"><value>QUEUES</value></data>
+  <data name="RemovedToast" xml:space="preserve"><value>{0} removed from the list · files stay on disk</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="ScheduleStopShort" xml:space="preserve"><value>Pause everything at</value></data>
+  <data name="Scheduler" xml:space="preserve"><value>Scheduler</value></data>
+  <data name="SecBrowserIntegration" xml:space="preserve"><value>Browser integration</value></data>
+  <data name="SecSpeedSchedule" xml:space="preserve"><value>Speed and scheduler</value></data>
+  <data name="SeedAndNetwork" xml:space="preserve"><value>Seeding and network</value></data>
+  <data name="SeedRatioFormat" xml:space="preserve"><value>Seeding · ratio {0}</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="SidebarCollapsedDesc" xml:space="preserve"><value>Icons only; Ctrl+B toggles it any time.</value></data>
+  <data name="SidebarCollapsedSetting" xml:space="preserve"><value>Narrow sidebar</value></data>
+  <data name="SpeedProfiles" xml:space="preserve"><value>Speed profiles</value></data>
+  <data name="SpeedProfilesDesc" xml:space="preserve"><value>Switch with the button in the status bar or by the scheduler. 0 MB/s means unlimited.</value></data>
+  <data name="Start" xml:space="preserve"><value>Start</value></data>
+  <data name="StateScheduled" xml:space="preserve"><value>Night queue</value></data>
+  <data name="TabInfo" xml:space="preserve"><value>Info</value></data>
+  <data name="TabLog" xml:space="preserve"><value>Log</value></data>
+  <data name="TabTrackers" xml:space="preserve"><value>Trackers</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="TorrentConnection" xml:space="preserve"><value>Connection</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="UpnpDesc" xml:space="preserve"><value>Open the port on the router automatically</value></data>
+  <data name="WeekSchedule" xml:space="preserve"><value>Weekly scheduler</value></data>
+  <data name="WeekScheduleDesc" xml:space="preserve"><value>Click or drag over cells to paint a profile. Selected brush:</value></data>
+  <data name="Yesterday" xml:space="preserve"><value>Yesterday</value></data>
+  <data name="TrayHeader" xml:space="preserve"><value>{0} active · {1} seeding</value></data>
+  <data name="TrayErrors" xml:space="preserve"><value>{0} download(s) failed · show</value></data>
+  <data name="TrayIdle" xml:space="preserve"><value>Nothing is downloading right now.</value></data>
+  <data name="PasteLink" xml:space="preserve"><value>Paste a link…</value></data>
+  <data name="QuickAdd" xml:space="preserve"><value>Quick add</value></data>
+  <data name="OpenWindow" xml:space="preserve"><value>Open window</value></data>
+  <data name="LinkOrMagnet" xml:space="preserve"><value>Link, magnet or file</value></data>
+  <data name="ResumeTile" xml:space="preserve"><value>Resume</value></data>
+  <data name="TypeTile" xml:space="preserve"><value>Type</value></data>
+  <data name="ConnectionCount" xml:space="preserve"><value>Connections</value></data>
+  <data name="LinksFound" xml:space="preserve"><value>{0} links found</value></data>
+  <data name="DontAskAgain" xml:space="preserve"><value>Don't ask again</value></data>
+  <data name="Supported" xml:space="preserve"><value>Supported</value></data>
+  <data name="NotSupported" xml:space="preserve"><value>Not supported</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="WebPage" xml:space="preserve"><value>Web page</value></data>
+  <data name="NoAnswer" xml:space="preserve"><value>No answer</value></data>
+  <data name="MainQueueNow" xml:space="preserve"><value>Main queue (now)</value></data>
+  <data name="NightQueueOption" xml:space="preserve"><value>Night queue ({0})</value></data>
+  <data name="StartN" xml:space="preserve"><value>Start {0} downloads</value></data>
+  <data name="StartDownload" xml:space="preserve"><value>Start download</value></data>
+  <data name="AddToNight" xml:space="preserve"><value>Add to night queue</value></data>
+  <data name="BadgeBatch" xml:space="preserve"><value>BATCH</value></data>
+  <data name="MagnetDetected" xml:space="preserve"><value>Magnet link · metadata comes from peers</value></data>
+  <data name="ServerAnswered" xml:space="preserve"><value>Server answered · ready to download</value></data>
+  <data name="LinksChecked" xml:space="preserve"><value>{0} links checked</value></data>
+  <data name="LinksCheckedSome" xml:space="preserve"><value>{0} links checked, {1} not answering</value></data>
+  <data name="Mixed" xml:space="preserve"><value>Mixed</value></data>
+  <data name="CategoryAuto" xml:space="preserve"><value>Category: {0} · from the extension</value></data>
+  <data name="CategoryManual" xml:space="preserve"><value>Category: {0}</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
 </root>
