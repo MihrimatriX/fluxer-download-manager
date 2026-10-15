@@ -155,8 +155,13 @@ MediaDisclaimer	Fluxer uses yt-dlp to save videos from websites. You are respons
 MediaProbing	Reading video information…	Video bilgileri okunuyor…
 MediaTitle	Save video	Videoyu kaydet
 MediaTools	Video tools	Video araçları
-MicaEffect	Mica background	Mica arka planı
-MicaEffectDesc	Soft, translucent Windows 11 backdrop that picks up your wallpaper.	Duvar kâğıdının rengini yumuşakça yansıtan yarı saydam Windows 11 arka planı.
+BackdropSetting	Background effect	Arka plan efekti
+BackdropDesc	Glass blurs what is behind the window; Mica tints with your wallpaper colour.	Cam, pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini hafifçe yansıtır.
+BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
+BackdropMica	Mica (Windows 11)	Mica (Windows 11)
+BackdropNone	Off (solid)	Kapalı (düz)
+SelectAll	Select all	Tümünü seç
+SelectRow	Select	Seç
 MinDimension	Min. size (px)	En küçük boyut (px)
 MinSizeKb	Min. file size (KB)	En küçük dosya (KB)
 MoveBottom	Move to bottom	En sona taşı
@@ -320,3 +325,6 @@ WhenDoneOpenFolder	Open the folder	Klasörü aç
 WhenToStart	Start	Başlatma
 Yes	Yes	Evet
 ZeroIsGlobal	0 = only the global limit applies.	0 = yalnızca genel sınır geçerli.
+Minimize	Minimize	Simge durumuna küçült
+Maximize	Maximize	Ekranı kapla
+CloseWindow	Close	Kapat

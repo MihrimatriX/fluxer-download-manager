@@ -14,11 +14,14 @@ Velopack installer. Kurulum yeri ve veri: `%LOCALAPPDATA%\Fluxer` (`current\` = 
 | 0.2.0 | Torrent'in `.html` inmesi düzeltildi (duraklat→yokla→kabul/ret); ayarlar sayfası; DataGrid listesi; torrent sekmeleri |
 | 0.3.0 | İlerleme penceresi, tamamlandı kartı, yeniden yazılan ekleme penceresi |
 | 0.4.0 | Yumuşak/hızlı/kişiselleştirilebilir UI: Görünüm ayarları (vurgu, Mica, ölçek, sıkı, animasyon, etiketler), daralan kenar çubuğu, sütun menüsü, yerleşim hafızası, ReadyToRun |
+| 0.4.1 | Başlık çubuğu uygulamanın içinde |
+| 0.5.0 | Liste onay kutuları, renkli ikon/durum etiketleri, cam (sistem akrilik) arka plan, kendi çizdiğimiz başlık düğmeleri |
 
 ## Doğrulama notları (0.4)
 - Vurgu rengi, Mica, ölçek %115, sıkı yerleşim, animasyon kapatma, sütun gizleme + yeniden açılışta geri gelme, kenar çubuğu hafızası canlı denendi (dev profil).
 - UIA ile test: SettingRow kontrollerine başlığı ad olarak verir → scratchpad pattern.ps1 -Name "<başlık>" -Action toggle|set.
 - Sağ tık otomasyonu pencere odakta değilse menüyü açmaz (önce satıra tıklayın).
+- Kullanıcı bilgisayarı kullanırken gerçek fare testleri yapma: scratchpad nctest.ps1 (WM_NCHITTEST + mesajla çift tık) ve UIA desenleri odak çalmadan test eder. Arka planı görmek için screen.ps1 (ekrandan), PrintWindow (shot.ps1) arka plan efektini yakalamaz.
 
 ## Önemli kararlar (ayrıntı: ARCHITECTURE §10)
 - uTP yok (MonoTorrent desteklemiyor).

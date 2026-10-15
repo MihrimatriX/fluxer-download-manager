@@ -161,8 +161,13 @@
   <data name="MediaProbing" xml:space="preserve"><value>Video bilgileri okunuyor…</value></data>
   <data name="MediaTitle" xml:space="preserve"><value>Videoyu kaydet</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video araçları</value></data>
-  <data name="MicaEffect" xml:space="preserve"><value>Mica arka planı</value></data>
-  <data name="MicaEffectDesc" xml:space="preserve"><value>Duvar kâğıdının rengini yumuşakça yansıtan yarı saydam Windows 11 arka planı.</value></data>
+  <data name="BackdropSetting" xml:space="preserve"><value>Arka plan efekti</value></data>
+  <data name="BackdropDesc" xml:space="preserve"><value>Cam, pencerenin arkasını bulanık gösterir; Mica duvar kâğıdının rengini hafifçe yansıtır.</value></data>
+  <data name="BackdropGlass" xml:space="preserve"><value>Cam (bulanık, saydam)</value></data>
+  <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
+  <data name="BackdropNone" xml:space="preserve"><value>Kapalı (düz)</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Seç</value></data>
   <data name="MinDimension" xml:space="preserve"><value>En küçük boyut (px)</value></data>
   <data name="MinSizeKb" xml:space="preserve"><value>En küçük dosya (KB)</value></data>
   <data name="MoveBottom" xml:space="preserve"><value>En sona taşı</value></data>
@@ -324,4 +329,7 @@
   <data name="WhenToStart" xml:space="preserve"><value>Başlatma</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="ZeroIsGlobal" xml:space="preserve"><value>0 = yalnızca genel sınır geçerli.</value></data>
+  <data name="Minimize" xml:space="preserve"><value>Simge durumuna küçült</value></data>
+  <data name="Maximize" xml:space="preserve"><value>Ekranı kapla</value></data>
+  <data name="CloseWindow" xml:space="preserve"><value>Kapat</value></data>
 </root>

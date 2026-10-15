@@ -1,7 +1,7 @@
 # Builds the Windows installer (Velopack): self-contained app + NativeAOT host + built extension.
 #   pwsh build/pack.ps1 [-Version 0.1.0]
 # Output: artifacts/releases/Fluxer-win-Setup.exe (+ update packages for the update feed).
-param([string]$Version = "0.4.1")
+param([string]$Version = "0.5.0")
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
 $publish = Join-Path $root "artifacts/publish"

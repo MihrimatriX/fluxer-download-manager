@@ -67,7 +67,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<AccentSwatch> Accents { get; } =
         [new(0, null, Strings.AccentSystem), .. Appearance.AccentChoices.Select((h, i) => new AccentSwatch(i + 1, h, h))];
     [ObservableProperty] private int _accentIndex;
-    [ObservableProperty] private bool _mica;
+    [ObservableProperty] private int _backdropIndex;
+    public string[] Backdrops => [Strings.BackdropGlass, Strings.BackdropMica, Strings.BackdropNone];
     [ObservableProperty] private bool _compact;
     [ObservableProperty] private double _scalePercent = 100;
     [ObservableProperty] private bool _animations;
@@ -131,7 +132,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         var s = _host.Engine.Settings;
         LanguageIndex = s.Language switch { "tr" => 1, "en" => 2, _ => 0 };
         AccentIndex = s.Ui.Accent is { } acc ? Array.IndexOf(Appearance.AccentChoices, acc) + 1 : 0;
-        Mica = s.Ui.Mica;
+        BackdropIndex = s.Ui.Backdrop switch { "mica" => 1, "none" => 2, _ => 0 };
         Compact = s.Ui.Compact;
         ScalePercent = Math.Round(s.Ui.Scale * 100);
         Animations = s.Ui.Animations;
@@ -187,7 +188,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         var s = JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(old))!;
         s.Language = LanguageIndex switch { 1 => "tr", 2 => "en", _ => "" };
         s.Ui.Accent = AccentIndex > 0 ? Appearance.AccentChoices[AccentIndex - 1] : null;
-        s.Ui.Mica = Mica;
+        s.Ui.Backdrop = BackdropIndex switch { 1 => "mica", 2 => "none", _ => "glass" };
         s.Ui.Compact = Compact;
         s.Ui.Scale = Math.Clamp(ScalePercent / 100, 0.85, 1.3);
         s.Ui.Animations = Animations;

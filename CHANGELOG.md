@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.0 — 2026-10-15
+
+### Liste
+- **Onay kutuları:** her satırın başında (fareyle üzerine gelince veya seçiliyken görünür; birden fazla satır seçilince hepsi görünür). Başlıktaki kutu tümünü seçer / temizler, kısmi seçimde "kısmi" durumunu gösterir. Kutular ve seçim her iki yönde senkron.
+- Yuvarlatılmış, vurgu renginde yumuşak satır vurgusu; hücrelerdeki noktalı odak çerçevesi kaldırıldı.
+- Dosya türüne göre renkli ikon döşemeleri (video mor, müzik pembe, belge mavi, arşiv turuncu, program yeşil, torrent turkuaz).
+- Durum renkli etiket olarak (indiriliyor = vurgu rengi, tamamlandı yeşil, hata kırmızı, sırada turuncu, tohumlama mor).
+- Liste ve ayrıntı paneli cam kartlarda; seçili durum filtresi vurgu rengiyle dolu.
+
+### Cam (glassmorphism)
+- Ayarlar → Görünüm → **Arka plan efekti**: Cam (bulanık, saydam — varsayılan) / Mica / Kapalı. Cam, Windows 11'in sistem akriliğini kullanır: pencerenin arkası bulanık görünür.
+- Kartlar, ayar satırları, istatistik kutuları: yarı saydam dolgu + üstten parlayan ince kenar.
+- Butonlar basınca hafifçe küçülür.
+
+### Başlık çubuğu
+- Küçült/büyüt/kapat düğmeleri artık uygulama tarafından çiziliyor; Windows'un başlık alanında bıraktığı siyah şerit gitti, arka plan efekti en üste kadar kesintisiz. Kapat üzerine gelince kırmızı; büyüt düğmesinde Windows 11 yerleşim menüsü, başlığa çift tıkla büyütme, sürükleyerek yerleştirme çalışıyor. İletişim pencerelerinde yalnızca kapat düğmesi.
+
 ## 0.4.1 — 2026-10-15
 
 - **Başlık çubuğu uygulamanın içinde:** Windows'un mavi başlık çubuğu kalktı; kenar çubuğu en üste uzanıyor (☰ ve logo başlıkta), arama kutusu başlığın ortasında. Küçült/büyüt/kapat düğmeleri yerinde; başlıktan sürükleme ve çift tıkla büyütme çalışıyor.

@@ -20,12 +20,42 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         var list = List;
-        list.SelectionChanged += (_, _) =>
+        // Check boxes mirror the selection both ways; the header box selects all / none.
+        var all = new CheckBox { MinWidth = 0, Padding = new Thickness(0), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        Avalonia.Automation.AutomationProperties.SetName(all, Strings.SelectAll);
+        ToolTip.SetTip(all, Strings.SelectAll);
+        all.Click += (_, _) =>
+        {
+            if (list.SelectedItems.Count > 0 && list.SelectedItems.Count >= ((DataContext as MainViewModel)?.View.Count ?? 0)) list.SelectedItems.Clear();
+            else list.SelectAll();
+        };
+        list.Columns[0].Header = all;
+        // A 40 px header has no room for the default padding and sort glyph.
+        all.AttachedToVisualTree += (_, _) =>
+        {
+            if (all.FindAncestorOfType<DataGridColumnHeader>() is not { } h) return;
+            h.Padding = new Thickness(0);
+            h.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            foreach (var g in h.GetVisualDescendants().OfType<Grid>())
+                foreach (var cd in g.ColumnDefinitions) cd.MinWidth = 0;
+        };
+        list.SelectionChanged += (_, e) =>
         {
             if (DataContext is not MainViewModel vm) return;
             vm.Selection.Clear();
             vm.Selection.AddRange(list.SelectedItems.OfType<DownloadItemViewModel>());
+            foreach (var i in e.RemovedItems.OfType<DownloadItemViewModel>()) i.IsChecked = false;
+            foreach (var i in e.AddedItems.OfType<DownloadItemViewModel>()) i.IsChecked = true;
+            var n = list.SelectedItems.Count;
+            all.IsChecked = n == 0 ? false : n >= vm.View.Count ? true : null;
+            list.Classes.Set("checking", n > 1);
         };
+        list.AddHandler(Button.ClickEvent, (_, e) =>
+        {
+            if (e.Source is not CheckBox { DataContext: DownloadItemViewModel item } box || !box.Classes.Contains("rowCheck")) return;
+            if (item.IsChecked) list.SelectedItems.Add(item); else list.SelectedItems.Remove(item);
+            e.Handled = true;
+        });
         list.DoubleTapped += (_, _) => (DataContext as MainViewModel)?.OpenDetailsCommand.Execute(null);
         // DataGrid consumes Enter/Space itself, so listen to handled events too.
         list.AddHandler(KeyDownEvent, OnListKeyDown, RoutingStrategies.Tunnel);
@@ -52,8 +82,9 @@ public sealed partial class MainWindow : Window
     // ================= layout the user can change =================
 
     /// Column keys in XAML order. Name and the action column cannot be hidden.
-    private static readonly string[] ColumnKeys = ["name", "size", "progress", "speed", "eta", "status", "added", "action"];
-    private static readonly HashSet<string> Fixed = ["name", "action"];
+    private static readonly string[] ColumnKeys = ["check", "name", "size", "progress", "speed", "eta", "status", "added", "action"];
+    private static readonly HashSet<string> Fixed = ["check", "name", "action"];
+    private static readonly int[] DefaultWidths = [40, 0, 130, 130, 95, 75, 170, 105, 40];
 
     /// Always the live object: the settings page replaces Settings with a copy when it saves.
     private static UiSettings? CurrentUi => Services.AppHost.Current?.Engine?.Settings.Ui;
@@ -75,11 +106,13 @@ public sealed partial class MainWindow : Window
         {
             var key = ColumnKeys[i];
             cols[i].IsVisible = Fixed.Contains(key) || !ui.HiddenColumns.Contains(key);
-            if (key != "name" && ui.ColumnWidths.TryGetValue(key, out var width) && width > 20) cols[i].Width = new DataGridLength(width);
+            if (key is not ("name" or "check") && ui.ColumnWidths.TryGetValue(key, out var width) && width > 20) cols[i].Width = new DataGridLength(width);
         }
-        for (var order = 0; order < ui.ColumnOrder.Count; order++)
+        // Layouts saved before the check box column existed: it goes first.
+        List<string> saved = ui.ColumnOrder.Count == 0 || ui.ColumnOrder.Contains("check") ? ui.ColumnOrder : ["check", .. ui.ColumnOrder];
+        for (var order = 0; order < saved.Count; order++)
         {
-            var i = Array.IndexOf(ColumnKeys, ui.ColumnOrder[order]);
+            var i = Array.IndexOf(ColumnKeys, saved[order]);
             if (i >= 0 && i < cols.Count) cols[i].DisplayIndex = Math.Min(order, cols.Count - 1);
         }
         ApplyDetailRow();
@@ -93,7 +126,7 @@ public sealed partial class MainWindow : Window
         var cols = List.Columns;
         ui.ColumnWidths.Clear();
         for (var i = 0; i < cols.Count && i < ColumnKeys.Length; i++)
-            if (ColumnKeys[i] != "name") ui.ColumnWidths[ColumnKeys[i]] = cols[i].ActualWidth;
+            if (ColumnKeys[i] is not ("name" or "check")) ui.ColumnWidths[ColumnKeys[i]] = cols[i].ActualWidth;
         ui.ColumnOrder = [.. Enumerable.Range(0, Math.Min(cols.Count, ColumnKeys.Length)).OrderBy(i => cols[i].DisplayIndex).Select(i => ColumnKeys[i])];
         if (DownloadsPage.RowDefinitions[4].Height.IsAbsolute && DownloadsPage.RowDefinitions[4].Height.Value > 80)
             ui.DetailHeight = DownloadsPage.RowDefinitions[4].Height.Value;
@@ -145,8 +178,8 @@ public sealed partial class MainWindow : Window
                 cols[i].IsVisible = true;
                 cols[i].DisplayIndex = i;
             }
-            int[] defaults = [0, 130, 130, 95, 75, 170, 105, 40];
-            for (var i = 1; i < cols.Count && i < defaults.Length; i++) cols[i].Width = new DataGridLength(defaults[i]);
+            for (var i = 0; i < cols.Count && i < DefaultWidths.Length; i++)
+                if (ColumnKeys[i] != "name") cols[i].Width = new DataGridLength(DefaultWidths[i]);
             (DataContext as MainViewModel)?.SaveLayoutCommand.Execute(null);
         };
         menu.Items.Add(reset);

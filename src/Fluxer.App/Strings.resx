@@ -161,8 +161,13 @@
   <data name="MediaProbing" xml:space="preserve"><value>Reading video information…</value></data>
   <data name="MediaTitle" xml:space="preserve"><value>Save video</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video tools</value></data>
-  <data name="MicaEffect" xml:space="preserve"><value>Mica background</value></data>
-  <data name="MicaEffectDesc" xml:space="preserve"><value>Soft, translucent Windows 11 backdrop that picks up your wallpaper.</value></data>
+  <data name="BackdropSetting" xml:space="preserve"><value>Background effect</value></data>
+  <data name="BackdropDesc" xml:space="preserve"><value>Glass blurs what is behind the window; Mica tints with your wallpaper colour.</value></data>
+  <data name="BackdropGlass" xml:space="preserve"><value>Glass (blurred, translucent)</value></data>
+  <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
+  <data name="BackdropNone" xml:space="preserve"><value>Off (solid)</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
   <data name="MinDimension" xml:space="preserve"><value>Min. size (px)</value></data>
   <data name="MinSizeKb" xml:space="preserve"><value>Min. file size (KB)</value></data>
   <data name="MoveBottom" xml:space="preserve"><value>Move to bottom</value></data>
@@ -324,4 +329,7 @@
   <data name="WhenToStart" xml:space="preserve"><value>Start</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="ZeroIsGlobal" xml:space="preserve"><value>0 = only the global limit applies.</value></data>
+  <data name="Minimize" xml:space="preserve"><value>Minimize</value></data>
+  <data name="Maximize" xml:space="preserve"><value>Maximize</value></data>
+  <data name="CloseWindow" xml:space="preserve"><value>Close</value></data>
 </root>

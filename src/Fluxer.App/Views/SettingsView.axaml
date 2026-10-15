@@ -81,8 +81,8 @@
             </ListBox.ItemTemplate>
           </ListBox>
         </c:SettingRow>
-        <c:SettingRow Title="{x:Static app:Strings.MicaEffect}" Description="{x:Static app:Strings.MicaEffectDesc}">
-          <ToggleSwitch IsChecked="{Binding Mica}" />
+        <c:SettingRow Title="{x:Static app:Strings.BackdropSetting}" Description="{x:Static app:Strings.BackdropDesc}">
+          <ComboBox ItemsSource="{Binding Backdrops}" SelectedIndex="{Binding BackdropIndex}" MinWidth="220" />
         </c:SettingRow>
         <c:SettingRow Title="{x:Static app:Strings.UiScale}" Description="{x:Static app:Strings.UiScaleDesc}">
           <StackPanel Orientation="Horizontal" Spacing="10">

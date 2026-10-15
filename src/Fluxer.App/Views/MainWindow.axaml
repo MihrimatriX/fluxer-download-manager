@@ -43,6 +43,10 @@
       <Setter Property="MinHeight" Value="28" />
       <Setter Property="Background" Value="{DynamicResource ChipBrush}" />
     </Style>
+    <Style Selector="ListBox.chips > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.chips > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
     <Style Selector="DataGrid#List DataGridRow" x:DataType="vm:DownloadItemViewModel">
       <Setter Property="Height" Value="{DynamicResource RowHeight}" />
       <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleText}" />
@@ -54,6 +58,14 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="DataGrid#List CheckBox.rowCheck"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="DataGrid#List DataGridRow:pointerover CheckBox.rowCheck, DataGrid#List DataGridRow:selected CheckBox.rowCheck, DataGrid#List.checking CheckBox.rowCheck">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="DataGrid#List ProgressBar">
+      <Setter Property="MinHeight" Value="6" />
+      <Setter Property="CornerRadius" Value="3" />
     </Style>
     <Style Selector="DataGridRow Button.rowAction">
       <Setter Property="Opacity" Value="0.35" />
@@ -185,12 +197,13 @@
       </StackPanel>
       </Grid>
 
-      <!-- List -->
-      <Panel Grid.Row="2">
+      <!-- List, on a glass card -->
+      <Border Grid.Row="2" Classes="glass" Margin="12,0,12,8" ClipToBounds="True">
+      <Panel>
         <DataGrid x:Name="List" ItemsSource="{Binding View}" SelectedItem="{Binding SelectedItem}"
                   SelectionMode="Extended" IsReadOnly="True" CanUserResizeColumns="True" CanUserSortColumns="True"
                   CanUserReorderColumns="True" GridLinesVisibility="None" HeadersVisibility="Column"
-                  Background="Transparent" Margin="8,0,8,0">
+                  Background="Transparent" Margin="2,4,2,2">
           <DataGrid.ContextMenu>
             <ContextMenu>
               <MenuItem Header="{x:Static app:Strings.ProgressWindow}" Command="{Binding OpenDetailsCommand}" FontWeight="SemiBold" />
@@ -213,11 +226,21 @@
             </ContextMenu>
           </DataGrid.ContextMenu>
           <DataGrid.Columns>
+            <DataGridTemplateColumn Width="40" CanUserResize="False" CanUserSort="False" CanUserReorder="False" x:DataType="vm:DownloadItemViewModel">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                  <CheckBox Classes="rowCheck" IsChecked="{Binding IsChecked}" HorizontalAlignment="Center" MinWidth="0" Padding="0"
+                            AutomationProperties.Name="{x:Static app:Strings.SelectRow}" />
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
             <DataGridTemplateColumn Header="{x:Static app:Strings.ColName}" Width="*" MinWidth="180" SortMemberPath="Name" x:DataType="vm:DownloadItemViewModel">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate x:DataType="vm:DownloadItemViewModel">
-                  <StackPanel Orientation="Horizontal" Spacing="10" Margin="10,0,8,0" VerticalAlignment="Center">
-                    <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="16" Opacity="0.8" />
+                  <StackPanel Orientation="Horizontal" Spacing="10" Margin="2,0,8,0" VerticalAlignment="Center">
+                    <Border Width="28" Height="28" CornerRadius="8" Background="{Binding TintSoft}">
+                      <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="14" Foreground="{Binding Tint}" HorizontalAlignment="Center" />
+                    </Border>
                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
                   </StackPanel>
                 </DataTemplate>
@@ -237,8 +260,12 @@
             <DataGridTemplateColumn Header="{x:Static app:Strings.ColStatus}" Width="170" SortMemberPath="StateOrder" x:DataType="vm:DownloadItemViewModel">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate x:DataType="vm:DownloadItemViewModel">
-                  <TextBlock Margin="8,0" VerticalAlignment="Center" Text="{Binding StatusText}" Classes.error="{Binding IsError}"
-                             TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
+                  <Border Classes="pill" Margin="6,0" Background="{Binding StateSoft}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <Ellipse Width="6" Height="6" Fill="{Binding StateBrush}" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{Binding StateBrush}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
+                    </StackPanel>
+                  </Border>
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
@@ -260,11 +287,12 @@
           <TextBlock Text="{x:Static app:Strings.EmptyBody}" Classes="subtle" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="420" TextWrapping="Wrap" />
         </StackPanel>
       </Panel>
+      </Border>
 
       <GridSplitter x:Name="DetailSplitter" Grid.Row="3" Height="6" Background="Transparent" ResizeDirection="Rows" IsVisible="{Binding ShowDetail}" />
 
       <!-- Detail panel -->
-      <Border Grid.Row="4" IsVisible="{Binding ShowDetail}" Background="{DynamicResource SurfaceBrush}" CornerRadius="12,12,0,0" Margin="8,0,8,0">
+      <Border Grid.Row="4" IsVisible="{Binding ShowDetail}" Classes="glass" Margin="12,0,12,8">
         <TabControl Margin="12,4,12,0" Padding="0,6,0,0">
           <TabItem Header="{x:Static app:Strings.TabGeneral}" FontSize="14">
             <ScrollViewer>
