@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1 — 2026-10-15
+
+### Düzeltildi
+- **Başlık alanındaki kontroller tıklanmıyordu:** ☰ (kenar çubuğu) düğmesi ve arama kutusu sürükleme alanının içinde kaldığı için Windows tıklamayı pencere tutma sayıyordu. Bu iki kontrol artık normal tıklama alır (Avalonia `ElementRole="User"`); logo ve boş alan sürüklemeye, çift tıkla büyütmeye devam eder. Windows'un nokta sınıflandırması ve gerçek tıklama/yazma ile doğrulandı.
+- Başlık bandı 44 piksele çıkarıldı; ☰, logo, arama kutusu ve pencere düğmeleri aynı yatay eksende ortalı (önceden üst kenara yapışıktı). Arama kutusu biraz genişledi.
+
 ## 0.7.0 — 2026-10-15
 
 ### Tarayıcı eklentisi (baştan güncellendi)

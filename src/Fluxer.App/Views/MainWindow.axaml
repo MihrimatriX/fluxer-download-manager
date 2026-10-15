@@ -83,9 +83,10 @@
     <!-- ============ Sidebar (collapsible), full height: its top row is part of the title bar ============ -->
     <Border Classes="sidebar" Classes.collapsed="{Binding SidebarCollapsed}" Grid.RowSpan="2" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarBrush}" ClipToBounds="True">
       <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Margin="12,2,12,10" Spacing="10">
-          <Grid ColumnDefinitions="Auto,*" Height="38" Background="Transparent" WindowDecorationProperties.ElementRole="TitleBar">
-            <Button Classes="icon" Content="&#xE700;" FontSize="15" Width="40" Height="36" Command="{Binding ToggleSidebarCommand}"
+        <StackPanel DockPanel.Dock="Top" Margin="12,0,12,10" Spacing="8">
+          <!-- same 44 px band as the title bar, everything on its centre line -->
+          <Grid ColumnDefinitions="Auto,*" Height="44" Background="Transparent" WindowDecorationProperties.ElementRole="TitleBar">
+            <Button Classes="icon" Content="&#xE700;" FontSize="15" Width="40" Height="36" Command="{Binding ToggleSidebarCommand}" WindowDecorationProperties.ElementRole="User"
                     ToolTip.Tip="{x:Static app:Strings.ToggleSidebar}" AutomationProperties.Name="{x:Static app:Strings.ToggleSidebar}" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="9" Margin="6,0,0,0" IsVisible="{Binding !SidebarCollapsed}">
               <Image Source="avares://Fluxer/Assets/fluxer.png" Width="20" Height="20" VerticalAlignment="Center" IsHitTestVisible="False" />
@@ -126,12 +127,15 @@
     </Border>
 
     <!-- ============ Title bar: drag area with search in the middle, room for the caption buttons on the right ============ -->
-    <Grid Grid.Column="1" Height="40" ColumnDefinitions="*,Auto,*" Margin="0,0,140,0" Background="Transparent"
+    <!-- Drag role on the band; the search box opts out with role User, otherwise Windows treats a click on it as
+         a title-bar grab and the box never gets focus. -->
+    <Grid Grid.Column="1" Height="44" ColumnDefinitions="*,Auto,*" Margin="0,0,146,0" Background="Transparent"
           WindowDecorationProperties.ElementRole="TitleBar">
-      <TextBox Grid.Column="1" Width="340" Height="30" MinHeight="0" Margin="0,4,0,0" Padding="34,0,10,0" VerticalContentAlignment="Center"
+      <TextBox Grid.Column="1" Width="360" Height="32" MinHeight="0" VerticalAlignment="Center" Padding="34,0,10,0" VerticalContentAlignment="Center"
+               WindowDecorationProperties.ElementRole="User"
                PlaceholderText="{x:Static app:Strings.Search}" Text="{Binding Search}" IsVisible="{Binding DownloadsOpen}"
-               AutomationProperties.Name="{x:Static app:Strings.Search}" CornerRadius="15" />
-      <TextBlock Grid.Column="1" Classes="icon" Text="&#xE721;" FontSize="13" Opacity="0.6" Margin="13,4,0,0" VerticalAlignment="Center"
+               AutomationProperties.Name="{x:Static app:Strings.Search}" CornerRadius="16" />
+      <TextBlock Grid.Column="1" Classes="icon" Text="&#xE721;" FontSize="13" Opacity="0.6" Margin="13,0,0,0" VerticalAlignment="Center"
                  IsHitTestVisible="False" IsVisible="{Binding DownloadsOpen}" />
     </Grid>
 

@@ -143,7 +143,7 @@ public static partial class Appearance
             ltc.LayoutTransform = Math.Abs(ui.Scale - 1) < 0.01 ? null : new ScaleTransform(ui.Scale, ui.Scale);
     }
 
-    public const double TitleBarHeight = 40;
+    public const double TitleBarHeight = 44;
     private const string TitleTag = "fluxer-titlebar";
 
     private static Control WithTop(Control c)
