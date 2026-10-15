@@ -1,58 +1,88 @@
 # Fluxer
 
-Windows için hızlı, native (Avalonia) arayüzlü indirme yöneticisi: çok bağlantılı HTTP, BitTorrent,
-yt-dlp ile video siteleri ve Chromium tarayıcı entegrasyonu.
+Fluxer is a download manager for Windows. It splits HTTP downloads across several connections, handles BitTorrent, pulls video from sites that yt-dlp supports, and picks up downloads from Chromium browsers through its extension. The UI is a native Avalonia app.
 
-## Kurulum
+## What it does
 
-1. `artifacts/releases/Fluxer-win-Setup.exe` dosyasını çalıştırın (yönetici yetkisi gerekmez;
-   `%LOCALAPPDATA%\Fluxer` altına kurulur, Başlat menüsüne eklenir).
-2. Tarayıcı eklentisini yükleyin (Chrome / Edge / Brave / Opera / Vivaldi):
-   - `chrome://extensions` (Edge: `edge://extensions`) → **Geliştirici modu** açık
-   - **Paketlenmemiş öğe yükle** → `%LOCALAPPDATA%\Fluxer\current\extension`
-   - Eklenti kimliği `dckkomckipcaglacbgfmbgmapfckpkja` olmalı (manifest'teki sabit `key` sayesinde).
-3. Tarayıcıda bir dosya indirin; indirme Fluxer'a düşer. **Alt** basılıyken tıklarsanız tarayıcıya kalır.
+- Multi-connection HTTP downloads with resume. When a link expires, Fluxer marks the download as needing a new link and lets you refresh it from the page.
+- BitTorrent through MonoTorrent: magnet links, `.torrent` files, DHT, peer exchange, local peer discovery, UPnP/NAT-PMP and encryption settings.
+- Video downloads through yt-dlp. On first use Fluxer fetches yt-dlp, deno and ffmpeg from their official GitHub releases and checks each one against its SHA-256 sum.
+- Browser integration for Chrome, Edge, Brave, Opera and Vivaldi. The extension hands downloads to Fluxer, can collect every file or image on a page, and shows a small card with a 3-second countdown before it takes a download, so you can leave it in the browser instead.
+- Speed profiles (Unlimited, Balanced, Background), each with its own download, upload and concurrency limits, plus a weekly 7 × 24 schedule that switches between them.
+- A night queue that starts at a time you choose (01:00 by default).
+- A tray window with live speed, a mini graph, running downloads and a box for pasting links.
+- Deleting is undoable for 6 seconds, and files stay on disk unless you pick "Delete with files…" from the context menu.
+- English and Turkish UI.
 
-Native messaging kayıtları (Chrome, Edge, Brave, Chromium; Opera/Vivaldi Chrome'unkini okur), `magnet:` ve
-`.torrent` ilişkilendirmeleri uygulamanın her açılışında `HKCU` altına yazılır/onarılır.
-Durum: **Ayarlar → Entegrasyon**.
+## Install
 
-## Kullanım ipuçları
+1. Download `Fluxer-win-Setup.exe` from the [latest release](../../releases/latest) and run it. It installs per user under `%LOCALAPPDATA%\Fluxer` without admin rights and adds a Start menu entry.
+2. Load the browser extension:
+   - Open `chrome://extensions` (Edge: `edge://extensions`) and turn on Developer mode.
+   - Click "Load unpacked" and pick `%LOCALAPPDATA%\Fluxer\current\extension`.
+   - The extension ID should be `dckkomckipcaglacbgfmbgmapfckpkja`. The manifest carries a fixed key, so the ID is the same on every machine.
+3. Download a file in the browser and it lands in Fluxer. Hold Alt while clicking to keep a download in the browser.
 
-| Kısayol | İşlev |
+Each time Fluxer starts, it writes or repairs its native messaging registrations (Chrome, Edge, Brave, Chromium; Opera and Vivaldi read Chrome's) and the `magnet:` and `.torrent` associations under `HKCU`. You can check their state in Settings → Browser integration.
+
+Windows 10 version 1809 or later, x64.
+
+## Keyboard shortcuts
+
+| Keys | Action |
 |---|---|
-| Ctrl+N | Yeni indirme (çok satırlı yapıştırma desteklenir) |
-| Ctrl+V | Panodaki bağlantıları ekle |
-| Ctrl+O | .torrent dosyası aç |
-| Boşluk / Delete / Enter | Duraklat-sürdür / sil / dosyayı aç |
-| Ctrl+Shift+P / R | Tümünü duraklat / sürdür |
+| Ctrl+N | New download (multi-line paste works) |
+| Ctrl+V | Add links from the clipboard |
+| Ctrl+O | Open a .torrent file |
+| Ctrl+F | Search |
+| Space / Delete / Enter | Pause or resume / delete / open file |
+| Ctrl+Shift+P / Ctrl+Shift+R | Pause all / resume all |
+| Ctrl+↑ / Ctrl+↓ | Move the selected rows in the queue |
+| Ctrl+I | Toggle the details panel |
+| Ctrl+B | Toggle the narrow sidebar |
+| Ctrl+, | Settings |
 
-- Pencereyi kapatmak tepsiye küçültür; çıkış tepsi menüsünden. Ayarlar: kenar çubuğu → **Ayarlar** (Ctrl+,), değişiklikler anında kaydedilir.
-- Kuyruk: satırları Ctrl+↑/↓ ile taşıyın; sütun başlıklarına tıklayarak sıralayın, kenarlarından sürükleyerek genişletin.
-- Torrent bağlantılarını tarayıcı indirir, Fluxer torrent olarak açar. Bir site Fluxer'a web sayfası döndürürse indirme otomatik olarak tarayıcıda kalır.
-- Süresi dolan bağlantılar "Bağlantı yenilenmeli" durumuna geçer: sayfadan dosyayı tekrar tıklayın
-  (Fluxer eşleştirip sorar) ya da sağ tık → **Bağlantıyı yenile**.
-- Sayfa yakalayıcı ve video: sayfada sağ tık → **Sayfadaki dosyaları/resimleri yakala** veya
-  **Bu sayfayı Fluxer'a gönder**. İlk video indirmesinde yt-dlp, deno ve ffmpeg resmi GitHub
-  sürümlerinden indirilir ve SHA-256 ile doğrulanır.
+Closing the window sends Fluxer to the tray. Quit from the tray menu. Settings save as soon as you change them.
 
-## Geliştirme
+## Updates
 
-Gereksinimler: .NET SDK 10.0.401+, Node 22+, (installer için) Visual Studio C++ araçları (NativeAOT host).
+Installed copies update themselves. Set Settings → Advanced → Update source to this repository's GitHub URL (or any folder or URL that hosts a Velopack feed). Fluxer downloads new versions in the background and installs them when you exit.
+
+## Building from source
+
+You need the .NET SDK 10.0.401 or newer and Node 22. Building the installer also needs the Visual Studio C++ tools, because the native messaging host is compiled with NativeAOT.
 
 ```powershell
-dotnet build                                              # tüm çözüm
-dotnet test --project tests/Fluxer.Core.Tests             # birim testleri
-dotnet test --project tests/Fluxer.Integration.Tests      # Kestrel sahte sunuculu entegrasyon testleri
-cd extension; npm ci; npm test; npm run build             # eklenti → extension/dist
-$env:FLUXER_INSTANCE="dev"; dotnet run --project src/Fluxer.App   # kurulu sürümün yanında ayrı profil
-dotnet run --project src/Fluxer.Cli -- get <url> -c 8     # motor konsol aracı
-pwsh build/pack.ps1 -Version 0.7.1                        # installer → artifacts/releases
+dotnet build                                              # whole solution
+dotnet test --project tests/Fluxer.Core.Tests             # unit tests
+dotnet test --project tests/Fluxer.Integration.Tests      # integration tests against local Kestrel servers
+cd extension; npm ci; npm test; npm run build             # extension -> extension/dist
+$env:FLUXER_INSTANCE="dev"; dotnet run --project src/Fluxer.App   # separate profile next to an installed copy
+dotnet run --project src/Fluxer.Cli -- get <url> -c 8     # engine console tool
+pwsh build/pack.ps1                                       # installer -> artifacts/releases
 ```
 
-Mimari: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Değişiklikler: [CHANGELOG.md](CHANGELOG.md)
+`build/pack.ps1` takes its version from `Directory.Build.props` unless you pass `-Version`.
 
-## Otomatik güncelleme
+## Releases
 
-**Ayarlar → Gelişmiş → Güncelleme kaynağı**'na `artifacts/releases` klasörünün yayınlandığı bir URL, ağ
-paylaşımı ya da GitHub repo adresi girin. Yeni sürüm arka planda indirilir, çıkışta kurulur.
+GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)) runs the tests and builds the installer on every push, and attaches the result to the run as an artifact. Pushing a tag such as `v0.8.0` also publishes a GitHub release with the installer and the update feed files:
+
+```powershell
+git tag v0.8.0
+git push origin v0.8.0
+```
+
+## Project layout
+
+| Path | Contents |
+|---|---|
+| `src/Fluxer.Core` | Download engine: HTTP segments, torrents, yt-dlp, queue, SQLite storage |
+| `src/Fluxer.App` | Avalonia desktop app |
+| `src/Fluxer.Ipc` | Message contracts shared by the app and the native host |
+| `src/Fluxer.NativeHost` | Native messaging host (NativeAOT) that relays browser messages to the app over a named pipe |
+| `src/Fluxer.Cli` | Console front end for the engine |
+| `extension` | Manifest V3 browser extension (TypeScript, Vite) |
+| `tests` | Unit and integration tests |
+
+Design notes are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and release history in [CHANGELOG.md](CHANGELOG.md), both in Turkish.

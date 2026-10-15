@@ -1,0 +1,62 @@
+# Every push: tests + installer as a build artifact.
+# Tag v* (e.g. v0.8.0): also publishes a GitHub release with the installer and the Velopack update feed.
+name: build
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Version
+        id: ver
+        shell: pwsh
+        run: |
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') }
+               else { ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Test
+        shell: pwsh
+        run: |
+          dotnet test --project tests/Fluxer.Core.Tests
+          if ($LASTEXITCODE) { exit 1 }
+          dotnet test --project tests/Fluxer.Integration.Tests
+          if ($LASTEXITCODE) { exit 1 }
+          cd extension; npm ci --no-audit --no-fund; npm test
+
+      - name: Pack
+        shell: pwsh
+        run: ./build/pack.ps1 -Version ${{ steps.ver.outputs.version }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fluxer-${{ steps.ver.outputs.version }}
+          path: artifacts/releases/*
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/releases/*
+          generate_release_notes: true
