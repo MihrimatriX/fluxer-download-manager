@@ -21,7 +21,7 @@
 
   <DockPanel>
     <!-- Header -->
-    <Grid DockPanel.Dock="Top" Margin="28,20,28,6" ColumnDefinitions="Auto,*,Auto">
+    <Grid DockPanel.Dock="Top" Margin="28,20,28,6" MaxWidth="900" ColumnDefinitions="Auto,*,Auto">
       <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseSettingsCommand}"
               AutomationProperties.Name="{x:Static app:Strings.Back}" ToolTip.Tip="{x:Static app:Strings.Back}" Margin="-10,0,8,0">
         <TextBlock Classes="icon" Text="&#xE72B;" FontSize="16" />

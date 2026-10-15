@@ -7,33 +7,91 @@
   <link rel="stylesheet" href="./popup.css">
 </head>
 <body>
-  <header>
-    <img src="/icons/icon32.png" alt="" width="20" height="20">
+  <header class="top">
+    <img src="/icons/icon32.png" alt="" width="22" height="22">
     <h1 data-i18n="extName"></h1>
     <span id="status" class="status" role="status" data-i18n="popupChecking"></span>
+    <button id="openApp" class="icon-btn" type="button" data-i18n-title="openApp">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+    </button>
   </header>
 
-  <section class="stats">
-    <div><span data-i18n="popupActive"></span><strong id="active">–</strong></div>
-    <div><span data-i18n="popupQueued"></span><strong id="queued">–</strong></div>
-    <div><span data-i18n="popupSpeed"></span><strong id="speed">–</strong></div>
-  </section>
+  <nav class="tabs" role="tablist">
+    <button role="tab" type="button" data-tab="downloads" data-i18n="tabDownloads"></button>
+    <button role="tab" type="button" data-tab="page"><span data-i18n="tabPage"></span><span id="pageBadge" class="badge" hidden></span></button>
+    <button role="tab" type="button" data-tab="settings" data-i18n="tabSettings"></button>
+  </nav>
 
-  <ul id="top" class="top"></ul>
-  <p id="empty" class="muted" data-i18n="popupNoDownloads" hidden></p>
+  <main>
+    <!-- ===== Downloads ===== -->
+    <section id="tab-downloads" role="tabpanel" hidden>
+      <div class="stats">
+        <div class="stat"><span data-i18n="popupSpeed"></span><strong id="speed">–</strong></div>
+        <div class="stat"><span data-i18n="popupActive"></span><strong id="active">–</strong></div>
+        <div class="stat"><span data-i18n="popupQueued"></span><strong id="queued">–</strong></div>
+      </div>
+      <div class="row-actions">
+        <button id="resumeAll" class="soft" type="button" data-i18n="resumeAll"></button>
+        <button id="pauseAll" class="soft" type="button" data-i18n="pauseAll"></button>
+      </div>
+      <ul id="list" class="dl-list"></ul>
+      <p id="empty" class="empty" data-i18n="emptyDownloads" hidden></p>
+    </section>
 
-  <section class="settings">
-    <h2 data-i18n="popupSettings"></h2>
-    <label class="row">
-      <span data-i18n="popupCaptureEnabled"></span>
-      <input type="checkbox" id="captureEnabled">
-    </label>
-    <label class="row">
-      <span data-i18n="popupMinSize"></span>
-      <input type="number" id="minSizeMiB" min="0" step="0.5">
-    </label>
-    <p class="muted" data-i18n="popupAltHint"></p>
-  </section>
+    <!-- ===== This page ===== -->
+    <section id="tab-page" role="tabpanel" hidden>
+      <p id="pageUnsupported" class="empty" data-i18n="pageUnsupported" hidden></p>
+      <div id="pageContent">
+        <div class="card hero">
+          <div class="hero-text">
+            <strong data-i18n="pageVideoTitle"></strong>
+            <small data-i18n="pageVideoHint"></small>
+          </div>
+          <button id="pageVideo" class="primary" type="button" data-i18n="pageVideoButton"></button>
+        </div>
+
+        <h2><span data-i18n="mediaFound"></span><span id="mediaCount" class="count"></span></h2>
+        <ul id="media" class="media-list"></ul>
+        <p id="mediaEmpty" class="empty small" data-i18n="mediaEmpty" hidden></p>
+
+        <h2><span data-i18n="batchTitle"></span><span id="linkCount" class="count"></span></h2>
+        <div id="cats" class="chips" role="group"></div>
+        <div class="search-row">
+          <input id="query" type="search" data-i18n-placeholder="search" autocomplete="off">
+          <label class="chk"><input id="selectAll" type="checkbox"><span data-i18n="selectAll"></span></label>
+        </div>
+        <ul id="links" class="link-list"></ul>
+        <p id="linksEmpty" class="empty small" hidden></p>
+      </div>
+    </section>
+
+    <!-- ===== Settings ===== -->
+    <section id="tab-settings" role="tabpanel" hidden>
+      <label class="setting">
+        <span><strong data-i18n="popupCaptureEnabled"></strong><small data-i18n="popupAltHint"></small></span>
+        <input type="checkbox" class="switch" id="captureEnabled">
+      </label>
+      <label class="setting">
+        <span><strong data-i18n="popupMinSize"></strong></span>
+        <input type="number" id="minSizeMiB" min="0" step="0.5">
+      </label>
+      <label class="setting">
+        <span><strong data-i18n="settingVideoButton"></strong><small data-i18n="settingVideoButtonHint"></small></span>
+        <input type="checkbox" class="switch" id="showVideoButton">
+      </label>
+      <label class="setting">
+        <span><strong data-i18n="settingBadge"></strong><small data-i18n="settingBadgeHint"></small></span>
+        <input type="checkbox" class="switch" id="showBadge">
+      </label>
+    </section>
+  </main>
+
+  <footer id="batchBar" class="batch-bar" hidden>
+    <span id="selCount"></span>
+    <button id="batchGo" class="primary" type="button" data-i18n="batchSend" disabled></button>
+  </footer>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
 
   <script type="module" src="./popup.ts"></script>
 </body>

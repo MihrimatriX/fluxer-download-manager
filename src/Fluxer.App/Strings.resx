@@ -238,7 +238,6 @@
   <data name="SeedRatio" xml:space="preserve"><value>Seeding ratio</value></data>
   <data name="SeedRatioDesc" xml:space="preserve"><value>Stop seeding when uploaded ÷ size reaches this ratio (0 = no limit).</value></data>
   <data name="SegmentMap" xml:space="preserve"><value>Connections</value></data>
-  <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="SelectNone" xml:space="preserve"><value>Select none</value></data>
   <data name="Sequential" xml:space="preserve"><value>Download in order (for previewing media)</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
@@ -333,4 +332,6 @@
   <data name="Minimize" xml:space="preserve"><value>Minimize</value></data>
   <data name="Maximize" xml:space="preserve"><value>Maximize</value></data>
   <data name="CloseWindow" xml:space="preserve"><value>Close</value></data>
+  <data name="EtaDays" xml:space="preserve"><value>{0}d {1}h</value></data>
+  <data name="AccentNames" xml:space="preserve"><value>Blue|Indigo|Purple|Pink|Orange|Green|Teal|Graphite</value></data>
 </root>

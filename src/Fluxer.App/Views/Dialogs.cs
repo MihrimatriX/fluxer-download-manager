@@ -40,10 +40,11 @@ public static partial class Dialogs
         var header = new TextBlock { Text = title, FontSize = 18, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 14) };
         DockPanel.SetDock(header, Dock.Top);
         DockPanel.SetDock(bar, Dock.Bottom);
-        bar.Margin = new Thickness(0, 18, 0, 0);
+        bar.Margin = new Thickness(0, buttons.Length > 0 ? 18 : 0, 0, 0);
         root.Children.Add(header);
         root.Children.Add(bar);
-        root.Children.Add(body);
+        // Tall bodies (and 130 % scale) scroll instead of being cut at MaxHeight.
+        root.Children.Add(new ScrollViewer { Content = body, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto });
         w.Content = root;
         w.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Escape) w.Close(); };
         return w;
@@ -149,7 +150,7 @@ public static partial class Dialogs
     public static (Control View, Func<string> Value) FolderPicker(string initial)
     {
         var box = new TextBox { Text = initial };
-        var browse = new Avalonia.Controls.Button { Content = "…", Margin = new Thickness(6, 0, 0, 0), MinWidth = 40 };
+        var browse = new Avalonia.Controls.Button { Content = Strings.Browse, Margin = new Thickness(6, 0, 0, 0) };
         browse.Click += async (_, _) =>
         {
             if (TopLevel.GetTopLevel(browse) is { } top && await PickFolderAsync(top, box.Text) is { } path) box.Text = path;

@@ -70,10 +70,14 @@ public static class Loc
 
     public static string Speed(long bps) => bps > 0 ? Bytes(bps) + "/s" : "";
 
+    /// 0..1 as a percentage in the UI language's pattern ("%45,3" in Turkish, "45.3%" in English).
+    public static string Percent(double fraction, int decimals = 0) =>
+        fraction.ToString("P" + decimals, CultureInfo.CurrentUICulture);
+
     public static string Eta(TimeSpan? t) => t switch
     {
         null => "",
-        { TotalDays: >= 1 } d => $"{(int)d.TotalDays}d {d.Hours}h",
+        { TotalDays: >= 1 } d => string.Format(CultureInfo.CurrentCulture, Strings.EtaDays, (int)d.TotalDays, d.Hours),
         { TotalHours: >= 1 } h => $"{(int)h.TotalHours}:{h.Minutes:00}:{h.Seconds:00}",
         { } m => $"{m.Minutes}:{m.Seconds:00}",
     };

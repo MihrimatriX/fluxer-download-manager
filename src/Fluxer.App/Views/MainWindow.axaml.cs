@@ -15,6 +15,12 @@ namespace Fluxer.App.Views;
 public sealed partial class MainWindow : Window
 {
     private readonly DispatcherTimer _timer;
+    private MainViewModel? _vm;
+
+    private void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.ShowDetail)) ApplyDetailRow();
+    }
 
     public MainWindow()
     {
@@ -61,11 +67,15 @@ public sealed partial class MainWindow : Window
         list.AddHandler(KeyDownEvent, OnListKeyDown, RoutingStrategies.Tunnel);
         // Column headers swallow the right click, so ContextRequested never fires there: watch the release.
         list.AddHandler(PointerReleasedEvent, OnHeaderPointerReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
+        // One subscription at a time, dropped on close: the window is rebuilt on language/theme changes
+        // and must not keep the old one alive through the view model.
         DataContextChanged += (_, _) =>
         {
-            if (DataContext is MainViewModel m)
-                m.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(MainViewModel.ShowDetail)) ApplyDetailRow(); };
+            if (_vm is not null) _vm.PropertyChanged -= OnVmPropertyChanged;
+            _vm = DataContext as MainViewModel;
+            if (_vm is not null) _vm.PropertyChanged += OnVmPropertyChanged;
         };
+        Closed += (_, _) => { if (_vm is not null) _vm.PropertyChanged -= OnVmPropertyChanged; };
 
         _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(250), DispatcherPriority.Background, (_, _) =>
         {
@@ -137,7 +147,9 @@ public sealed partial class MainWindow : Window
     {
         if (DataContext is not MainViewModel vm || CurrentUi is null) return;
         var row = DownloadsPage.RowDefinitions[4];
-        if (vm.ShowDetail) row.Height = new GridLength(Math.Clamp(CurrentUi!.DetailHeight, 120, 700));
+        // Never more than 60 % of the page, so a remembered tall panel can't squeeze the list to nothing.
+        var max = DownloadsPage.Bounds.Height > 0 ? Math.Max(120, DownloadsPage.Bounds.Height * 0.6) : 700;
+        if (vm.ShowDetail) row.Height = new GridLength(Math.Clamp(CurrentUi!.DetailHeight, 120, Math.Min(700, max)));
         else
         {
             if (row.Height.IsAbsolute && row.Height.Value > 80) CurrentUi!.DetailHeight = row.Height.Value;

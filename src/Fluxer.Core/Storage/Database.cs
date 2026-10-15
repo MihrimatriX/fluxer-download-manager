@@ -49,6 +49,8 @@ public sealed class Database : IDisposable
         ALTER TABLE http_downloads ADD COLUMN reject_html INTEGER NOT NULL DEFAULT 0;
         ALTER TABLE torrent_downloads ADD COLUMN upload_limit INTEGER NOT NULL DEFAULT 0;
         """,
+        // 3: page a captured stream was playing on (sent to yt-dlp as Referer)
+        "ALTER TABLE media_downloads ADD COLUMN referrer TEXT;",
     ];
 
     public Database(string path)
@@ -179,6 +181,7 @@ public sealed class Database : IDisposable
                             Title = Str(rd, "title"),
                             Cookies = Dpapi.Unprotect(Blob(rd, "cookies")),
                             AudioOnly = rd.GetInt64(rd.GetOrdinal("audio_only")) != 0,
+                            Referrer = Str(rd, "referrer"),
                         };
 
             return [.. list.Values];
@@ -276,12 +279,12 @@ public sealed class Database : IDisposable
 
         if (r.Media is { } m)
             Exec("""
-                INSERT INTO media_downloads (download_id, page_url, format_spec, title, cookies, audio_only)
-                VALUES ($id, $url, $fmt, $title, $cookies, $audio)
+                INSERT INTO media_downloads (download_id, page_url, format_spec, title, cookies, audio_only, referrer)
+                VALUES ($id, $url, $fmt, $title, $cookies, $audio, $ref)
                 ON CONFLICT(download_id) DO UPDATE SET page_url=excluded.page_url, format_spec=excluded.format_spec,
-                  title=excluded.title, cookies=excluded.cookies, audio_only=excluded.audio_only
+                  title=excluded.title, cookies=excluded.cookies, audio_only=excluded.audio_only, referrer=excluded.referrer
                 """, tx, ("$id", r.Id), ("$url", m.PageUrl), ("$fmt", m.FormatSpec), ("$title", m.Title),
-                ("$cookies", Dpapi.Protect(m.Cookies)), ("$audio", m.AudioOnly ? 1 : 0));
+                ("$cookies", Dpapi.Protect(m.Cookies)), ("$audio", m.AudioOnly ? 1 : 0), ("$ref", m.Referrer));
     }
 
     private static (string, object?)[] CommonParams(DownloadRecord r) =>

@@ -48,8 +48,8 @@ describe('decide', () => {
   it('leaves files below the threshold when size is known', () => {
     expect(decide(item({ totalBytes: MiB - 1 }), ctx())).toBe('small');
     expect(decide(item({ totalBytes: MiB }), ctx())).toBe('capture');
-    expect(decide(item({ totalBytes: 3 * MiB }), ctx({ settings: { captureEnabled: true, minSizeMiB: 5 } }))).toBe('small');
-    expect(decide(item({ totalBytes: 10 }), ctx({ settings: { captureEnabled: true, minSizeMiB: 0 } }))).toBe('capture');
+    expect(decide(item({ totalBytes: 3 * MiB }), ctx({ settings: { ...DEFAULT_SETTINGS, minSizeMiB: 5 } }))).toBe('small');
+    expect(decide(item({ totalBytes: 10 }), ctx({ settings: { ...DEFAULT_SETTINGS, minSizeMiB: 0 } }))).toBe('capture');
   });
   it('leaves everything when capture is disabled', () => {
     expect(decide(item(), ctx({ settings: { ...DEFAULT_SETTINGS, captureEnabled: false } }))).toBe('disabled');

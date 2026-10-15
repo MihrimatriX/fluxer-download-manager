@@ -47,7 +47,7 @@ dotnet test --project tests/Fluxer.Integration.Tests      # Kestrel sahte sunucu
 cd extension; npm ci; npm test; npm run build             # eklenti → extension/dist
 $env:FLUXER_INSTANCE="dev"; dotnet run --project src/Fluxer.App   # kurulu sürümün yanında ayrı profil
 dotnet run --project src/Fluxer.Cli -- get <url> -c 8     # motor konsol aracı
-pwsh build/pack.ps1 -Version 0.6.0                        # installer → artifacts/releases
+pwsh build/pack.ps1 -Version 0.7.0                        # installer → artifacts/releases
 ```
 
 Mimari: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Değişiklikler: [CHANGELOG.md](CHANGELOG.md)

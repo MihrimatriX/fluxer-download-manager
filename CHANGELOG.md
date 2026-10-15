@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.7.0 — 2026-10-15
+
+### Tarayıcı eklentisi (baştan güncellendi)
+- **Video yakalama:** sayfada oynayan videolar ve sesler ağ yanıtlarından yakalanır: MP4/WebM/MP3… dosyaları, HLS (`.m3u8`) ve DASH (`.mpd`) akışları. Akış parçaları (`.ts`, `.m4s`), küçük dosyalar ve YouTube'un parça istekleri elenir; aynı dosyanın onlarca aralık isteği tek giriş olur. Simgede sekmedeki video sayısı.
+- **Videoların üzerinde "Fluxer ile indir" düğmesi** (fareyle üzerine gelince; tam ekranda da). Normal dosya → doğrudan indirme; blob/MediaSource oynatıcı → yakalanan akış (sayfa referrer olarak gönderilir), yoksa sayfa yt-dlp'ye.
+- **Açılır pencere yeniden tasarlandı**, üç sekme:
+  - *İndirmeler:* canlı liste (durum etiketi, ilerleme, hız); duraklat / sürdür / dosyayı aç / klasörde göster / listeden kaldır; ada tıklayınca ilerleme penceresi; tümünü duraklat/sürdür; sağ üstten Fluxer'ı aç.
+  - *Bu sayfa:* "bu sayfadaki videoyu indir" (yt-dlp), yakalanan medya listesi, **toplu indirme**: sayfadaki dosyalar türüne göre (video, ses, arşiv, belge, program, resim, torrent), arama, tümünü seç → tek ekleme penceresi.
+  - *Ayarlar:* yakalama, en küçük boyut, video düğmesi, simge sayacı.
+- Sağ tık → "Fluxer ile indir" blob kaynaklı videolarda da çalışır.
+
+### Uygulama
+- Yeni mesajlar: `download.batch` (toplu indirme → ekleme penceresi) ve `command` (açılır pencerenin düğmeleri). Durum yanıtı indirme listesini de taşır.
+- Yakalanan akışlar için yt-dlp'ye `--referer` (veritabanı migration 3: `media_downloads.referrer`).
+
+### Arayüz düzeltmeleri (kod denetiminden)
+- Torrent/video indirmesinde ilerleme penceresi ve ayrıntı paneli gizli bir sekmeyi seçili bırakıp boş içerik gösteriyordu.
+- Ekleme penceresinde bağlantı değiştirilince kart eski dosyayı göstermeye devam ediyordu.
+- Uzun dosya adları ve durum yazıları "…" ile kırpılmıyordu (listede, eş listesinde, başlıklarda, torrent dosyalarında).
+- İngilizce kalan "Delete" ipucu; vurgu rengi ipuçlarında renk kodu yerine renk adı; Türkçe yüzde ("%45,3") ve gün/saat biçimleri.
+- Ayrıntı düğmesi seçiliyken düz mavi kare görünüyordu; seçili filtre çipi tüm pencerelerde aynı.
+- Kalan çizgiler kaldırıldı: kart kenarı (yalnızca cam stilinde ince parıltı), genişletici kenarlıkları, hata/uyarı bandı kenarları, hız grafiği ızgarası, segment haritası ayırıcıları.
+- Neumorfik stilde ekleme penceresi kartları görünmüyordu; saat seçicisi gri kutu kalıyordu.
+- Gizli sayfaya Tab ile odak geçebiliyordu; ana pencere her dil/tema değişiminde görünüm modeline abone kalıp sızıyordu.
+- Ayrıntı paneli küçük pencerede listeyi tamamen ezebiliyordu; filtre çipleri dar pencerede kırpılıyordu (artık alt satıra geçer); daraltılmış kenar çubuğunda ikonlar aynı hizada.
+- Ayarlar başlığı geniş pencerede kartlarla hizasızdı; "Kaydedildi" artık kayboluyor; Escape ayarlardan ve ilerleme penceresinden çıkar.
+- İlerleme penceresinde düğme sırası: İptal, Arka plana al, Duraklat (ana eylem en sağda).
+- Kaynak yakalama penceresi: seçim düğmeleri sayaç satırında, liste kartta, uzun içerik kayar; açık temada soluk yazılar daha okunaklı.
+
+### Test
+- Eklenti: 62 birim testi (medya sınıflandırma, toplu liste, her metin anahtarının iki dilde de olması).
+- `tools/e2e-extension.mjs`: geçici Chrome profilinde uçtan uca test (yakalama, simge sayacı, video düğmesi, açılır pencerenin üç sekmesi, toplu seçim; `--send` ile uygulamaya gönderim) — 19/19.
+- .NET: 60 test (yeni: referrer kalıcılığı, migration, yt-dlp argümanları, yeni mesajların ayrıştırılması ve durum JSON'u).
+
 ## 0.6.0 — 2026-10-15
 
 ### Çizgisiz, tek parça yüzey

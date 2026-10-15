@@ -5,8 +5,12 @@ export interface Settings {
   captureEnabled: boolean;
   /** Files smaller than this (when size is known) stay in the browser. 0 = capture everything. */
   minSizeMiB: number;
+  /** "Download with Fluxer" button over videos on web pages. */
+  showVideoButton: boolean;
+  /** Count of videos found on the tab, on the toolbar icon. */
+  showBadge: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { captureEnabled: true, minSizeMiB: 1 };
+export const DEFAULT_SETTINGS: Settings = { captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true };
 
 export type DownloadItemLike = Pick<
   chrome.downloads.DownloadItem,
@@ -131,6 +135,8 @@ export function outcomeOf(reply: Reply | undefined, expect?: Reply['type']): Out
   if (!reply || typeof reply !== 'object') return 'unreachable';
   if (reply.type === 'error') {
     if (reply.payload?.code === 'protocol-mismatch') return 'update';
+    // An older app that does not know a newer message type yet.
+    if (reply.payload?.code === 'invalid-message' && reply.payload.message === 'unknown type') return 'update';
     return reply.payload?.code === 'app-unavailable' ? 'unreachable' : 'failed';
   }
   if (expect && reply.type !== expect) return 'failed';

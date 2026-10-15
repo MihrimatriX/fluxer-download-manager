@@ -17,7 +17,7 @@
           <SolidColorBrush x:Key="MainBrush" Color="#FCFCFD" />
           <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
           <SolidColorBrush x:Key="CardBrush" Color="#F6F6F8" />
-          <SolidColorBrush x:Key="SubtleBrush" Color="#77000000" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#99000000" />
           <SolidColorBrush x:Key="DividerBrush" Color="#14000000" />
           <SolidColorBrush x:Key="ChipBrush" Color="#0D000000" />
           <!-- glass edge: bright top, fading down -->
@@ -135,6 +135,16 @@
     <Style Selector="DataGrid /template/ Rectangle#PART_ColumnHeadersAndRowsSeparator">
       <Setter Property="IsVisible" Value="False" />
     </Style>
+    <!-- Selected filter chip: filled with the accent, in every window -->
+    <Style Selector="ListBox.chips > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.chips > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <!-- A checked tool toggle is a soft chip, not Fluent's solid accent square -->
+    <Style Selector="ToggleButton.tool:checked /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ChipBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
     <!-- Neumorphic: raised buttons and chips, pressed/selected/inputs sink in (shadows are empty in other styles) -->
     <Style Selector="Button:not(.tool):not(.icon):not(.caption):not(.rowAction) /template/ ContentPresenter#PART_ContentPresenter, ListBox.chips > ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="BoxShadow" Value="{DynamicResource RaisedShadow}" />
@@ -142,7 +152,10 @@
     <Style Selector="Button:not(.tool):not(.icon):not(.caption):not(.rowAction):pressed /template/ ContentPresenter#PART_ContentPresenter, ListBox.chips > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.nav > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="BoxShadow" Value="{DynamicResource SunkenShadow}" />
     </Style>
-    <Style Selector="TextBox /template/ Border#PART_BorderElement, ComboBox /template/ Border#Background, NumericUpDown /template/ Border#PART_BorderElement">
+    <Style Selector="TextBox /template/ Border#PART_BorderElement, ComboBox /template/ Border#Background">
+      <Setter Property="BoxShadow" Value="{DynamicResource SunkenShadow}" />
+    </Style>
+    <Style Selector="TimePicker /template/ Button#PART_FlyoutButton /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="BoxShadow" Value="{DynamicResource SunkenShadow}" />
     </Style>
     <!-- rounded, inset row highlight -->
@@ -264,6 +277,8 @@
     <Style Selector=":is(Control).page.hidden">
       <Setter Property="Opacity" Value="0" />
       <Setter Property="IsHitTestVisible" Value="False" />
+      <!-- out of the Tab order and the accessibility tree while faded out -->
+      <Setter Property="IsEnabled" Value="False" />
       <Setter Property="RenderTransform" Value="translateY(10px)" />
     </Style>
     <Style Selector="Window.motion Border.sidebar">

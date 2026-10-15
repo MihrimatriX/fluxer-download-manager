@@ -5,9 +5,10 @@ import {
   type Outcome, type Settings,
 } from './capture';
 import { truncateToFit } from './collector';
+import { classifyMedia, mergeHit, pickForVideo, type MediaHit } from './media';
 import {
   MAX_REQUEST_BYTES, envelope, sendNative,
-  type CookieDto, type DownloadAdd, type PageResources, type PageSend, type Reply, type Request, type Resource,
+  type CookieDto, type DownloadAdd, type DownloadBatch, type PageResources, type PageSend, type Reply, type Request, type Resource,
 } from './protocol';
 
 const t = (key: string) => chrome.i18n.getMessage(key);
@@ -205,6 +206,9 @@ async function onMenu(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.T
 
   if (info.menuItemId === 'download') {
     const url = info.linkUrl || info.srcUrl;
+    // blob:/MediaSource players: the same logic as the in-page video button.
+    if (tab && !info.linkUrl && (info.mediaType === 'video' || info.mediaType === 'audio') && !isHttp(url))
+      return notifyOutcome(await sendVideo(tab, url), 'send');
     if (!url || !/^(https?|magnet):/i.test(url)) return notify('unsupportedUrl');
     const msg = envelope<DownloadAdd>('download.add', {
       ...ctx,
@@ -248,5 +252,166 @@ async function onMenu(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.T
     });
     msg.payload.resources = truncateToFit(page.resources, JSON.stringify(msg), MAX_REQUEST_BYTES);
     return notifyOutcome(outcomeOf(await trySend(msg)), 'send');
+  }
+}
+
+// ---- media sniffing: videos/audio and stream manifests seen on each tab ----
+// Kept in storage.session (survives worker restarts, cleared with the browser session).
+interface TabMedia { pageUrl?: string; hits: MediaHit[] }
+const mediaKey = (tabId: number) => `media:${tabId}`;
+
+async function tabMedia(tabId: number): Promise<TabMedia> {
+  const key = mediaKey(tabId);
+  return ((await chrome.storage.session.get(key))[key] as TabMedia | undefined) ?? { hits: [] };
+}
+
+// One write at a time per tab: responses arrive in bursts and each update reads the previous list.
+const mediaWrites = new Map<number, Promise<void>>();
+function updateTabMedia(tabId: number, change: (m: TabMedia) => TabMedia): Promise<void> {
+  const next = (mediaWrites.get(tabId) ?? Promise.resolve()).then(async () => {
+    const m = change(await tabMedia(tabId));
+    await chrome.storage.session.set({ [mediaKey(tabId)]: m });
+    await updateBadge(tabId, m.hits.length);
+  }).catch((e) => console.warn('Fluxer: media list', e));
+  mediaWrites.set(tabId, next);
+  return next;
+}
+
+async function updateBadge(tabId: number, count: number): Promise<void> {
+  const show = (await settings).showBadge;
+  await chrome.action.setBadgeText({ tabId, text: show && count > 0 ? String(Math.min(count, 99)) : '' }).catch(() => {});
+}
+// Turning the badge setting on or off applies to open tabs right away.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !changes.showBadge) return;
+  void chrome.tabs.query({}).then((tabs) => Promise.all(tabs.map(async (tab) => {
+    if (tab.id !== undefined) await updateBadge(tab.id, (await tabMedia(tab.id)).hits.length);
+  })));
+});
+void chrome.action.setBadgeBackgroundColor({ color: '#0A84FF' });
+void chrome.action.setBadgeTextColor({ color: '#FFFFFF' });
+
+const header = (h: chrome.webRequest.HttpHeader[] | undefined, name: string) =>
+  h?.find((x) => x.name.toLowerCase() === name)?.value;
+
+chrome.webRequest.onHeadersReceived.addListener(
+  (d) => {
+    if (d.tabId < 0) return;
+    const hit = classifyMedia({
+      url: d.url,
+      status: d.statusCode,
+      contentType: header(d.responseHeaders, 'content-type'),
+      contentLength: header(d.responseHeaders, 'content-length'),
+      contentRange: header(d.responseHeaders, 'content-range'),
+    });
+    if (hit) void updateTabMedia(d.tabId, (m) => ({ ...m, hits: mergeHit(m.hits, hit) }));
+  },
+  { urls: ['<all_urls>'], types: ['media', 'xmlhttprequest', 'other', 'object'] },
+  ['responseHeaders'],
+);
+
+// A new page (not just a #hash change) starts with an empty list.
+const pageOf = (url: string) => url.split('#')[0];
+chrome.tabs.onUpdated.addListener((tabId, info) => {
+  if (!info.url) return;
+  const url = info.url;
+  void updateTabMedia(tabId, (m) => (m.pageUrl && pageOf(m.pageUrl) === pageOf(url) ? m : { pageUrl: url, hits: [] }));
+});
+chrome.tabs.onRemoved.addListener((tabId) => {
+  mediaWrites.delete(tabId);
+  void chrome.storage.session.remove(mediaKey(tabId));
+});
+
+// ---- sending media / pages / batches (popup, video button, context menu) ----
+const browserCtx = (tab: chrome.tabs.Tab) => ({ userAgent: navigator.userAgent, incognito: tab.incognito });
+
+async function sendFile(tab: chrome.tabs.Tab, url: string): Promise<Outcome> {
+  const msg = envelope<DownloadAdd>('download.add', {
+    ...browserCtx(tab),
+    url,
+    source: 'context-menu',
+    referrer: tab.url,
+    tabUrl: tab.url,
+    cookies: await cookiesFor([url, tab.url], tab.id),
+  });
+  return outcomeOf(await trySend(msg), 'download.add.result');
+}
+
+/** A page for yt-dlp, or a stream manifest with the page it plays on as referrer. */
+async function sendMediaPage(tab: chrome.tabs.Tab, url: string): Promise<Outcome> {
+  const msg = envelope<PageSend>('page.send', {
+    ...browserCtx(tab),
+    pageUrl: url,
+    title: tab.title,
+    referrer: tab.url,
+    cookies: await cookiesFor([url, tab.url], tab.id),
+  });
+  return outcomeOf(await trySend(msg));
+}
+
+async function sendVideo(tab: chrome.tabs.Tab, src: string | undefined): Promise<Outcome> {
+  if (!isHttp(tab.url)) return 'failed';
+  const pick = pickForVideo(src, tab.id === undefined ? [] : (await tabMedia(tab.id)).hits);
+  return pick.type === 'file' ? sendFile(tab, pick.url)
+    : pick.type === 'stream' ? sendMediaPage(tab, pick.url)
+    : sendMediaPage(tab, tab.url!);
+}
+
+async function sendBatch(tab: chrome.tabs.Tab, items: { url: string; fileName?: string }[]): Promise<Outcome> {
+  const http = items.filter((i) => isHttp(i.url)).slice(0, 1000);
+  if (!http.length || !isHttp(tab.url)) return 'failed';
+  // Cookies for the page and for each host the files live on (download hosts often differ).
+  const origins = [...new Set(http.map((i) => new URL(i.url).origin))].slice(0, 30).map((o) => o + '/');
+  const msg = envelope<DownloadBatch>('download.batch', {
+    ...browserCtx(tab),
+    pageUrl: tab.url!,
+    referrer: tab.url,
+    items: http,
+    cookies: await cookiesFor([tab.url, ...origins], tab.id),
+  });
+  msg.payload.items = truncateToFit(http, JSON.stringify({ ...msg, payload: { ...msg.payload, items: [] } }), MAX_REQUEST_BYTES);
+  return outcomeOf(await trySend(msg), 'download.add.result');
+}
+
+async function collectLinks(tabId: number): Promise<Resource[] | undefined> {
+  try {
+    const page = await chrome.tabs.sendMessage(tabId, { type: 'collect' }, { frameId: 0 });
+    return page?.resources;
+  } catch {
+    return undefined; // no content script: the tab was open before the extension was installed/updated
+  }
+}
+
+/** Messages from the popup (tabId given) and from the in-page video button (sender.tab). */
+type PanelMessage =
+  | { type: 'media-list'; tabId: number }
+  | { type: 'media-download'; tabId: number; url: string; kind: MediaHit['kind'] }
+  | { type: 'page-video'; tabId: number }
+  | { type: 'collect-links'; tabId: number }
+  | { type: 'batch'; tabId: number; items: { url: string; fileName?: string }[] }
+  | { type: 'video-button'; src?: string };
+
+chrome.runtime.onMessage.addListener((msg: PanelMessage, sender, sendResponse) => {
+  if (sender.id !== chrome.runtime.id || !msg || typeof msg !== 'object') return;
+  const handled = handlePanel(msg, sender);
+  if (!handled) return;
+  handled.then(sendResponse, (e) => { console.warn('Fluxer:', e); sendResponse({ outcome: 'failed' }); });
+  return true; // async response
+});
+
+function handlePanel(msg: PanelMessage, sender: chrome.runtime.MessageSender): Promise<unknown> | undefined {
+  const withTab = async (tabId: number, run: (tab: chrome.tabs.Tab) => Promise<Outcome>) =>
+    ({ outcome: await run(await chrome.tabs.get(tabId)) });
+  switch (msg.type) {
+    case 'media-list': return tabMedia(msg.tabId);
+    case 'media-download':
+      return withTab(msg.tabId, (tab) => (msg.kind === 'file' ? sendFile(tab, msg.url) : sendMediaPage(tab, msg.url)));
+    case 'page-video':
+      return withTab(msg.tabId, (tab) => (isHttp(tab.url) ? sendMediaPage(tab, tab.url!) : Promise.resolve<Outcome>('failed')));
+    case 'collect-links': return collectLinks(msg.tabId).then((resources) => ({ resources }));
+    case 'batch': return withTab(msg.tabId, (tab) => sendBatch(tab, msg.items));
+    case 'video-button':
+      return sender.tab ? sendVideo(sender.tab, msg.src).then((outcome) => ({ outcome })) : undefined;
+    default: return undefined;
   }
 }

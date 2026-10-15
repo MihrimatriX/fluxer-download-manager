@@ -67,4 +67,5 @@ public sealed class MediaInfo
     public string? Title { get; set; }
     public string? Cookies { get; set; }            // Netscape cookie lines; encrypted at rest
     public bool AudioOnly { get; set; }
+    public string? Referrer { get; set; }           // page a captured stream (m3u8/mpd) was playing on
 }

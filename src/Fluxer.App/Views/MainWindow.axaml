@@ -36,16 +36,16 @@
       <Setter Property="Margin" Value="8,1" />
       <Setter Property="Padding" Value="10,7" />
     </Style>
+    <!-- collapsed sidebar: every icon on the same centre line as the menu and + buttons -->
+    <Style Selector="Border.sidebar.collapsed ListBox.nav > ListBoxItem, Border.sidebar.collapsed Button.tool">
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
     <Style Selector="ListBox.chips > ListBoxItem">
       <Setter Property="CornerRadius" Value="14" />
-      <Setter Property="Margin" Value="0,0,6,0" />
+      <Setter Property="Margin" Value="0,3,6,3" />
       <Setter Property="Padding" Value="12,4" />
       <Setter Property="MinHeight" Value="28" />
       <Setter Property="Background" Value="{DynamicResource ChipBrush}" />
-    </Style>
-    <Style Selector="ListBox.chips > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.chips > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-      <Setter Property="Foreground" Value="White" />
     </Style>
     <Style Selector="DataGrid#List DataGridRow" x:DataType="vm:DownloadItemViewModel">
       <Setter Property="Height" Value="{DynamicResource RowHeight}" />
@@ -81,7 +81,7 @@
 
   <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
     <!-- ============ Sidebar (collapsible), full height: its top row is part of the title bar ============ -->
-    <Border Classes="sidebar" Grid.RowSpan="2" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarBrush}" ClipToBounds="True">
+    <Border Classes="sidebar" Classes.collapsed="{Binding SidebarCollapsed}" Grid.RowSpan="2" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarBrush}" ClipToBounds="True">
       <DockPanel>
         <StackPanel DockPanel.Dock="Top" Margin="12,2,12,10" Spacing="10">
           <Grid ColumnDefinitions="Auto,*" Height="38" Background="Transparent" WindowDecorationProperties.ElementRole="TitleBar">
@@ -146,7 +146,7 @@
     <!-- ============ Downloads page ============ -->
     <Grid x:Name="DownloadsPage" Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" Classes="page" Classes.hidden="{Binding IsSettingsOpen}">
       <!-- Toolbar -->
-      <Grid Margin="12,0,14,4" ColumnDefinitions="*,Auto">
+      <Grid Margin="12,0,12,4" ColumnDefinitions="*,Auto">
         <StackPanel Orientation="Horizontal" Spacing="2" ClipToBounds="True">
           <Button Classes="tool" Command="{Binding ResumeCommand}" AutomationProperties.Name="{x:Static app:Strings.Resume}" ToolTip.Tip="{x:Static app:Strings.Resume}">
             <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE768;" /><TextBlock Text="{x:Static app:Strings.Resume}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
@@ -154,7 +154,7 @@
           <Button Classes="tool" Command="{Binding PauseCommand}" AutomationProperties.Name="{x:Static app:Strings.Pause}" ToolTip.Tip="{x:Static app:Strings.Pause}">
             <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE769;" /><TextBlock Text="{x:Static app:Strings.Pause}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
-          <Button Classes="tool" Command="{Binding DeleteCommand}" AutomationProperties.Name="{x:Static app:Strings.Delete}" ToolTip.Tip="Delete">
+          <Button Classes="tool" Command="{Binding DeleteCommand}" AutomationProperties.Name="{x:Static app:Strings.Delete}" ToolTip.Tip="{x:Static app:Strings.Delete}">
             <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE74D;" /><TextBlock Text="{x:Static app:Strings.Delete}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
           <Panel Width="14" />
@@ -177,11 +177,12 @@
       </Grid>
 
       <!-- State chips -->
-      <Grid Grid.Row="1" Margin="16,2,14,8" ColumnDefinitions="*,Auto">
+      <Grid Grid.Row="1" Margin="12,2,12,8" ColumnDefinitions="*,Auto">
       <ListBox Classes="chips" ItemsSource="{Binding StateFilters}"
                SelectedItem="{Binding SelectedStateFilter}" Background="Transparent">
         <ListBox.ItemsPanel>
-          <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+          <!-- wraps instead of clipping the last chips at 130 % or in a narrow window -->
+          <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
         </ListBox.ItemsPanel>
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:StateFilter">
@@ -236,12 +237,13 @@
             <DataGridTemplateColumn Header="{x:Static app:Strings.ColName}" Width="*" MinWidth="180" SortMemberPath="Name" x:DataType="vm:DownloadItemViewModel">
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate x:DataType="vm:DownloadItemViewModel">
-                  <StackPanel Orientation="Horizontal" Spacing="10" Margin="2,0,8,0" VerticalAlignment="Center">
+                  <!-- Grid, not StackPanel: the name needs a bounded width for the "…" trimming -->
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="2,0,8,0" VerticalAlignment="Center">
                     <Border Width="28" Height="28" CornerRadius="8" Background="{Binding TintSoft}">
                       <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="14" Foreground="{Binding Tint}" HorizontalAlignment="Center" />
                     </Border>
-                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
-                  </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
+                  </Grid>
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>
@@ -260,10 +262,10 @@
               <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate x:DataType="vm:DownloadItemViewModel">
                   <Border Classes="pill" Margin="6,0" Background="{Binding StateSoft}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                       <Ellipse Width="6" Height="6" Fill="{Binding StateBrush}" VerticalAlignment="Center" />
-                      <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{Binding StateBrush}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
-                    </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12" Foreground="{Binding StateBrush}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding StatusText}" />
+                    </Grid>
                   </Border>
                 </DataTemplate>
               </DataGridTemplateColumn.CellTemplate>
@@ -292,7 +294,7 @@
 
       <!-- Detail panel -->
       <Border Grid.Row="4" IsVisible="{Binding ShowDetail}" Classes="glass" Margin="12,0,12,8">
-        <TabControl Margin="12,4,12,0" Padding="0,6,0,0">
+        <TabControl Margin="12,4,12,0" Padding="0,6,0,0" SelectedIndex="{Binding Detail.SelectedTab}">
           <TabItem Header="{x:Static app:Strings.TabGeneral}" FontSize="14">
             <ScrollViewer>
               <ItemsControl ItemsSource="{Binding Detail.Info}" Margin="4,0">
@@ -343,7 +345,7 @@
                   <DataTemplate x:DataType="vm:PeerRow">
                     <Grid ColumnDefinitions="*,120,90,90,50">
                       <TextBlock Text="{Binding Address}" TextTrimming="CharacterEllipsis" FontSize="12.5" />
-                      <TextBlock Grid.Column="1" Classes="subtle" Text="{Binding Client}" />
+                      <TextBlock Grid.Column="1" Classes="subtle" Text="{Binding Client}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Client}" />
                       <TextBlock Grid.Column="2" Text="{Binding Down}" FontSize="12.5" />
                       <TextBlock Grid.Column="3" Text="{Binding Up}" FontSize="12.5" />
                       <TextBlock Grid.Column="4" Classes="subtle" Text="{Binding Progress}" />
@@ -377,8 +379,10 @@
                 </c:SettingRow>
                 <c:SettingRow Title="{x:Static app:Strings.SeedOverride}" Description="{x:Static app:Strings.SeedOverrideDesc}">
                   <StackPanel Orientation="Horizontal" Spacing="8">
-                    <NumericUpDown Value="{Binding Detail.SeedRatio}" IsEnabled="{Binding Detail.SeedOverride}" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.0" Width="110" />
-                    <NumericUpDown Value="{Binding Detail.SeedMinutes}" IsEnabled="{Binding Detail.SeedOverride}" Minimum="0" Maximum="100000" Increment="10" FormatString="0" Width="130" />
+                    <NumericUpDown Value="{Binding Detail.SeedRatio}" IsEnabled="{Binding Detail.SeedOverride}" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.0" Width="110"
+                                   ToolTip.Tip="{x:Static app:Strings.SeedRatio}" AutomationProperties.Name="{x:Static app:Strings.SeedRatio}" />
+                    <NumericUpDown Value="{Binding Detail.SeedMinutes}" IsEnabled="{Binding Detail.SeedOverride}" Minimum="0" Maximum="100000" Increment="10" FormatString="0" Width="130"
+                                   ToolTip.Tip="{x:Static app:Strings.SeedMinutes}" AutomationProperties.Name="{x:Static app:Strings.SeedMinutes}" />
                     <ToggleSwitch IsChecked="{Binding Detail.SeedOverride}" OnContent="" OffContent="" />
                   </StackPanel>
                 </c:SettingRow>
@@ -391,7 +395,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:InfoRow">
                     <Grid ColumnDefinitions="220,*" Margin="0,2">
-                      <TextBlock Classes="subtle" Text="{Binding Label}" FontFamily="Cascadia Mono, Consolas" />
+                      <TextBlock Classes="subtle" Text="{Binding Label}" FontFamily="Cascadia Mono, Consolas" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Label}" />
                       <SelectableTextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" FontSize="12" FontFamily="Cascadia Mono, Consolas" />
                     </Grid>
                   </DataTemplate>

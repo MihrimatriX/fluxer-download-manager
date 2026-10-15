@@ -62,12 +62,14 @@ public static partial class Appearance
         "ButtonBackground", "ButtonBackgroundPointerOver", "ButtonBackgroundPressed",
         "TextControlBackground", "TextControlBackgroundPointerOver", "TextControlBackgroundFocused",
         "ComboBoxBackground", "ComboBoxBackgroundPointerOver", "ComboBoxBackgroundPressed",
+        "TimePickerButtonBackground", "TimePickerButtonBackgroundPointerOver", "TimePickerButtonBackgroundPressed",
     ];
     private static readonly string[] NeuNoBorders =
     [
         "ButtonBorderBrush", "ButtonBorderBrushPointerOver", "ButtonBorderBrushPressed",
         "TextControlBorderBrush", "TextControlBorderBrushPointerOver", "TextControlBorderBrushFocused",
         "ComboBoxBorderBrush", "ComboBoxBorderBrushPointerOver", "ComboBoxBorderBrushPressed",
+        "TimePickerButtonBorderBrush", "TimePickerButtonBorderBrushPointerOver", "TimePickerButtonBorderBrushPressed",
     ];
 
     private static bool Translucent(UiSettings ui) => ui.Backdrop is "glass" or "mica" && _backdropWorks;
@@ -85,7 +87,8 @@ public static partial class Appearance
         }
 
         app.Resources["RowHeight"] = ui.Compact ? 32.0 : 42.0;
-        ApplyLayers(app, ui.Backdrop == "neu" ? Neu : Translucent(ui) ? ui.Backdrop == "mica" ? OnMica : OnGlass : Solid, neu: ui.Backdrop == "neu");
+        ApplyLayers(app, ui.Backdrop == "neu" ? Neu : Translucent(ui) ? ui.Backdrop == "mica" ? OnMica : OnGlass : Solid,
+            neu: ui.Backdrop == "neu", glass: ui.Backdrop == "glass" && Translucent(ui));
 
         if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             foreach (var w in desktop.Windows) ApplyTo(w, ui);
@@ -264,7 +267,7 @@ public static partial class Appearance
         w.ClearValue(Window.BackgroundProperty);
     }
 
-    private static void ApplyLayers(Application app, Dictionary<string, (string Light, string Dark)> table, bool neu)
+    private static void ApplyLayers(Application app, Dictionary<string, (string Light, string Dark)> table, bool neu, bool glass = false)
     {
         foreach (var (variant, light) in new[] { (ThemeVariant.Light, true), (ThemeVariant.Dark, false) })
         {
@@ -277,7 +280,9 @@ public static partial class Appearance
                 dict["ExpanderContentBackground"] = dict["CardBrush"];
 
                 // Card edge: the glass highlight, or nothing when shadows do the work.
-                dict["CardEdgeBrush"] = neu ? Brushes.Transparent : dict["GlassBorderBrush"];
+                dict["CardEdgeBrush"] = glass ? dict["GlassBorderBrush"] : Brushes.Transparent;
+                dict["ExpanderHeaderBorderBrush"] = Brushes.Transparent;
+                dict["ExpanderContentBorderBrush"] = Brushes.Transparent;
                 dict["CardShadow"] = neu ? BoxShadows.Parse(light ? NeuRaised.Light : NeuRaised.Dark) : default(BoxShadows);
                 dict["RaisedShadow"] = dict["CardShadow"];
                 // Shadows need air between cards, or neighbouring shades read as lines.

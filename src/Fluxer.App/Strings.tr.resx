@@ -238,7 +238,6 @@
   <data name="SeedRatio" xml:space="preserve"><value>Paylaşım oranı</value></data>
   <data name="SeedRatioDesc" xml:space="preserve"><value>Gönderilen ÷ boyut bu orana ulaşınca paylaşımı durdur (0 = sınırsız).</value></data>
   <data name="SegmentMap" xml:space="preserve"><value>Bağlantılar</value></data>
-  <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
   <data name="SelectNone" xml:space="preserve"><value>Hiçbirini seçme</value></data>
   <data name="Sequential" xml:space="preserve"><value>Sıralı indir (medya önizlemesi için)</value></data>
   <data name="Settings" xml:space="preserve"><value>Ayarlar</value></data>
@@ -333,4 +332,6 @@
   <data name="Minimize" xml:space="preserve"><value>Simge durumuna küçült</value></data>
   <data name="Maximize" xml:space="preserve"><value>Ekranı kapla</value></data>
   <data name="CloseWindow" xml:space="preserve"><value>Kapat</value></data>
+  <data name="EtaDays" xml:space="preserve"><value>{0}g {1}sa</value></data>
+  <data name="AccentNames" xml:space="preserve"><value>Mavi|Çivit|Mor|Pembe|Turuncu|Yeşil|Turkuaz|Grafit</value></data>
 </root>

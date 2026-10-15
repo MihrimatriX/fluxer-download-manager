@@ -38,6 +38,8 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
 
     [ObservableProperty] private bool _hasItem;
     [ObservableProperty] private bool _isHttp;
+    /// Tab order: general, activity, files, peers, torrent options (torrent only), headers (HTTP only).
+    [ObservableProperty] private int _selectedTab;
     [ObservableProperty] private bool _isTorrent;
     [ObservableProperty] private bool _isMedia;
     [ObservableProperty] private string _title = "";
@@ -71,6 +73,8 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         IsHttp = d is HttpDownload;
         IsTorrent = d is TorrentDownload;
         IsMedia = d is MediaDownload;
+        // A tab the new kind hides would stay selected (and show stale content): fall back to General.
+        if (SelectedTab is >= 2 and <= 4 && !IsTorrent || SelectedTab == 5 && !IsHttp) SelectedTab = 0;
         Title = item.Name;
 
         var r = d.Record;
@@ -141,7 +145,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         {
             var f = Files[r.Index];
             f.Percent = r.Percent;
-            f.PercentText = $"{r.Percent:F0}%";
+            f.PercentText = Loc.Percent(r.Percent / 100);
         }
     }
 
@@ -211,7 +215,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         Peers.Clear();
         foreach (var peer in peers.OrderByDescending(p => p.Monitor.DownloadRate).Take(200))
             Peers.Add(new PeerRow(peer.Uri.ToString(), peer.ClientApp.Client.ToString(), Loc.Speed(peer.Monitor.DownloadRate),
-                Loc.Speed(peer.Monitor.UploadRate), $"{peer.BitField.PercentComplete:F0}%"));
+                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100)));
 
         Trackers.Clear();
         if (td.Manager is { } m)

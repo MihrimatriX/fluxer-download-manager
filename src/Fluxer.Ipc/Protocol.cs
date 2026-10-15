@@ -49,6 +49,7 @@ public static class MessageTypes
     public const string DownloadAdd = "download.add", DownloadAddResult = "download.add.result";
     public const string StatusGet = "status.get", Status = "status";
     public const string PageSend = "page.send", PageResources = "page.resources";
+    public const string DownloadBatch = "download.batch", Command = "command";
     public const string InstanceArgs = "instance.args";
     public const string Error = "error";
 }
@@ -71,9 +72,26 @@ public sealed record PageResource(string Url, string Kind, int? Width, int? Heig
 
 public sealed record PageResources(string PageUrl, PageResource[] Resources, string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito);
 
+/// Several links at once (the popup's batch download); opens the add dialog with all of them.
+public sealed record BatchItem(string Url, string? FileName);
+public sealed record DownloadBatch(BatchItem[] Items, string PageUrl, string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito);
+
+/// Remote control from the popup. Id is required for the per-download actions.
+public sealed record Command(string Action, long? Id);
+
+public static class CommandActions
+{
+    public const string Pause = "pause", Resume = "resume", Remove = "remove", Open = "open", Folder = "folder",
+        Details = "details", PauseAll = "pauseAll", ResumeAll = "resumeAll", Show = "show";
+    public static readonly string[] PerDownload = [Pause, Resume, Remove, Open, Folder, Details];
+    public static readonly string[] Global = [PauseAll, ResumeAll, Show];
+}
+
 public sealed record DownloadAddResult(string Status, string? Reason);
 public sealed record StatusItem(string Name, double Progress, long BytesPerSecond);
-public sealed record StatusReply(int Active, int Queued, long BytesPerSecond, StatusItem[] Top);
+/// One row of the popup's download list. State: downloading, queued, paused, completed, failed, seeding.
+public sealed record StatusEntry(long Id, string Name, string State, string Kind, double Progress, long BytesPerSecond, long DoneBytes, long? TotalBytes);
+public sealed record StatusReply(int Active, int Queued, long BytesPerSecond, StatusItem[] Top, StatusEntry[]? Items = null);
 public sealed record ErrorReply(string Code, int? MinProtocolVersion, string? Message);
 public sealed record Pong(string AppVersion);
 public sealed record Empty;
@@ -85,6 +103,8 @@ public sealed record InstanceArgs(string[] Args);
 [JsonSerializable(typeof(DownloadAdd))]
 [JsonSerializable(typeof(PageSend))]
 [JsonSerializable(typeof(PageResources))]
+[JsonSerializable(typeof(DownloadBatch))]
+[JsonSerializable(typeof(Command))]
 [JsonSerializable(typeof(DownloadAddResult))]
 [JsonSerializable(typeof(StatusReply))]
 [JsonSerializable(typeof(ErrorReply))]

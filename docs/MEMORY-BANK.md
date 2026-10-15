@@ -17,6 +17,12 @@ Velopack installer. Kurulum yeri ve veri: `%LOCALAPPDATA%\Fluxer` (`current\` = 
 | 0.4.1 | Başlık çubuğu uygulamanın içinde |
 | 0.5.0 | Liste onay kutuları, renkli ikon/durum etiketleri, cam (sistem akrilik) arka plan, kendi çizdiğimiz başlık düğmeleri |
 | 0.6.0 | Çizgisiz yüzey (ayırıcılar, DataGrid çizgileri, pencere çerçevesi yok), neumorfik görünüm stili |
+| 0.7.0 | Eklenti: video yakalama + video düğmesi, 3 sekmeli açılır pencere (indirme yönetimi, toplu indirme), `download.batch`/`command` mesajları, medya referrer (migration 3); 35 maddelik UI denetiminin çoğu düzeltildi; uçtan uca eklenti testi |
+
+## Eklenti uçtan uca testi
+- `node tools/e2e-extension.mjs`: Chrome 154 `--load-extension`'ı yok sayıyor; betik `--remote-debugging-pipe --enable-unsafe-extension-debugging` + CDP `Extensions.loadUnpacked` kullanır. Geçici profil, ekran dışı pencere, kendi test sunucusu.
+- `--send`: Chrome'un `HKCU\Software\Google\Chrome\NativeMessagingHosts\com.fluxer.host` anahtarı dev host'a (FLUXER_INSTANCE=dev ile .bat) işaret etmeli; test sonrası anahtar silinir. Kurulu bir Fluxer kaydı varsa üzerine yazma.
+- UI denetiminden kalanlar (bilerek ertelendi): komutlarda CanExecute (seçim yokken araç düğmeleri etkin), satır düğmesinin duruma özgü erişilebilir adı, %130 ölçekte başlık düğmeleri ile arama kutusunun dikey hizası, meşgul pencerelerde kapat düğmesi.
 
 ## Doğrulama notları (0.4)
 - Vurgu rengi, Mica, ölçek %115, sıkı yerleşim, animasyon kapatma, sütun gizleme + yeniden açılışta geri gelme, kenar çubuğu hafızası canlı denendi (dev profil).

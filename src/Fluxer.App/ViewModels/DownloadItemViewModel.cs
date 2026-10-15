@@ -127,7 +127,7 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
         if (state == DownloadState.Queued && queuePosition(d) is { } pos)
             return string.Format(CultureInfo.CurrentCulture, Strings.QueuedAt, pos);
         if (state == DownloadState.Downloading && p.TotalBytes > 0)
-            return $"{p.Fraction * 100:F1}%" + (p.Connections > 1 ? $" · {p.Connections} {Strings.ConnectionsShort}" : "");
+            return Loc.Percent(p.Fraction, 1) + (p.Connections > 1 ? $" · {p.Connections} {Strings.ConnectionsShort}" : "");
         return Loc.State(state);
     }
 

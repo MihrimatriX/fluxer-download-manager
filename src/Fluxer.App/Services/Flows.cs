@@ -143,7 +143,7 @@ public static class Flows
 
     // ================= media (yt-dlp) =================
 
-    public static async Task MediaAsync(AppHost host, string pageUrl, CookieDto[]? cookies)
+    public static async Task MediaAsync(AppHost host, string pageUrl, CookieDto[]? cookies, string? referrer = null)
     {
         var engine = host.Engine;
         if (!await EnsureMediaReadyAsync(host)) return;
@@ -158,7 +158,7 @@ public static class Flows
                 try
                 {
                     if (netscape is not null) file = Cookies.WritePrivateFile(Path.Combine(Program.DataDirectory, "tmp"), netscape);
-                    return await YtDlp.ProbeAsync(engine.Tools, pageUrl, file, CancellationToken.None);
+                    return await YtDlp.ProbeAsync(engine.Tools, pageUrl, file, CancellationToken.None, referrer);
                 }
                 finally { if (file is not null) File.Delete(file); }
             });
@@ -178,7 +178,7 @@ public static class Flows
         var choice = await Dialogs.MediaAsync(host.Owner, engine.Settings, probe);
         if (choice is null) return;
         var format = YtDlp.FormatFor(choice.MaxHeight, choice.AudioOnly);
-        var media = choice.Entries.Select(entry => engine.AddMedia(entry.Url, entry.Title, format, choice.AudioOnly, netscape, choice.Folder)).ToList();
+        var media = choice.Entries.Select(entry => engine.AddMedia(entry.Url, entry.Title, format, choice.AudioOnly, netscape, choice.Folder, referrer)).ToList();
         if (media.Count == 1) host.OpenProgressIfEnabled(media[0], activate: true);
         else host.ShowMainWindow();
     }

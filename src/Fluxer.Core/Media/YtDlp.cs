@@ -10,9 +10,9 @@ public sealed record MediaProbe(string Title, bool IsPlaylist, IReadOnlyList<Med
 /// Metadata extraction (`yt-dlp -J`). Downloading itself is MediaDownload.
 public static class YtDlp
 {
-    public static async Task<MediaProbe> ProbeAsync(ToolManager tools, string url, string? cookieFile, CancellationToken ct)
+    public static async Task<MediaProbe> ProbeAsync(ToolManager tools, string url, string? cookieFile, CancellationToken ct, string? referrer = null)
     {
-        var psi = BaseStartInfo(tools, cookieFile);
+        var psi = BaseStartInfo(tools, cookieFile, referrer);
         foreach (var a in new[] { "-J", "--flat-playlist", "--no-warnings", url }) psi.ArgumentList.Add(a);
 
         using var p = Process.Start(psi)!;
@@ -55,7 +55,7 @@ public static class YtDlp
         : maxHeight is { } h ? $"bv*[height<={h}]+ba/b[height<={h}]"
         : "bv*+ba/b";
 
-    internal static ProcessStartInfo BaseStartInfo(ToolManager tools, string? cookieFile)
+    internal static ProcessStartInfo BaseStartInfo(ToolManager tools, string? cookieFile, string? referrer = null)
     {
         var psi = new ProcessStartInfo(tools.YtDlpPath)
         {
@@ -71,6 +71,8 @@ public static class YtDlp
         foreach (var a in new[] { "--ignore-config", "--no-colors", "--encoding", "utf-8", "--ffmpeg-location", tools.Directory })
             psi.ArgumentList.Add(a);
         if (cookieFile is not null) { psi.ArgumentList.Add("--cookies"); psi.ArgumentList.Add(cookieFile); }
+        // Stream URLs captured in the browser usually only answer with the page they play on as Referer.
+        if (referrer is not null) { psi.ArgumentList.Add("--referer"); psi.ArgumentList.Add(referrer); }
         return psi;
     }
 

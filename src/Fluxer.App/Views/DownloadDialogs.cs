@@ -22,7 +22,12 @@ public static partial class Dialogs
     public static async Task<TorrentChoice?> TorrentAsync(Window? owner, AppSettings s, string name, IReadOnlyList<(string Path, long Length)> files)
     {
         TorrentChoice? result = null;
-        var checks = files.Select(f => new CheckBox { Content = $"{f.Path}   ({Loc.Bytes(f.Length)})", IsChecked = true }).ToList();
+        var checks = files.Select(f => new CheckBox
+        {
+            IsChecked = true,
+            // long paths end in "…" (full path in the tooltip) instead of being cut at the window edge
+            Content = new TextBlock { Text = $"{f.Path}   ({Loc.Bytes(f.Length)})", TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis, [ToolTip.TipProperty] = f.Path },
+        }).ToList();
         var list = new StackPanel { Spacing = 2 };
         foreach (var c in checks) list.Children.Add(c);
         var total = new TextBlock { Opacity = 0.7 };

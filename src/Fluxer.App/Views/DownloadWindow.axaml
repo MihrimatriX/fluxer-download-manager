@@ -66,7 +66,7 @@
       <ProgressBar Value="{Binding Percent}" IsIndeterminate="{Binding Indeterminate}" MinHeight="8" CornerRadius="4" Foreground="{Binding StatusBrush}" />
 
       <!-- error banner -->
-      <Border IsVisible="{Binding IsFailed}" Background="#22E5484D" BorderBrush="#66E5484D" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,12,0,0">
+      <Border IsVisible="{Binding IsFailed}" Background="#22E5484D" CornerRadius="8" Padding="12,10" Margin="0,12,0,0">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <TextBlock Classes="icon" Text="&#xE783;" Foreground="#E5484D" FontSize="16" Margin="0,0,10,0" />
           <TextBlock Grid.Column="1" Text="{Binding ErrorText}" TextWrapping="Wrap" VerticalAlignment="Center" />
@@ -93,7 +93,7 @@
       </StackPanel>
 
       <!-- details -->
-      <TabControl IsVisible="{Binding !Compact}" Margin="-4,12,0,0" Padding="0,6,0,0" Height="210">
+      <TabControl IsVisible="{Binding !Compact}" Margin="-4,12,0,0" Padding="0,6,0,0" Height="210" SelectedIndex="{Binding FirstTab, Mode=OneTime}">
         <TabItem Header="{x:Static app:Strings.TabConnectionsList}" FontSize="13.5" IsVisible="{Binding IsHttp}">
           <DockPanel>
             <Grid DockPanel.Dock="Top" ColumnDefinitions="34,*,90,100,110" Margin="6,0,6,4">
@@ -132,7 +132,7 @@
               <DataTemplate x:DataType="vm:PeerRow">
                 <Grid ColumnDefinitions="*,110,80,80,45">
                   <TextBlock Text="{Binding Address}" TextTrimming="CharacterEllipsis" FontSize="12" />
-                  <TextBlock Grid.Column="1" Classes="subtle" Text="{Binding Client}" />
+                  <TextBlock Grid.Column="1" Classes="subtle" Text="{Binding Client}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Client}" />
                   <TextBlock Grid.Column="2" Text="{Binding Down}" FontSize="12" />
                   <TextBlock Grid.Column="3" Text="{Binding Up}" FontSize="12" />
                   <TextBlock Grid.Column="4" Classes="subtle" Text="{Binding Progress}" />
@@ -162,7 +162,9 @@
             <TextBlock Text="{x:Static app:Strings.Details}" FontSize="12.5" />
           </StackPanel>
         </Button>
+        <!-- destructive first, primary (accent) last -->
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+          <Button Content="{x:Static app:Strings.Cancel}" Command="{Binding CancelCommand}" CommandParameter="{Binding $parent[Window]}" />
           <Button Content="{x:Static app:Strings.Hide}" Click="OnHide" ToolTip.Tip="{x:Static app:Strings.HideTip}" />
           <Button Classes="accent" Command="{Binding ToggleCommand}" MinWidth="110" AutomationProperties.Name="{Binding ToggleText}">
             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -170,7 +172,6 @@
               <TextBlock Text="{Binding ToggleText}" />
             </StackPanel>
           </Button>
-          <Button Content="{x:Static app:Strings.Cancel}" Command="{Binding CancelCommand}" CommandParameter="{Binding $parent[Window]}" />
         </StackPanel>
       </Grid>
     </StackPanel>

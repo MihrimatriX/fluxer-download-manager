@@ -26,7 +26,8 @@ try
     if (Validate(msg) is { } problem) return await ReplyAsync(Envelope.Error(id, ErrorCodes.InvalidMessage, problem));
 
     // Status/ping must not launch the app (the popup polls them); real work does.
-    var mayLaunch = msg.Type is MessageTypes.DownloadAdd or MessageTypes.PageSend or MessageTypes.PageResources;
+    var mayLaunch = msg.Type is MessageTypes.DownloadAdd or MessageTypes.PageSend or MessageTypes.PageResources or MessageTypes.DownloadBatch
+        || msg.Type == MessageTypes.Command && msg.PayloadAs<Command>()?.Action == CommandActions.Show;
     var reply = await RelayAsync(body, mayLaunch);
     if (reply is null) return await ReplyAsync(Envelope.Error(id, ErrorCodes.AppUnavailable));
     if (reply.Length > Protocol.MaxReplyBytes) return await ReplyAsync(Envelope.Error(id, ErrorCodes.Internal, "reply too large"));
@@ -62,6 +63,14 @@ static string? Validate(Envelope msg)
         case MessageTypes.PageResources:
             var res = msg.PayloadAs<PageResources>();
             return res is not null && IsUrl(res.PageUrl, false) && res.Resources.All(r => IsUrl(r.Url, false)) ? null : "bad url";
+        case MessageTypes.DownloadBatch:
+            var batch = msg.PayloadAs<DownloadBatch>();
+            return batch is not null && IsUrl(batch.PageUrl, false) && batch.Items is { Length: > 0 and <= 1000 }
+                   && batch.Items.All(i => IsUrl(i.Url, false) && (i.FileName is null || i.FileName.Length < 512)) ? null : "bad batch";
+        case MessageTypes.Command:
+            var cmd = msg.PayloadAs<Command>();
+            return cmd is not null && (CommandActions.Global.Contains(cmd.Action) || CommandActions.PerDownload.Contains(cmd.Action) && cmd.Id is > 0)
+                ? null : "bad command";
         default:
             return "unknown type";
     }

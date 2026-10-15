@@ -54,7 +54,9 @@ public static partial class Dialogs
         var list = new ListBox
         {
             ItemsSource = visible,
-            Height = 330,
+            MinHeight = 160,
+            MaxHeight = 330,
+            Background = Avalonia.Media.Brushes.Transparent,
             ItemTemplate = new FuncDataTemplate<GrabRow>((_, _) =>
             {
                 var check = new CheckBox { [!ToggleButton_IsChecked] = new Binding(nameof(GrabRow.IsChecked)) { Mode = BindingMode.TwoWay } };
@@ -98,8 +100,13 @@ public static partial class Dialogs
         pattern.TextChanged += (_, _) => Apply();
         foreach (var r in rows) r.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(GrabRow.IsChecked)) count.Text = string.Format(CultureInfo.CurrentCulture, Strings.GrabCount, visible.Count(x => x.IsChecked), visible.Count); };
 
-        var all = new Button(Strings.SelectAll, false, () => { foreach (var r in visible) r.IsChecked = true; return false; });
-        var none = new Button(Strings.SelectNone, false, () => { foreach (var r in visible) r.IsChecked = false; return false; });
+        // Selection helpers sit with the count, not among the dialog's actions.
+        var all = new Avalonia.Controls.Button { Content = Strings.SelectAll, Classes = { "tool" }, Padding = new Thickness(8, 3) };
+        all.Click += (_, _) => { foreach (var r in visible) r.IsChecked = true; };
+        var none = new Avalonia.Controls.Button { Content = Strings.SelectNone, Classes = { "tool" }, Padding = new Thickness(8, 3) };
+        none.Click += (_, _) => { foreach (var r in visible) r.IsChecked = false; };
+        var selectors = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Children = { all, none } };
+        DockPanel.SetDock(selectors, Dock.Right);
         var (folder, folderValue) = FolderPicker(Path.Combine(s.DownloadDirectory, FolderNameFor(page.PageUrl)));
 
         var filters = new WrapPanel { Orientation = Orientation.Horizontal };
@@ -112,8 +119,9 @@ public static partial class Dialogs
             {
                 new TextBlock { Text = page.PageUrl, Opacity = 0.7, TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis },
                 filters, Label(Strings.UrlPattern), pattern,
-                new DockPanel { Margin = new Thickness(0, 8, 0, 4), Children = { count } },
-                list, Label(Strings.SaveTo), folder,
+                new DockPanel { Margin = new Thickness(0, 8, 0, 4), Children = { selectors, count } },
+                new Border { Classes = { "card" }, Background = Avalonia.Media.Brushes.Transparent, CornerRadius = new CornerRadius(10), Child = list },
+                Label(Strings.SaveTo), folder,
             },
         };
         Apply();
@@ -121,7 +129,6 @@ public static partial class Dialogs
         (List<string>, string)? result = null;
         using var cts = new CancellationTokenSource();
         var w = Shell(Strings.GrabTitle, body, 760,
-            all, none,
             new Button(Strings.Cancel, false, () => true),
             new Button(Strings.Download, true, () =>
             {

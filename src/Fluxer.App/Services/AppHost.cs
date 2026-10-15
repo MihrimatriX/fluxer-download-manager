@@ -350,6 +350,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
     {
         if (msg.Type == MessageTypes.DownloadAdd && msg.PayloadAs<DownloadAdd>() is { } add)
             return await OnDownloadAddAsync(msg.Id, add);
+        if (msg.Type == MessageTypes.Command && msg.PayloadAs<Command>() is { } cmd)
+            return await Dispatcher.UIThread.InvokeAsync(() => RunCommandAsync(msg.Id, cmd));
         return HandleOther(msg);
     }
 
@@ -363,7 +365,14 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             case MessageTypes.StatusGet:
                 return Envelope.Create(msg.Id, MessageTypes.Status, BuildStatus());
             case MessageTypes.PageSend when msg.PayloadAs<PageSend>() is { } page:
-                Dispatcher.UIThread.Post(() => _ = Guard(Flows.MediaAsync(this, page.PageUrl, page.Cookies)));
+                // A captured stream (m3u8/mpd) comes with the page it plays on as referrer.
+                var referrer = page.Referrer is { } r && r != page.PageUrl ? r : null;
+                Dispatcher.UIThread.Post(() => _ = Guard(Flows.MediaAsync(this, page.PageUrl, page.Cookies, referrer)));
+                return accepted;
+            case MessageTypes.DownloadBatch when msg.PayloadAs<DownloadBatch>() is { } batch:
+                var ctx = new RequestContext(batch.Referrer ?? batch.PageUrl, batch.UserAgent, CookieHeader(batch.Cookies));
+                var urls = batch.Items.Select(i => i.Url).Distinct().ToList();
+                Dispatcher.UIThread.Post(() => _ = Guard(Flows.NewDownloadAsync(this, urls, null, ctx)));
                 return accepted;
             case MessageTypes.PageResources when msg.PayloadAs<PageResources>() is { } res:
                 Dispatcher.UIThread.Post(() => _ = Guard(Flows.GrabAsync(this, res)));
@@ -381,7 +390,66 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var items = Engine.Queue.Items;
         var active = items.Where(d => d.State is DownloadState.Starting or DownloadState.Downloading).Select(d => (d, p: d.GetProgress())).ToList();
         return new StatusReply(active.Count, items.Count(d => d.State == DownloadState.Queued), active.Sum(x => x.p.BytesPerSecond),
-            [.. active.OrderByDescending(x => x.p.BytesPerSecond).Take(5).Select(x => new StatusItem(x.d.FileName, x.p.Fraction, x.p.BytesPerSecond))]);
+            [.. active.OrderByDescending(x => x.p.BytesPerSecond).Take(5).Select(x => new StatusItem(x.d.FileName, x.p.Fraction, x.p.BytesPerSecond))],
+            [.. PopupList(items)]);
+    }
+
+    /// The popup's list: everything unfinished (running first), then the latest finished ones. Bounded so
+    /// the reply stays small.
+    private static IEnumerable<StatusEntry> PopupList(IReadOnlyList<IDownload> items)
+    {
+        static int Rank(DownloadState s) => s switch
+        {
+            DownloadState.Starting or DownloadState.Downloading or DownloadState.Verifying => 0,
+            DownloadState.Seeding => 1,
+            DownloadState.Queued => 2,
+            DownloadState.Paused => 3,
+            DownloadState.Completed => 5,
+            _ => 4,
+        };
+        static string Name(DownloadState s) => s switch
+        {
+            DownloadState.Starting or DownloadState.Downloading or DownloadState.Verifying => "downloading",
+            DownloadState.Seeding => "seeding",
+            DownloadState.Queued => "queued",
+            DownloadState.Paused => "paused",
+            DownloadState.Completed => "completed",
+            _ => "failed",
+        };
+        var open = items.Where(d => d.State != DownloadState.Completed).OrderBy(d => Rank(d.State)).Take(20);
+        var done = items.Where(d => d.State == DownloadState.Completed).OrderByDescending(d => d.Record.CreatedAt).Take(8);
+        foreach (var d in open.Concat(done))
+        {
+            var p = d.GetProgress();
+            yield return new StatusEntry(d.Id, d.FileName.Length > 0 ? d.FileName : d.Record.Http?.Url ?? "…", Name(d.State),
+                d.Kind.ToString().ToLowerInvariant(), d.State == DownloadState.Completed ? 1 : p.Fraction, p.BytesPerSecond, p.BytesDone, p.TotalBytes);
+        }
+    }
+
+    /// Popup buttons. Replies "accepted" or an error the popup can show.
+    private async Task<Envelope> RunCommandAsync(string id, Command c)
+    {
+        var ok = Envelope.Create(id, MessageTypes.DownloadAddResult, new DownloadAddResult("accepted", null));
+        var q = Engine.Queue;
+        switch (c.Action)
+        {
+            case CommandActions.PauseAll: await q.PauseAllAsync(); return ok;
+            case CommandActions.ResumeAll: q.ResumeAll(); return ok;
+            case CommandActions.Show: ShowMainWindow(); return ok;
+        }
+        if (q.Items.FirstOrDefault(d => d.Id == c.Id) is not { } dl)
+            return Envelope.Error(id, ErrorCodes.InvalidMessage, "unknown download");
+        switch (c.Action)
+        {
+            case CommandActions.Pause: await q.PauseAsync(dl.Id); break;
+            case CommandActions.Resume: q.Resume(dl.Id); break;
+            case CommandActions.Remove: await q.RemoveAsync(dl.Id, deleteFiles: false); break;
+            case CommandActions.Open: ViewModels.MainViewModel.OpenFileOf(dl); break;
+            case CommandActions.Folder: ViewModels.MainViewModel.ShowInFolder(dl); break;
+            case CommandActions.Details: OpenDownloadWindow(dl); break;
+            default: return Envelope.Error(id, ErrorCodes.InvalidMessage, "unknown action");
+        }
+        return ok;
     }
 
     private static async Task Guard(Task t)

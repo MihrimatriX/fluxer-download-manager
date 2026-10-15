@@ -38,6 +38,8 @@ public sealed partial class DownloadWindow : Window
         _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(250), DispatcherPriority.Background, (_, _) => OnTick());
         Opened += (_, _) => _timer.Start();
         Closed += (_, _) => _timer.Stop();
+        // Escape closes like every dialog; the download keeps running.
+        KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Escape) Close(); };
     }
 
     public long DownloadId => _vm.Download.Id;

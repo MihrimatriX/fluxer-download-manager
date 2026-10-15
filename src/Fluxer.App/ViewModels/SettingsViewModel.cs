@@ -42,6 +42,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly AppHost _host;
     private readonly DispatcherTimer _saveTimer;
     private bool _loading;
+    private int _savedStamp;
 
     public SettingsViewModel(AppHost host)
     {
@@ -65,7 +66,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     // Appearance
     public IReadOnlyList<AccentSwatch> Accents { get; } =
-        [new(0, null, Strings.AccentSystem), .. Appearance.AccentChoices.Select((h, i) => new AccentSwatch(i + 1, h, h))];
+        [new(0, null, Strings.AccentSystem), .. Appearance.AccentChoices.Select((h, i) => new AccentSwatch(i + 1, h, Strings.AccentNames.Split('|').ElementAtOrDefault(i) ?? h))];
     [ObservableProperty] private int _accentIndex;
     [ObservableProperty] private int _backdropIndex;
     public string[] Backdrops => [Strings.BackdropGlass, Strings.BackdropMica, Strings.BackdropNeu, Strings.BackdropNone];
@@ -73,7 +74,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private double _scalePercent = 100;
     [ObservableProperty] private bool _animations;
     [ObservableProperty] private bool _toolbarLabelsOn;
-    public string ScaleText => $"%{ScalePercent:0}";
+    public string ScaleText => Loc.Percent(ScalePercent / 100);
     partial void OnScalePercentChanged(double value) => OnPropertyChanged(nameof(ScaleText));
 
     // General
@@ -224,6 +225,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
         _host.Main.LoadUi();
         SavedText = Strings.SettingsSaved;
+        // The confirmation fades after a moment instead of staying forever.
+        var stamp = ++_savedStamp;
+        Avalonia.Threading.DispatcherTimer.RunOnce(() => { if (stamp == _savedStamp) SavedText = ""; }, TimeSpan.FromSeconds(2.5));
         if (uiChanged) _host.ReloadUi();
     }
 

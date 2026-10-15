@@ -302,7 +302,19 @@ export type PageResources = Envelope<'page.resources', BrowserContext & {
   resources: { url: string; kind: 'link' | 'image' | 'media'; width?: number; height?: number }[];
 }>;
 
-export type Request = Ping | DownloadAdd | StatusGet | PageSend | PageResources;
+// 0.7 — açılır pencere: toplu indirme ve uzaktan kontrol
+// (eski uygulama 'invalid-message' + 'unknown type' döner → eklenti "güncelleme gerekli" der)
+export type DownloadBatch = Envelope<'download.batch', BrowserContext & {
+  pageUrl: string;
+  items: { url: string; fileName?: string }[];   // yalnızca http(s), 1..1000 → tek ekleme penceresi
+}>;
+export type Command = Envelope<'command', {
+  action: 'pause' | 'resume' | 'remove' | 'open' | 'folder' | 'details' | 'pauseAll' | 'resumeAll' | 'show';
+  id?: number;                                   // indirme başına eylemlerde zorunlu; yanıt download.add.result
+}>;
+// page.send ile yakalanan akış: pageUrl = m3u8/mpd adresi, referrer = videonun oynadığı sayfa → yt-dlp --referer
+
+export type Request = Ping | DownloadAdd | StatusGet | PageSend | PageResources | DownloadBatch | Command;
 
 // ---- uygulama → eklenti ----
 export type Pong = Envelope<'pong', { appVersion: string }>;
@@ -313,6 +325,8 @@ export type DownloadAddResult = Envelope<'download.add.result', {
 export type Status = Envelope<'status', {
   active: number; queued: number; bytesPerSecond: number;
   top: { name: string; progress: number; bytesPerSecond: number }[]; // en fazla 5
+  items?: { id: number; name: string; state: string; kind: string; progress: number;
+            bytesPerSecond: number; doneBytes: number; totalBytes?: number }[]; // 0.7: bitmemişler (≤20) + son bitenler (≤8)
 }>;
 export type ErrorReply = Envelope<'error', {
   code: 'protocol-mismatch' | 'invalid-message' | 'app-unavailable' | 'internal';
@@ -363,7 +377,7 @@ public sealed partial class IpcJson : JsonSerializerContext;   // NativeAOT içi
 ### 5.4 Host davranışı
 
 1. Chrome, host'u çağıran origin'i (`chrome-extension://<id>/`) ilk argüman olarak verir → izin listesinde değilse `error/invalid-message` ve çıkış (manifest'teki `allowed_origins`'e ek savunma).
-2. Mesaj okunur, `protocolVersion` ve şema doğrulanır (URL şeması yalnızca `http/https`; `magnet:` sadece `download.add`'de).
+2. Mesaj okunur, `protocolVersion` ve şema doğrulanır (URL şeması yalnızca `http/https`; `magnet:` sadece `download.add`'de; `download.batch` 1–1000 öğe; `command` bilinen eylem + gerekiyorsa `id`). Uygulamayı yalnızca iş isteyen mesajlar başlatır (`download.*`, `page.*`, `command/show`); durum ve diğer komutlar başlatmaz.
 3. Pipe'a bağlanılır; başarısızsa `Fluxer.exe --background` başlatılır, 5 sn boyunca 100 ms aralıkla yeniden denenir; olmazsa `error/app-unavailable`.
 4. Yanıt aynen eklentiye döner, host çıkar.
 

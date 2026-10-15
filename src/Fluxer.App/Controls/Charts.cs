@@ -41,7 +41,6 @@ public sealed class SegmentMap : Control
         var total = Total;
         if (total <= 0 || Segments.Length == 0) return;
 
-        var edge = new Pen(new SolidColorBrush(Colors.Black, 0.35), 1);
         using (ctx.PushClip(new RoundedRect(bounds, radius)))
         {
             foreach (var s in Segments)
@@ -52,7 +51,6 @@ public sealed class SegmentMap : Control
                 var x1 = Math.Min(s.Position, s.End) / (double)total * bounds.Width;
                 if (Colorful && xe > x1) ctx.FillRectangle(new SolidColorBrush(color, 0.18), new Rect(x1, 0, xe - x1, bounds.Height));
                 if (x1 > x0) ctx.FillRectangle(new SolidColorBrush(color), new Rect(x0, 0, Math.Max(1, x1 - x0), bounds.Height));
-                if (s.Start > 0) ctx.DrawLine(edge, new Point(x0, 0), new Point(x0, bounds.Height));
             }
         }
     }
@@ -77,9 +75,6 @@ public sealed class SpeedGraph : Control
     {
         var b = new Rect(Bounds.Size);
         var accent = SegmentMap.Accent(this);
-        var grid = new Pen(new SolidColorBrush(accent, 0.08), 1, dashStyle: new DashStyle([3, 4], 0));
-        for (var i = 1; i < 4; i++) ctx.DrawLine(grid, new Point(0, b.Height * i / 4), new Point(b.Width, b.Height * i / 4));
-
         var values = Values;
         if (values.Length < 2) return;
         var max = Math.Max(values.Max(), 1);

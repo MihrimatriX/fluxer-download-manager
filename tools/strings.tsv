@@ -234,7 +234,6 @@ SeedOverrideDesc	Ratio and minutes for this torrent only; off = global setting.	
 SeedRatio	Seeding ratio	Paylaşım oranı
 SeedRatioDesc	Stop seeding when uploaded ÷ size reaches this ratio (0 = no limit).	Gönderilen ÷ boyut bu orana ulaşınca paylaşımı durdur (0 = sınırsız).
 SegmentMap	Connections	Bağlantılar
-SelectAll	Select all	Tümünü seç
 SelectNone	Select none	Hiçbirini seçme
 Sequential	Download in order (for previewing media)	Sıralı indir (medya önizlemesi için)
 Settings	Settings	Ayarlar
@@ -329,3 +328,5 @@ ZeroIsGlobal	0 = only the global limit applies.	0 = yalnızca genel sınır geç
 Minimize	Minimize	Simge durumuna küçült
 Maximize	Maximize	Ekranı kapla
 CloseWindow	Close	Kapat
+EtaDays	{0}d {1}h	{0}g {1}sa
+AccentNames	Blue|Indigo|Purple|Pink|Orange|Green|Teal|Graphite	Mavi|Çivit|Mor|Pembe|Turuncu|Yeşil|Turkuaz|Grafit

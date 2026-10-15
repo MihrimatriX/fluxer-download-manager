@@ -77,6 +77,8 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
     public bool IsHttp { get; }
     public bool IsTorrent { get; }
     public bool IsMedia { get; }
+    /// First visible tab: connections (HTTP), peers (torrent), else the speed graph. A hidden tab stays selectable.
+    public int FirstTab => IsHttp ? 0 : IsTorrent ? 1 : 2;
 
     public ObservableCollection<ConnectionRow> Connections { get; } = [];
     public ObservableCollection<PeerRow> Peers { get; } = [];
@@ -140,7 +142,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         var fraction = IsCompleted ? 1 : p.Fraction;
         Percent = fraction * 100;
         Indeterminate = IsRunning && p.TotalBytes is null or 0;
-        PercentText = p.TotalBytes is > 0 || IsCompleted ? (fraction * 100).ToString(fraction >= 0.995 ? "F0" : "F1", CultureInfo.CurrentCulture) + "%" : "—";
+        PercentText = p.TotalBytes is > 0 || IsCompleted ? Loc.Percent(fraction, fraction >= 0.995 ? 0 : 1) : "—";
         DoneText = p.TotalBytes is > 0 ? $"{Loc.Bytes(p.BytesDone)} / {Loc.Bytes(p.TotalBytes)}" : Loc.Bytes(p.BytesDone);
         SizeText = Loc.Bytes(p.TotalBytes ?? p.BytesDone);
         SpeedText = state == DownloadState.Downloading || state == DownloadState.Seeding ? Loc.Speed(p.BytesPerSecond) : "";
@@ -248,7 +250,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         Peers.Clear();
         foreach (var peer in peers.OrderByDescending(p => p.Monitor.DownloadRate).Take(100))
             Peers.Add(new PeerRow(peer.Uri.ToString(), peer.ClientApp.Client.ToString(), Loc.Speed(peer.Monitor.DownloadRate),
-                Loc.Speed(peer.Monitor.UploadRate), $"{peer.BitField.PercentComplete:F0}%"));
+                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100)));
     }
 
     // ================= commands =================

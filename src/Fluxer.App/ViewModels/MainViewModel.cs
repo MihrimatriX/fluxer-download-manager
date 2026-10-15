@@ -340,7 +340,12 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenFile()
     {
-        if (SelectedItem?.Download is { State: DownloadState.Completed } d && (File.Exists(d.Record.FullPath) || Directory.Exists(d.Record.FullPath)))
+        if (SelectedItem?.Download is { } d) OpenFileOf(d);
+    }
+
+    public static void OpenFileOf(IDownload d)
+    {
+        if (d.State == DownloadState.Completed && (File.Exists(d.Record.FullPath) || Directory.Exists(d.Record.FullPath)))
             Process.Start(new ProcessStartInfo(d.Record.FullPath) { UseShellExecute = true });
     }
 
@@ -357,7 +362,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (SelectedItem?.Download is { } d) ShowInFolder(d);
     }
 
-    private static void ShowInFolder(IDownload d)
+    public static void ShowInFolder(IDownload d)
     {
         var path = d.Record.FullPath;
         if (File.Exists(path)) Process.Start("explorer.exe", $"/select,\"{path}\"");

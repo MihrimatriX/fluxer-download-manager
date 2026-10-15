@@ -93,7 +93,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         return Queue.Add(r);
     }
 
-    public IDownload AddMedia(string pageUrl, string title, string formatSpec, bool audioOnly, string? netscapeCookies, string? saveDirectory = null)
+    public IDownload AddMedia(string pageUrl, string title, string formatSpec, bool audioOnly, string? netscapeCookies, string? saveDirectory = null, string? referrer = null)
     {
         var r = new DownloadRecord
         {
@@ -101,7 +101,7 @@ public sealed class FluxerEngine : IAsyncDisposable
             FileName = FileNameSanitizer.Sanitize(title),
             SaveDirectory = saveDirectory ?? (Settings.UseCategoryFolders ? Path.Combine(Settings.DownloadDirectory, audioOnly ? "Music" : "Video") : Settings.DownloadDirectory),
             Category = audioOnly ? "Music" : "Video",
-            Media = new MediaInfo { PageUrl = pageUrl, Title = title, FormatSpec = formatSpec, AudioOnly = audioOnly, Cookies = netscapeCookies },
+            Media = new MediaInfo { PageUrl = pageUrl, Title = title, FormatSpec = formatSpec, AudioOnly = audioOnly, Cookies = netscapeCookies, Referrer = referrer },
         };
         return Queue.Add(r);
     }

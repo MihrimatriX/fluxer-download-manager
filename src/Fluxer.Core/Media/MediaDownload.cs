@@ -62,7 +62,7 @@ public sealed class MediaDownload : IDownload
         try
         {
             cookieFile = Info.Cookies is { Length: > 0 } c ? Cookies.WritePrivateFile(TempDirectory(_tools), c) : null;
-            var psi = YtDlp.BaseStartInfo(_tools, cookieFile);
+            var psi = YtDlp.BaseStartInfo(_tools, cookieFile, Info.Referrer);
             Directory.CreateDirectory(Record.SaveDirectory);
             var stem = Record.FileName; // sanitized title; gets its extension only on completion
             var args = new List<string>

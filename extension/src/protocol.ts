@@ -45,7 +45,17 @@ export type PageResources = Envelope<'page.resources', BrowserContext & {
   resources: { url: string; kind: 'link' | 'image' | 'media'; width?: number; height?: number }[];
 }>;
 
-export type Request = Ping | DownloadAdd | StatusGet | PageSend | PageResources;
+/** Batch download from the popup: opens Fluxer's add dialog with all of them. */
+export type DownloadBatch = Envelope<'download.batch', BrowserContext & {
+  pageUrl: string;
+  items: { url: string; fileName?: string }[];   // http(s) only, 1..1000
+}>;
+
+export type CommandAction = 'pause' | 'resume' | 'remove' | 'open' | 'folder' | 'details' | 'pauseAll' | 'resumeAll' | 'show';
+/** Popup buttons. uid=197608(AFU) gid=197608 groups=197608 is required for the per-download actions. */
+export type Command = Envelope<'command', { action: CommandAction; id?: number }>;
+
+export type Request = Ping | DownloadAdd | StatusGet | PageSend | PageResources | DownloadBatch | Command;
 
 // ---- app → extension ----
 export type Pong = Envelope<'pong', { appVersion: string }>;
@@ -54,9 +64,16 @@ export type DownloadAddResult = Envelope<'download.add.result', {
   /** 'html': the server sends us a web page, 'torrent': let the browser fetch the .torrent, then send torrentPath. */
   reason?: 'html' | 'torrent' | 'unreachable' | string;
 }>;
+export type EntryState = 'downloading' | 'seeding' | 'queued' | 'paused' | 'completed' | 'failed';
+export interface StatusEntry {
+  id: number; name: string; state: EntryState; kind: 'http' | 'torrent' | 'media';
+  progress: number;          // 0..1
+  bytesPerSecond: number; doneBytes: number; totalBytes?: number;
+}
 export type Status = Envelope<'status', {
   active: number; queued: number; bytesPerSecond: number;
   top: { name: string; progress: number; bytesPerSecond: number }[]; // at most 5
+  items?: StatusEntry[];     // the popup list (app 0.7+): unfinished first, then recent finished
 }>;
 export type ErrorReply = Envelope<'error', {
   code: 'protocol-mismatch' | 'invalid-message' | 'app-unavailable' | 'internal';

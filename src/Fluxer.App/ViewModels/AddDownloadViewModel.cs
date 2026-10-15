@@ -33,10 +33,14 @@ public sealed partial class AddItem : ObservableObject
 
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _glyph = "";
-    [ObservableProperty] private IBrush _tile = Brushes.SlateGray;
+    [ObservableProperty] private IBrush _tile = Gray;
     [ObservableProperty] private string _meta = "";
     [ObservableProperty] private string _warning = "";
-    [ObservableProperty] private IBrush _warningBrush = Brushes.IndianRed;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(WarningSoft))] private IBrush _warningBrush = Red;
+    /// Tinted banner behind the warning (no outline: the app has no lines).
+    public IBrush WarningSoft => new SolidColorBrush(WarningBrush is ISolidColorBrush b ? b.Color : Colors.Gray, 0.14);
+    // the app's status colours (list pills, progress window)
+    private static readonly IBrush Red = new SolidColorBrush(Color.Parse("#E5484D")), Gray = new SolidColorBrush(Color.Parse("#64748B"));
     [ObservableProperty] private bool _probing;
     [ObservableProperty] private string? _category;
 
@@ -81,10 +85,10 @@ public sealed partial class AddItem : ObservableObject
 
         (Warning, WarningBrush) = p?.Kind switch
         {
-            ProbeKind.Html => (Strings.WarnHtml, Brushes.IndianRed),
+            ProbeKind.Html => (Strings.WarnHtml, Red),
             ProbeKind.Torrent => (Strings.WarnTorrent, Brush("#8B5CF6")),
-            ProbeKind.Error => (p.Status > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.WarnHttp, p.Status) : Strings.WarnUnreachable, Brushes.IndianRed),
-            _ => ("", Brushes.IndianRed),
+            ProbeKind.Error => (p.Status > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.WarnHttp, p.Status) : Strings.WarnUnreachable, Red),
+            _ => ("", Red),
         };
     }
 
@@ -175,6 +179,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         Items.Clear();
         foreach (var u in urls) Items.Add(keep.TryGetValue(u, out var old) ? old : new AddItem(u, _ctx));
         Count = Items.Count;
+        OnPropertyChanged(nameof(Single)); // one link swapped for another keeps Count at 1
 
         _probeCts?.Cancel();
         var cts = _probeCts = new CancellationTokenSource();
