@@ -21,8 +21,7 @@ public static partial class Dialogs
         var w = new Window
         {
             Title = title,
-            Width = width,
-            SizeToContent = SizeToContent.Height,
+            SizeToContent = SizeToContent.WidthAndHeight,
             MaxHeight = 820,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -37,7 +36,7 @@ public static partial class Dialogs
             btn.Click += (_, _) => { if (b.OnClick()) w.Close(); };
             bar.Children.Add(btn);
         }
-        var root = new DockPanel { Margin = new Thickness(24, 20, 24, 20) };
+        var root = new DockPanel { Margin = new Thickness(24, 20, 24, 20), Width = width - 48 };
         var header = new TextBlock { Text = title, FontSize = 18, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 14) };
         DockPanel.SetDock(header, Dock.Top);
         DockPanel.SetDock(bar, Dock.Bottom);
@@ -52,6 +51,7 @@ public static partial class Dialogs
 
     public static async Task ShowAsync(Window w, Window? owner)
     {
+        Appearance.ApplyTo(w, AppHost.Current.Engine.Settings.Ui);
         if (owner is not null)
         {
             await w.ShowDialog(owner);

@@ -81,6 +81,7 @@ public sealed partial class MainViewModel : ObservableObject
         View = new DataGridCollectionView(_source) { Filter = o => o is DownloadItemViewModel vm && Matches(vm) };
         View.SortDescriptions.Add(DataGridSortDescription.FromPath(nameof(DownloadItemViewModel.AddedAt), ListSortDirection.Descending));
         Detail = new DetailViewModel(host);
+        Detail.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(DetailViewModel.HasItem)) OnPropertyChanged(nameof(ShowDetail)); };
         Settings = new SettingsViewModel(host);
     }
 
@@ -102,6 +103,48 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _isEmpty = true;
     [ObservableProperty] private bool _isSettingsOpen;
     [ObservableProperty] private string _quickLimitText = "";
+    /// Null until the settings page is first opened (lazy view creation).
+    [ObservableProperty] private SettingsViewModel? _settingsPage;
+
+    // ---- layout the user can change (remembered in Settings.Ui) ----
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(SidebarWidth), nameof(SidebarExpanded))] private bool _sidebarCollapsed;
+    [ObservableProperty] private bool _toolbarLabels = true;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowDetail))] private bool _detailVisible = true;
+    private bool _loadingUi;
+
+    public double SidebarWidth => SidebarCollapsed ? 64 : 220;
+    public bool SidebarExpanded => !SidebarCollapsed;
+    public bool ShowDetail => DetailVisible && Detail.HasItem;
+    public bool DownloadsOpen => !IsSettingsOpen;
+
+    partial void OnIsSettingsOpenChanged(bool value) => OnPropertyChanged(nameof(DownloadsOpen));
+    partial void OnSidebarCollapsedChanged(bool value) => SaveUi(ui => ui.SidebarCollapsed = value);
+    partial void OnToolbarLabelsChanged(bool value) => SaveUi(ui => ui.ToolbarLabels = value);
+    partial void OnDetailVisibleChanged(bool value) => SaveUi(ui => ui.DetailVisible = value);
+
+    /// Mirrors Settings.Ui into the bindable properties (startup, after the settings page saved).
+    public void LoadUi()
+    {
+        _loadingUi = true;
+        var ui = _host.Engine.Settings.Ui;
+        SidebarCollapsed = ui.SidebarCollapsed;
+        ToolbarLabels = ui.ToolbarLabels;
+        DetailVisible = ui.DetailVisible;
+        _loadingUi = false;
+    }
+
+    private void SaveUi(Action<UiSettings> change)
+    {
+        if (_loadingUi) return;
+        change(_host.Engine.Settings.Ui);
+        _ = _host.Engine.SaveSettingsAsync(_host.Engine.Settings);
+    }
+
+    [RelayCommand]
+    private void SaveLayout() => _host.SaveLayout();
+
+    [RelayCommand]
+    private void ToggleSidebar() => SidebarCollapsed = !SidebarCollapsed;
 
     partial void OnSelectedCategoryChanged(CategoryItem value) { IsSettingsOpen = false; Refilter(); }
     partial void OnSelectedStateFilterChanged(StateFilter value) => Refilter();
@@ -116,6 +159,7 @@ public sealed partial class MainViewModel : ObservableObject
         Refilter();
         UpdateQuickLimitText();
         Settings.Load(); // before any view binds to it, so controls never write defaults back
+        LoadUi();
     }
 
     public void RefreshTexts()
@@ -364,6 +408,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Settings.Load();
         Settings.LoadInfo();
+        SettingsPage ??= Settings;
         IsSettingsOpen = true;
     }
 

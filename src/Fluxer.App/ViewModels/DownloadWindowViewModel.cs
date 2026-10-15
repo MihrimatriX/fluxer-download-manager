@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Controls;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -69,6 +70,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
 
     public IDownload Download { get; }
     public bool IsCard { get; }
+    public double ContentWidth => IsCard ? 396 : 596;
     public string Glyph { get; }
     public IBrush TileBrush { get; }
     public string Host { get; }
@@ -129,7 +131,8 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         CanRefreshLink = state == DownloadState.NeedsLinkRefresh && d is HttpDownload;
         ErrorText = Loc.Error(r.Error);
         StatusText = Loc.State(state);
-        StatusBrush = new SolidColorBrush(Color.Parse(IsFailed ? "#E5484D" : IsCompleted ? "#30A46C" : state == DownloadState.Seeding ? "#8E4EC6" : IsRunning ? "#3B82F6" : "#8A8A8E"));
+        StatusBrush = IsRunning && state != DownloadState.Seeding ? AccentBrush()
+            : new SolidColorBrush(Color.Parse(IsFailed ? "#E5484D" : IsCompleted ? "#30A46C" : state == DownloadState.Seeding ? "#8E4EC6" : "#8A8A8E"));
         var canPause = IsRunning || state == DownloadState.Queued;
         ToggleText = canPause ? Strings.Pause : Strings.Resume;
         ToggleGlyph = canPause ? "" : "";
@@ -196,6 +199,11 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         if (_lastState != DownloadState.Completed && state == DownloadState.Completed) Completed?.Invoke();
         _lastState = state;
     }
+
+    /// Follows the accent colour the user picked (or the Windows one).
+    private static IBrush AccentBrush() =>
+        Avalonia.Application.Current?.TryFindResource("SystemAccentColor", Avalonia.Application.Current.ActualThemeVariant, out var c) == true && c is Color col
+            ? new SolidColorBrush(col) : new SolidColorBrush(Color.Parse("#3B82F6"));
 
     private void UpdateConnections(HttpDownload hd)
     {

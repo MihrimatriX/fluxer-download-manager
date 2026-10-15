@@ -526,3 +526,6 @@ Kabul kriterleri prompt'taki gibidir; her aşama sonunda `CHANGELOG.md` girdisi 
 | User-Agent (0.2) | Önce tarayıcı UA'sı; istek düşerse/HTML gelirse kendi UA'mızla tekrar | TLS parmak izi ile UA tutarsızlığını bot sayan sunucular (Hetzner'da ölçüldü) |
 | Liste (0.2) | Avalonia DataGrid + `DataGridCollectionView` (filtre/sıralama); 4 Hz yenileme yalnızca çalışan satırlar için | Sütun genişletme/sıralama hazır geliyor |
 | Ayarlar (0.2) | Uygulama içi sayfa, 400 ms gecikmeli otomatik kaydetme; görünüm modeli pencere bağlanmadan önce yüklenir | Gizli sayfanın varsayılan kontrol değerlerinin ayarların üzerine yazılması hatası bulundu |
+| Görünüm (0.4) | `AppSettings.Ui` + `Services/Appearance`: FluentTheme paleti (vurgu), DensityStyle (sıkı), Mica, `LayoutTransformControl` ile ölçek; geçişler yalnızca `Window.motion` sınıfında | Tek yerden canlı uygulanır; animasyon kapatılınca sınıf kalkar, stiller etkisiz olur |
+| Açılış (0.4) | Release'te `PublishReadyToRun`; ayarlar sayfası ilk açılışta oluşturulur | Ölçüm: JIT ~3,1 sn → R2R ~1,3 sn ana pencere hazır |
+| Sütun menüsü (0.4) | Başlıkta sağ tuş *bırakma* olayı (handledEventsToo) + menü bir sonraki dispatcher turunda açılır | DataGrid başlığı ContextRequested üretmiyor; bırakma içinde açılan menü aynı tıklamayla kapanıyordu |

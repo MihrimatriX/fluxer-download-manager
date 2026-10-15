@@ -13,30 +13,12 @@ Velopack installer. Kurulum yeri ve veri: `%LOCALAPPDATA%\Fluxer` (`current\` = 
 | 0.1.0 | Aşama 0–7 (HTTP motoru, kuyruk, SQLite, UI, eklenti, host, torrent, Velopack, yt-dlp) |
 | 0.2.0 | Torrent'in `.html` inmesi düzeltildi (duraklat→yokla→kabul/ret); ayarlar sayfası; DataGrid listesi; torrent sekmeleri |
 | 0.3.0 | İlerleme penceresi, tamamlandı kartı, yeniden yazılan ekleme penceresi |
-| devam ediyor (commit edilmedi) | UI yumuşatma + kişiselleştirme, aşağıya bakın |
+| 0.4.0 | Yumuşak/hızlı/kişiselleştirilebilir UI: Görünüm ayarları (vurgu, Mica, ölçek, sıkı, animasyon, etiketler), daralan kenar çubuğu, sütun menüsü, yerleşim hafızası, ReadyToRun |
 
-## Devam eden iş: "yumuşak, hızlı, kişiselleştirilebilir" UI
-Kullanıcının isteği: her şey daha yumuşak/soft, hızlı tepkili ve pek çok yeri düzenlenebilir olsun.
-Yapılanlar (çalışma kopyasında, commit edilmemiş):
-- `UiSettings` (`AppSettings.Ui`): Accent, Mica, Compact, Scale, Animations, ToolbarLabels, SidebarCollapsed,
-  DetailVisible/DetailHeight, HiddenColumns/ColumnWidths/ColumnOrder, WindowBounds/Maximized.
-- `Services/Appearance.cs`: vurgu rengi (FluentTheme.Palettes), yoğunluk (DensityStyle + `RowHeight` kaynağı),
-  Mica (yarı saydam katman fırçaları, Win10'da otomatik opak), `motion` sınıfı, `LayoutTransformControl` ile ölçek.
-  `Apply(app, ui)` tüm pencerelere canlı uygular; her yeni pencere `ApplyTo(w, ui)` çağırır.
-- `App.axaml`: ControlCornerRadius 8 / Overlay 12, hover geçişleri, ProgressBar/ProgressRing değer animasyonu,
-  `.page/.page.hidden` sayfa geçişi, `Border.sidebar` genişlik animasyonu.
-- Ana pencere: hamburger ile daralan kenar çubuğu (220↔64), ayarlar ↔ indirmeler kayan geçiş, araç çubuğu etiketleri,
-  ayrıntı paneli aç/kapa + hatırlanan yükseklik, sütun başlığına sağ tık (göster/gizle, sıfırla), pencere/sütun yerleşimi kaydı.
-- Ayarlar → "Görünüm" bölümü (tema, vurgu rengi örnekleri, Mica, arayüz boyutu %85–130, sıkı yerleşim, animasyonlar, etiketler).
-- Hız grafiği: Catmull-Rom eğrisi + solan dolgu.
-
-Doğrulananlar (ekran görüntüsüyle): Mica, sayfa katmanlanması, daraltılmış kenar çubuğu, Görünüm bölümü.
-Henüz doğrulanmayan / açık:
-- Vurgu rengi örneğine tıklama: son denemede renk uygulanmış görünmedi; `AccentIndex` → `SaveAsync` → `Appearance.Apply`
-  zinciri kontrol edilmeli (ListBox SelectedIndex bağlaması tetikleniyor mu?).
-- Sıkı yerleşim, ölçek kaydırıcısı, animasyon kapatma, sütun menüsü, yerleşimin yeniden açılışta geri gelmesi canlı denenmedi.
-- Hız: Release yayınına `PublishReadyToRun` eklenmesi planlandı, yapılmadı.
-- Bitince: testler, CHANGELOG (0.4.0), `build/pack.ps1`, commit.
+## Doğrulama notları (0.4)
+- Vurgu rengi, Mica, ölçek %115, sıkı yerleşim, animasyon kapatma, sütun gizleme + yeniden açılışta geri gelme, kenar çubuğu hafızası canlı denendi (dev profil).
+- UIA ile test: SettingRow kontrollerine başlığı ad olarak verir → scratchpad pattern.ps1 -Name "<başlık>" -Action toggle|set.
+- Sağ tık otomasyonu pencere odakta değilse menüyü açmaz (önce satıra tıklayın).
 
 ## Önemli kararlar (ayrıntı: ARCHITECTURE §10)
 - uTP yok (MonoTorrent desteklemiyor).

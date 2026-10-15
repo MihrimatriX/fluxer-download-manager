@@ -23,6 +23,7 @@ public sealed class AppSettings
     public string? ScheduleStop { get; set; }
     public string AfterQueue { get; set; } = "None"; // None | Sleep | Shutdown
     public bool ShowAddDialog { get; set; } = true;
+    public UiSettings Ui { get; set; } = new();
     public bool ShowProgressWindow { get; set; } = true;
     public bool ShowCompletedCard { get; set; } = true;
     public List<string> RecentFolders { get; set; } = [];
@@ -49,4 +50,23 @@ public sealed class AppSettings
             if (exts.Contains(ext)) return cat;
         return null;
     }
+}
+
+/// Look and layout the user can change; remembered between sessions.
+public sealed class UiSettings
+{
+    public string? Accent { get; set; }                 // "#RRGGBB", null = Windows accent
+    public bool Mica { get; set; } = true;              // Windows 11 backdrop
+    public bool Compact { get; set; }                   // denser rows and controls
+    public double Scale { get; set; } = 1.0;            // 0.85 – 1.3
+    public bool Animations { get; set; } = true;
+    public bool ToolbarLabels { get; set; } = true;
+    public bool SidebarCollapsed { get; set; }
+    public bool DetailVisible { get; set; } = true;
+    public double DetailHeight { get; set; } = 290;
+    public List<string> HiddenColumns { get; set; } = [];
+    public Dictionary<string, double> ColumnWidths { get; set; } = [];
+    public List<string> ColumnOrder { get; set; } = [];
+    public double[]? WindowBounds { get; set; }         // x, y, width, height
+    public bool WindowMaximized { get; set; }
 }

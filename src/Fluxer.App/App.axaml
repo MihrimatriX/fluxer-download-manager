@@ -6,6 +6,9 @@
              RequestedThemeVariant="Default">
   <Application.Resources>
     <ResourceDictionary>
+      <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+      <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+      <x:Double x:Key="RowHeight">42</x:Double>
       <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
       <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI, avares://Avalonia.Fonts.Inter/Assets#Inter</FontFamily>
       <ResourceDictionary.ThemeDictionaries>
@@ -77,20 +80,88 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Padding" Value="10,6" />
-      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="CornerRadius" Value="8" />
     </Style>
     <Style Selector="Button.icon">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Padding" Value="6" />
-      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="CornerRadius" Value="8" />
       <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
       <Setter Property="FontSize" Value="13" />
+    </Style>
+    <!-- checkboxes stay square-ish so they never look like radio buttons -->
+    <Style Selector="CheckBox">
+      <Setter Property="CornerRadius" Value="4" />
     </Style>
     <Style Selector="ProgressBar">
       <Setter Property="MinHeight" Value="4" />
       <Setter Property="MinWidth" Value="0" />
-      <Setter Property="CornerRadius" Value="2" />
+      <Setter Property="CornerRadius" Value="3" />
+    </Style>
+
+    <!-- ===== Motion (windows get the "motion" class unless the user turned animations off) ===== -->
+    <Style Selector="Window.motion Button /template/ ContentPresenter#PART_ContentPresenter, Window.motion ToggleButton /template/ ContentPresenter#PART_ContentPresenter, Window.motion ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.14" />
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+          <BrushTransition Property="Foreground" Duration="0:0:0.14" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion DataGridRow /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+          <BrushTransition Property="Fill" Duration="0:0:0.14" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion ProgressBar">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Value" Duration="0:0:0.4" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion c|ProgressRing">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Value" Duration="0:0:0.4" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion Border.stat, Window.motion Border.card">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.2" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <!-- pages slide/fade in instead of popping -->
+    <Style Selector="Window.motion :is(Control).page">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.24" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector=":is(Control).page">
+      <Setter Property="RenderTransform" Value="none" />
+    </Style>
+    <Style Selector=":is(Control).page.hidden">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+      <Setter Property="RenderTransform" Value="translateY(10px)" />
+    </Style>
+    <Style Selector="Window.motion Border.sidebar">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
     </Style>
   </Application.Styles>
 </Application>

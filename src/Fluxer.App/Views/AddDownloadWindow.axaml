@@ -5,7 +5,7 @@
         x:Class="Fluxer.App.Views.AddDownloadWindow"
         x:DataType="vm:AddDownloadViewModel"
         Title="{x:Static app:Strings.NewDownload}" Icon="avares://Fluxer/Assets/fluxer.ico"
-        Width="660" SizeToContent="Height" CanResize="False" MaxHeight="860"
+        SizeToContent="WidthAndHeight" CanResize="False" MaxHeight="900"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
 
   <Window.Styles>
@@ -25,7 +25,7 @@
     </Style>
   </Window.Styles>
 
-  <DockPanel Margin="24,20,24,20">
+  <DockPanel Margin="24,20,24,20" Width="612">
     <!-- footer -->
     <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,18,0,0">
       <TextBlock Text="{Binding TotalText}" Classes="subtle" VerticalAlignment="Center" />

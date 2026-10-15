@@ -4,6 +4,9 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccentColor" xml:space="preserve"><value>Vurgu rengi</value></data>
+  <data name="AccentColorDesc" xml:space="preserve"><value>Butonlar, ilerleme ve vurgular. İlki Windows rengini izler.</value></data>
+  <data name="AccentSystem" xml:space="preserve"><value>Windows vurgu rengi</value></data>
   <data name="Accept" xml:space="preserve"><value>Kabul et</value></data>
   <data name="AddPaused" xml:space="preserve"><value>Duraklatılmış ekle</value></data>
   <data name="AddToQueue" xml:space="preserve"><value>Kuyruğa ekle</value></data>
@@ -15,6 +18,8 @@
   <data name="AfterQueueDesc" xml:space="preserve"><value>Bir kez çalışır, sonra "Hiçbir şey yapma"ya döner.</value></data>
   <data name="AfterShutdown" xml:space="preserve"><value>Bilgisayarı kapat</value></data>
   <data name="AfterSleep" xml:space="preserve"><value>Bilgisayarı uyut</value></data>
+  <data name="AnimationsDesc" xml:space="preserve"><value>Yumuşak geçişler ve ilerleme. Hareketi azaltmak için kapatın.</value></data>
+  <data name="AnimationsSetting" xml:space="preserve"><value>Animasyonlar</value></data>
   <data name="AudioOnly" xml:space="preserve"><value>Yalnızca ses</value></data>
   <data name="AvgSpeedIs" xml:space="preserve"><value>ort. {0}</value></data>
   <data name="Back" xml:space="preserve"><value>Geri</value></data>
@@ -48,6 +53,8 @@
   <data name="ColSize" xml:space="preserve"><value>Boyut</value></data>
   <data name="ColSpeed" xml:space="preserve"><value>Hız</value></data>
   <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="CompactMode" xml:space="preserve"><value>Sıkı yerleşim</value></data>
+  <data name="CompactModeDesc" xml:space="preserve"><value>Daha küçük satırlar ve kontroller; ekrana daha çok indirme sığar.</value></data>
   <data name="CompactTip" xml:space="preserve"><value>Ayrıntıları göster/gizle</value></data>
   <data name="Conflict" xml:space="preserve"><value>Aynı adda dosya varsa</value></data>
   <data name="ConflictOverwrite" xml:space="preserve"><value>Üzerine yaz</value></data>
@@ -137,6 +144,7 @@
   <data name="KindMedia" xml:space="preserve"><value>Medya</value></data>
   <data name="LangSystem" xml:space="preserve"><value>Sistem dili</value></data>
   <data name="Language" xml:space="preserve"><value>Dil</value></data>
+  <data name="LayoutTip" xml:space="preserve"><value>İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Pencere boyutu, sütunlar, paneller ve kenar çubuğu hatırlanır.</value></data>
   <data name="LimitHttp" xml:space="preserve"><value>HTTP indirmeleri</value></data>
   <data name="LimitHttpDesc" xml:space="preserve"><value>Tüm HTTP ve video indirmeleri arasında paylaşılır.</value></data>
   <data name="LimitTorrentDown" xml:space="preserve"><value>Torrent indirme</value></data>
@@ -153,6 +161,8 @@
   <data name="MediaProbing" xml:space="preserve"><value>Video bilgileri okunuyor…</value></data>
   <data name="MediaTitle" xml:space="preserve"><value>Videoyu kaydet</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video araçları</value></data>
+  <data name="MicaEffect" xml:space="preserve"><value>Mica arka planı</value></data>
+  <data name="MicaEffectDesc" xml:space="preserve"><value>Duvar kâğıdının rengini yumuşakça yansıtan yarı saydam Windows 11 arka planı.</value></data>
   <data name="MinDimension" xml:space="preserve"><value>En küçük boyut (px)</value></data>
   <data name="MinSizeKb" xml:space="preserve"><value>En küçük dosya (KB)</value></data>
   <data name="MoveBottom" xml:space="preserve"><value>En sona taşı</value></data>
@@ -192,6 +202,7 @@
   <data name="RegisterAssociationsDesc" xml:space="preserve"><value>Magnet bağlantısına tıklamak veya .torrent dosyası açmak Fluxer'ı başlatır.</value></data>
   <data name="Repair" xml:space="preserve"><value>Onar</value></data>
   <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ResetColumns" xml:space="preserve"><value>Sütunları sıfırla</value></data>
   <data name="ResetDefaults" xml:space="preserve"><value>Ayarları sıfırla</value></data>
   <data name="ResetDefaultsConfirm" xml:space="preserve"><value>Tüm ayarlar varsayılana dönsün mü? İndirmeler etkilenmez.</value></data>
   <data name="ResetDefaultsDesc" xml:space="preserve"><value>Bu sayfadaki tüm seçenekleri varsayılana döndürür.</value></data>
@@ -206,6 +217,7 @@
   <data name="ScheduleStop" xml:space="preserve"><value>Durma saati</value></data>
   <data name="ScheduleStopDesc" xml:space="preserve"><value>Her gün bu saatte tüm indirmeleri duraklat.</value></data>
   <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="SecAppearance" xml:space="preserve"><value>Görünüm</value></data>
   <data name="SecBrowser" xml:space="preserve"><value>Tarayıcı</value></data>
   <data name="SecDownloads" xml:space="preserve"><value>İndirmeler</value></data>
   <data name="SecGeneral" xml:space="preserve"><value>Genel</value></data>
@@ -267,7 +279,11 @@
   <data name="ThemeDark" xml:space="preserve"><value>Koyu</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Açık</value></data>
   <data name="ThemeSystem" xml:space="preserve"><value>Sistemi izle</value></data>
+  <data name="ToggleDetail" xml:space="preserve"><value>Ayrıntı panelini göster/gizle</value></data>
+  <data name="ToggleSidebar" xml:space="preserve"><value>Kenar çubuğunu daralt/genişlet</value></data>
   <data name="TookIs" xml:space="preserve"><value>{0} sürdü</value></data>
+  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Araç çubuğu ikonlarının yanında yazı göster.</value></data>
+  <data name="ToolbarLabelsSetting" xml:space="preserve"><value>Araç çubuğu etiketleri</value></data>
   <data name="ToolsConsent" xml:space="preserve"><value>Video kaydetmek için Fluxer'ın yt-dlp, deno ve ffmpeg araçlarına ihtiyacı var (yaklaşık 150 MB). Resmi GitHub sürümlerinden bir kez indirilip yayıncıların SHA-256 özetleriyle doğrulanacaklar.</value></data>
   <data name="ToolsDownloading" xml:space="preserve"><value>Video araçları indiriliyor…</value></data>
   <data name="ToolsFailed" xml:space="preserve"><value>Video araçları kurulamadı.</value></data>
@@ -282,6 +298,8 @@
   <data name="TorrentUpStat" xml:space="preserve"><value>↑ {0} · {1} gönderildi</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Fluxer'dan çık</value></data>
   <data name="TrayOpen" xml:space="preserve"><value>Fluxer'ı aç</value></data>
+  <data name="UiScale" xml:space="preserve"><value>Arayüz boyutu</value></data>
+  <data name="UiScaleDesc" xml:space="preserve"><value>Tüm pencerelerde yazıları ve kontrolleri büyütür veya küçültür.</value></data>
   <data name="Unlimited" xml:space="preserve"><value>Sınırsız</value></data>
   <data name="UpdateFeed" xml:space="preserve"><value>Güncelleme kaynağı</value></data>
   <data name="UpdateFeedDesc" xml:space="preserve"><value>Sürümlerin yayınlandığı klasör, paylaşım ya da URL; boş = güncelleme kapalı.</value></data>

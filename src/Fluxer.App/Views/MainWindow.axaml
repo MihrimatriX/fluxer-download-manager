@@ -44,7 +44,7 @@
       <Setter Property="Background" Value="{DynamicResource ChipBrush}" />
     </Style>
     <Style Selector="DataGrid#List DataGridRow" x:DataType="vm:DownloadItemViewModel">
-      <Setter Property="Height" Value="38" />
+      <Setter Property="Height" Value="{DynamicResource RowHeight}" />
       <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleText}" />
     </Style>
     <Style Selector="DataGrid#List DataGridCell">
@@ -67,40 +67,45 @@
     <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="#E5484D" /></Style>
   </Window.Styles>
 
-  <Grid ColumnDefinitions="220,*">
-    <!-- ============ Sidebar ============ -->
-    <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,1,0">
+  <Grid ColumnDefinitions="Auto,*">
+    <!-- ============ Sidebar (collapsible) ============ -->
+    <Border Classes="sidebar" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarBrush}"
+            BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,1,0" ClipToBounds="True">
       <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Margin="16,18,16,10" Spacing="14">
-          <StackPanel Orientation="Horizontal" Spacing="10">
-            <Image Source="avares://Fluxer/Assets/fluxer.png" Width="28" Height="28" />
-            <TextBlock Text="Fluxer" Classes="h1" VerticalAlignment="Center" />
-          </StackPanel>
-          <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,9"
+        <StackPanel DockPanel.Dock="Top" Margin="12,14,12,10" Spacing="12">
+          <Grid ColumnDefinitions="Auto,*">
+            <Button Classes="icon" Content="&#xE700;" FontSize="15" Width="40" Height="36" Command="{Binding ToggleSidebarCommand}"
+                    ToolTip.Tip="{x:Static app:Strings.ToggleSidebar}" AutomationProperties.Name="{x:Static app:Strings.ToggleSidebar}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="9" Margin="6,0,0,0" IsVisible="{Binding !SidebarCollapsed}">
+              <Image Source="avares://Fluxer/Assets/fluxer.png" Width="24" Height="24" />
+              <TextBlock Text="Fluxer" Classes="h1" FontSize="18" VerticalAlignment="Center" />
+            </StackPanel>
+          </Grid>
+          <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,9" CornerRadius="10"
                   Command="{Binding AddUrlCommand}" ToolTip.Tip="Ctrl+N" AutomationProperties.Name="{x:Static app:Strings.NewDownload}">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <TextBlock Classes="icon" Text="&#xE710;" />
-              <TextBlock Text="{x:Static app:Strings.NewDownload}" />
+              <TextBlock Text="{x:Static app:Strings.NewDownload}" IsVisible="{Binding !SidebarCollapsed}" />
             </StackPanel>
           </Button>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,12">
-          <Button Classes="tool" Margin="8,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+          <Button Classes="tool" Margin="8,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12,8"
                   Command="{Binding OpenSettingsCommand}" AutomationProperties.Name="{x:Static app:Strings.Settings}" ToolTip.Tip="Ctrl+,">
             <StackPanel Orientation="Horizontal" Spacing="12">
               <TextBlock Classes="icon" Text="&#xE713;" FontSize="15" />
-              <TextBlock Text="{x:Static app:Strings.Settings}" />
+              <TextBlock Text="{x:Static app:Strings.Settings}" IsVisible="{Binding !SidebarCollapsed}" />
             </StackPanel>
           </Button>
         </StackPanel>
         <StackPanel>
-          <TextBlock Text="{x:Static app:Strings.Categories}" Classes="subtle" Margin="20,4,0,4" />
+          <TextBlock Text="{x:Static app:Strings.Categories}" Classes="subtle" Margin="20,4,0,4" IsVisible="{Binding !SidebarCollapsed}" />
           <ListBox Classes="nav" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:CategoryItem">
-                <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="12" ToolTip.Tip="{Binding Title}">
                   <TextBlock Classes="icon" Text="{Binding Glyph}" FontSize="15" />
-                  <TextBlock Text="{Binding Title}" />
+                  <TextBlock Text="{Binding Title}" IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).SidebarExpanded}" />
                 </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -110,21 +115,26 @@
     </Border>
 
     <!-- ============ Settings page ============ -->
-    <v:SettingsView Grid.Column="1" DataContext="{Binding Settings}" IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsSettingsOpen}" />
+    <!-- created on first use: building it at start-up cost ~1 s -->
+    <ContentControl Grid.Column="1" Classes="page" Classes.hidden="{Binding DownloadsOpen}" Content="{Binding SettingsPage}">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView /></DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
 
     <!-- ============ Downloads page ============ -->
-    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" IsVisible="{Binding !IsSettingsOpen}">
+    <Grid x:Name="DownloadsPage" Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" Classes="page" Classes.hidden="{Binding IsSettingsOpen}">
       <!-- Toolbar -->
       <Grid Margin="12,10,14,4" ColumnDefinitions="*,Auto">
         <StackPanel Orientation="Horizontal" Spacing="2" ClipToBounds="True">
           <Button Classes="tool" Command="{Binding ResumeCommand}" AutomationProperties.Name="{x:Static app:Strings.Resume}" ToolTip.Tip="{x:Static app:Strings.Resume}">
-            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE768;" /><TextBlock Text="{x:Static app:Strings.Resume}" /></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE768;" /><TextBlock Text="{x:Static app:Strings.Resume}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
           <Button Classes="tool" Command="{Binding PauseCommand}" AutomationProperties.Name="{x:Static app:Strings.Pause}" ToolTip.Tip="{x:Static app:Strings.Pause}">
-            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE769;" /><TextBlock Text="{x:Static app:Strings.Pause}" /></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE769;" /><TextBlock Text="{x:Static app:Strings.Pause}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
           <Button Classes="tool" Command="{Binding DeleteCommand}" AutomationProperties.Name="{x:Static app:Strings.Delete}" ToolTip.Tip="Delete">
-            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE74D;" /><TextBlock Text="{x:Static app:Strings.Delete}" /></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE74D;" /><TextBlock Text="{x:Static app:Strings.Delete}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
           <Rectangle Width="1" Margin="8,6" Fill="{DynamicResource DividerBrush}" />
           <Button Classes="tool" Command="{Binding MoveUpCommand}" AutomationProperties.Name="{x:Static app:Strings.MoveUp}" ToolTip.Tip="{x:Static app:Strings.MoveUpTip}">
@@ -135,11 +145,16 @@
           </Button>
           <Rectangle Width="1" Margin="8,6" Fill="{DynamicResource DividerBrush}" />
           <Button Classes="tool" Command="{Binding AddTorrentCommand}" AutomationProperties.Name="{x:Static app:Strings.AddTorrent}" ToolTip.Tip="Ctrl+O">
-            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE8E5;" /><TextBlock Text="{x:Static app:Strings.AddTorrent}" /></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="7"><TextBlock Classes="icon" Text="&#xE8E5;" /><TextBlock Text="{x:Static app:Strings.AddTorrent}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
           </Button>
         </StackPanel>
-        <TextBox Grid.Column="1" Width="200" Margin="8,0,0,0" PlaceholderText="{x:Static app:Strings.Search}" Text="{Binding Search}"
-                 AutomationProperties.Name="{x:Static app:Strings.Search}" CornerRadius="6" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+        <ToggleButton Classes="tool" IsChecked="{Binding DetailVisible}" ToolTip.Tip="{x:Static app:Strings.ToggleDetail}" AutomationProperties.Name="{x:Static app:Strings.ToggleDetail}" Background="Transparent" BorderThickness="0" CornerRadius="8" Padding="10,6">
+          <TextBlock Classes="icon" Text="&#xE90D;" />
+        </ToggleButton>
+        <TextBox Width="200" Margin="2,0,0,0" PlaceholderText="{x:Static app:Strings.Search}" Text="{Binding Search}"
+                 AutomationProperties.Name="{x:Static app:Strings.Search}" CornerRadius="10" VerticalContentAlignment="Center" />
+        </StackPanel>
       </Grid>
 
       <!-- State chips -->
@@ -238,10 +253,10 @@
         </StackPanel>
       </Panel>
 
-      <GridSplitter Grid.Row="3" Height="5" Background="{DynamicResource DividerBrush}" ResizeDirection="Rows" IsVisible="{Binding Detail.HasItem}" />
+      <GridSplitter x:Name="DetailSplitter" Grid.Row="3" Height="6" Background="Transparent" ResizeDirection="Rows" IsVisible="{Binding ShowDetail}" />
 
       <!-- Detail panel -->
-      <Border Grid.Row="4" Height="290" IsVisible="{Binding Detail.HasItem}" Background="{DynamicResource SurfaceBrush}">
+      <Border Grid.Row="4" IsVisible="{Binding ShowDetail}" Background="{DynamicResource SurfaceBrush}" CornerRadius="12,12,0,0" Margin="8,0,8,0">
         <TabControl Margin="12,4,12,0" Padding="0,6,0,0">
           <TabItem Header="{x:Static app:Strings.TabGeneral}" FontSize="14">
             <ScrollViewer>

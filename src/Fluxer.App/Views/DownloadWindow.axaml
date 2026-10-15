@@ -6,7 +6,7 @@
         x:Class="Fluxer.App.Views.DownloadWindow"
         x:DataType="vm:DownloadWindowViewModel"
         Title="{Binding Title}" Icon="avares://Fluxer/Assets/fluxer.ico"
-        Width="640" SizeToContent="Height" CanResize="False"
+        SizeToContent="WidthAndHeight" CanResize="False"
         WindowStartupLocation="CenterScreen">
 
   <Window.Styles>
@@ -32,7 +32,7 @@
     </Style>
   </Window.Styles>
 
-  <StackPanel Margin="22,20,22,18">
+  <StackPanel Margin="22,20,22,18" Width="{Binding ContentWidth}">
 
     <!-- ===== Header: type tile · name · status · ring ===== -->
     <Grid ColumnDefinitions="Auto,*,Auto">

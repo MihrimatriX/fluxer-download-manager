@@ -16,6 +16,19 @@ using Fluxer.Ipc;
 
 namespace Fluxer.App.ViewModels;
 
+public sealed record AccentSwatch(int Index, string? Hex, string Name)
+{
+    public Avalonia.Media.IBrush Brush => Hex is null
+        ? new Avalonia.Media.LinearGradientBrush
+        {
+            StartPoint = new Avalonia.RelativePoint(0, 0, Avalonia.RelativeUnit.Relative),
+            EndPoint = new Avalonia.RelativePoint(1, 1, Avalonia.RelativeUnit.Relative),
+            GradientStops = { new(Avalonia.Media.Color.Parse("#0A84FF"), 0), new(Avalonia.Media.Color.Parse("#BF5AF2"), 0.5), new(Avalonia.Media.Color.Parse("#30D158"), 1) },
+        }
+        : new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(Hex));
+    public override string ToString() => Name;
+}
+
 public sealed record BrowserRow(string Browser, bool Ok)
 {
     public string Glyph => Ok ? "" : "";
@@ -49,6 +62,18 @@ public sealed partial class SettingsViewModel : ObservableObject
     public string ExtensionFolder => Path.Combine(AppContext.BaseDirectory, "extension");
     public string ExtensionId => Protocol.AllowedExtensionIds[0];
     public string Version => typeof(App).Assembly.GetName().Version?.ToString(3) ?? "";
+
+    // Appearance
+    public IReadOnlyList<AccentSwatch> Accents { get; } =
+        [new(0, null, Strings.AccentSystem), .. Appearance.AccentChoices.Select((h, i) => new AccentSwatch(i + 1, h, h))];
+    [ObservableProperty] private int _accentIndex;
+    [ObservableProperty] private bool _mica;
+    [ObservableProperty] private bool _compact;
+    [ObservableProperty] private double _scalePercent = 100;
+    [ObservableProperty] private bool _animations;
+    [ObservableProperty] private bool _toolbarLabelsOn;
+    public string ScaleText => $"%{ScalePercent:0}";
+    partial void OnScalePercentChanged(double value) => OnPropertyChanged(nameof(ScaleText));
 
     // General
     [ObservableProperty] private int _languageIndex;
@@ -96,6 +121,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private static readonly HashSet<string> NotSettings =
     [
+        nameof(ScaleText),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
     ];
 
@@ -104,6 +130,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         _loading = true;
         var s = _host.Engine.Settings;
         LanguageIndex = s.Language switch { "tr" => 1, "en" => 2, _ => 0 };
+        AccentIndex = s.Ui.Accent is { } acc ? Array.IndexOf(Appearance.AccentChoices, acc) + 1 : 0;
+        Mica = s.Ui.Mica;
+        Compact = s.Ui.Compact;
+        ScalePercent = Math.Round(s.Ui.Scale * 100);
+        Animations = s.Ui.Animations;
+        ToolbarLabelsOn = s.Ui.ToolbarLabels;
         ThemeIndex = s.Theme switch { "Light" => 1, "Dark" => 2, _ => 0 };
         Notifications = s.Notifications;
         ShowAddDialog = s.ShowAddDialog;
@@ -154,6 +186,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         var old = engine.Settings;
         var s = JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(old))!;
         s.Language = LanguageIndex switch { 1 => "tr", 2 => "en", _ => "" };
+        s.Ui.Accent = AccentIndex > 0 ? Appearance.AccentChoices[AccentIndex - 1] : null;
+        s.Ui.Mica = Mica;
+        s.Ui.Compact = Compact;
+        s.Ui.Scale = Math.Clamp(ScalePercent / 100, 0.85, 1.3);
+        s.Ui.Animations = Animations;
+        s.Ui.ToolbarLabels = ToolbarLabelsOn;
         s.Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" };
         s.Notifications = Notifications;
         s.ShowAddDialog = ShowAddDialog;
@@ -182,6 +220,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         await engine.SaveSettingsAsync(s);
         if (assocChanged) _host.RegisterIntegration();
         _host.Main.UpdateQuickLimitText();
+        if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
+        _host.Main.LoadUi();
         SavedText = Strings.SettingsSaved;
         if (uiChanged) _host.ReloadUi();
     }

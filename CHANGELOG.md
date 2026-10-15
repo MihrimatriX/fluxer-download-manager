@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.4.0 — 2026-10-15
+
+### Daha yumuşak
+- Yuvarlatılmış köşeler (kontrol 8, panel/pencere 12), Windows 11 **Mica** arka planı.
+- Butonlar, liste satırları ve kartlarda yumuşak hover geçişleri; ilerleme çubukları ve halkalar sıçramak yerine kayarak ilerler; ayarlar ↔ indirmeler arası kayan sayfa geçişi; kenar çubuğu açılıp kapanırken genişler.
+- Hız grafiği yumuşak eğri + gradyan dolgu.
+- İndirme penceresinin durum rengi ve onay kutuları vurgu rengini izler.
+
+### Daha hızlı
+- Sürüm yapıları **ReadyToRun** ile önceden derleniyor: ana pencere açılışı ~3,1 sn → ~1,3 sn (ölçüldü).
+- Ayarlar sayfası ilk açılışta oluşturuluyor (açılışta ~0,2 sn kazanç).
+- Açılış adımları süreleriyle log'a yazılıyor.
+
+### Düzenlenebilir (hepsi hatırlanır)
+- Ayarlar → **Görünüm**: tema, vurgu rengi (Windows rengi + 8 renk), Mica aç/kapa, arayüz boyutu %85–130 (tüm pencereler), sıkı yerleşim, animasyonlar aç/kapa, araç çubuğu etiketleri.
+- Daraltılabilir kenar çubuğu (☰), ayrıntı paneli aç/kapa ve yüksekliği.
+- Liste sütunları: başlığa sağ tık → göster/gizle, "Sütunları sıfırla"; sürükleyerek sıra ve genişlik.
+- Pencere konumu, boyutu ve tam ekran durumu.
+
+### Erişilebilirlik
+- Ayar satırlarındaki kontroller ekran okuyucuya satır başlığı ve açıklamasıyla duyuruluyor.
+
 ## 0.3.0 — 2026-10-15
 
 ### İndirme pencereleri

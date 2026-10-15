@@ -42,9 +42,6 @@
         <c:SettingRow Title="{x:Static app:Strings.Language}">
           <ComboBox ItemsSource="{Binding Languages}" SelectedIndex="{Binding LanguageIndex}" />
         </c:SettingRow>
-        <c:SettingRow Title="{x:Static app:Strings.Theme}">
-          <ComboBox ItemsSource="{Binding Themes}" SelectedIndex="{Binding ThemeIndex}" />
-        </c:SettingRow>
         <c:SettingRow Title="{x:Static app:Strings.ShowNotifications}" Description="{x:Static app:Strings.ShowNotificationsDesc}">
           <ToggleSwitch IsChecked="{Binding Notifications}" />
         </c:SettingRow>
@@ -58,6 +55,51 @@
         <c:SettingRow Title="{x:Static app:Strings.ShowCompletedCard}" Description="{x:Static app:Strings.ShowCompletedCardDesc}">
           <ToggleSwitch IsChecked="{Binding ShowCompletedCard}" />
         </c:SettingRow>
+
+        <!-- Appearance -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecAppearance}" />
+        <c:SettingRow Title="{x:Static app:Strings.Theme}">
+          <ComboBox ItemsSource="{Binding Themes}" SelectedIndex="{Binding ThemeIndex}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.AccentColor}" Description="{x:Static app:Strings.AccentColorDesc}">
+          <ListBox ItemsSource="{Binding Accents}" SelectedIndex="{Binding AccentIndex}" Background="Transparent">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.Styles>
+              <Style Selector="ListBoxItem">
+                <Setter Property="Padding" Value="3" />
+                <Setter Property="Margin" Value="2,0" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="MinWidth" Value="0" />
+              </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:AccentSwatch">
+                <Ellipse Width="22" Height="22" Fill="{Binding Brush}" ToolTip.Tip="{Binding Name}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.MicaEffect}" Description="{x:Static app:Strings.MicaEffectDesc}">
+          <ToggleSwitch IsChecked="{Binding Mica}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.UiScale}" Description="{x:Static app:Strings.UiScaleDesc}">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Slider Minimum="85" Maximum="130" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding ScalePercent}" Width="180" />
+            <TextBlock Text="{Binding ScaleText}" Width="44" VerticalAlignment="Center" FontWeight="SemiBold" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.CompactMode}" Description="{x:Static app:Strings.CompactModeDesc}">
+          <ToggleSwitch IsChecked="{Binding Compact}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.AnimationsSetting}" Description="{x:Static app:Strings.AnimationsDesc}">
+          <ToggleSwitch IsChecked="{Binding Animations}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ToolbarLabelsSetting}" Description="{x:Static app:Strings.ToolbarLabelsDesc}">
+          <ToggleSwitch IsChecked="{Binding ToolbarLabelsOn}" />
+        </c:SettingRow>
+        <TextBlock Classes="subtle" Margin="4,4,0,0" Text="{x:Static app:Strings.LayoutTip}" TextWrapping="Wrap" />
 
         <!-- Downloads -->
         <TextBlock Classes="section" Text="{x:Static app:Strings.SecDownloads}" />

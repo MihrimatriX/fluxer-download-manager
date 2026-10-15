@@ -10,6 +10,8 @@
     <ApplicationIcon>Assets\fluxer.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <SatelliteResourceLanguages>en;tr</SatelliteResourceLanguages>
+    <!-- Precompiled code for release builds: no JIT pause at start-up or when a window opens. -->
+    <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
 
   <ItemGroup>

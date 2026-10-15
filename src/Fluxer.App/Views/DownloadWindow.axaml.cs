@@ -28,7 +28,6 @@ public sealed partial class DownloadWindow : Window
 
         if (vm.IsCard)
         {
-            Width = 440;
             ShowInTaskbar = false;
             Topmost = true;
             WindowStartupLocation = WindowStartupLocation.Manual;

@@ -77,7 +77,7 @@ public sealed class SpeedGraph : Control
     {
         var b = new Rect(Bounds.Size);
         var accent = SegmentMap.Accent(this);
-        var grid = new Pen(new SolidColorBrush(accent, 0.15), 1);
+        var grid = new Pen(new SolidColorBrush(accent, 0.08), 1, dashStyle: new DashStyle([3, 4], 0));
         for (var i = 1; i < 4; i++) ctx.DrawLine(grid, new Point(0, b.Height * i / 4), new Point(b.Width, b.Height * i / 4));
 
         var values = Values;
@@ -86,16 +86,49 @@ public sealed class SpeedGraph : Control
         var step = b.Width / (Capacity - 1);
         var x0 = b.Width - (values.Length - 1) * step;
 
-        var geo = new StreamGeometry();
-        using (var g = geo.Open())
+        var pts = new Point[values.Length];
+        for (var i = 0; i < values.Length; i++)
+            pts[i] = new Point(x0 + i * step, b.Height - values[i] / max * (b.Height - 16));
+
+        // Catmull-Rom through the samples → smooth cubic Béziers (no sharp 4 Hz steps).
+        void Curve(StreamGeometryContext g)
+        {
+            for (var i = 0; i < pts.Length - 1; i++)
+            {
+                var p0 = pts[Math.Max(0, i - 1)];
+                var p1 = pts[i];
+                var p2 = pts[i + 1];
+                var p3 = pts[Math.Min(pts.Length - 1, i + 2)];
+                var c1 = new Point(p1.X + (p2.X - p0.X) / 6, Math.Min(b.Height, p1.Y + (p2.Y - p0.Y) / 6));
+                var c2 = new Point(p2.X - (p3.X - p1.X) / 6, Math.Min(b.Height, p2.Y - (p3.Y - p1.Y) / 6));
+                g.CubicBezierTo(c1, c2, p2);
+            }
+        }
+
+        var area = new StreamGeometry();
+        using (var g = area.Open())
         {
             g.BeginFigure(new Point(x0, b.Height), true);
-            for (var i = 0; i < values.Length; i++)
-                g.LineTo(new Point(x0 + i * step, b.Height - values[i] / max * (b.Height - 14)));
-            g.LineTo(new Point(b.Width, b.Height));
+            g.LineTo(pts[0]);
+            Curve(g);
+            g.LineTo(new Point(pts[^1].X, b.Height));
             g.EndFigure(true);
         }
-        ctx.DrawGeometry(new SolidColorBrush(accent, 0.25), new Pen(new SolidColorBrush(accent), 1.5), geo);
+        var line = new StreamGeometry();
+        using (var g = line.Open())
+        {
+            g.BeginFigure(pts[0], false);
+            Curve(g);
+            g.EndFigure(false);
+        }
+        var fill = new LinearGradientBrush
+        {
+            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+            GradientStops = { new GradientStop(Color.FromArgb(90, accent.R, accent.G, accent.B), 0), new GradientStop(Color.FromArgb(0, accent.R, accent.G, accent.B), 1) },
+        };
+        ctx.DrawGeometry(fill, null, area);
+        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(accent), 2, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round), line);
 
         if (max < 1024) return;
         var label = new FormattedText(Loc.Speed((long)max), CultureInfo.CurrentCulture, FlowDirection.LeftToRight,

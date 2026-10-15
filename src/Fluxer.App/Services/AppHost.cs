@@ -43,12 +43,19 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
     public void Start(string[] args)
     {
         Current = this;
+        var sw = Stopwatch.StartNew();
+        var marks = new List<string>();
+        void Mark(string step) { marks.Add($"{step} {sw.ElapsedMilliseconds}"); sw.Restart(); }
+        Mark($"runtime+avalonia {(int)(DateTime.Now - Process.GetCurrentProcess().StartTime).TotalMilliseconds}");
         Engine = new FluxerEngine(Program.DataDirectory);
+        Mark("engine");
         Loc.Apply(Engine.Settings.Language);
         ApplyTheme();
+        Appearance.Apply(app, Engine.Settings.Ui);
         _ = SetCurrentProcessExplicitAppUserModelID(ShellIntegration.Aumid);
         RegisterIntegration();
         MediaDownload.CleanupTemp(Engine.Tools);
+        Mark("theme+integration");
 
         Main = new MainViewModel(this);
         Engine.Queue.Added += d => Dispatcher.UIThread.Post(() => Main.OnAdded(d));
@@ -57,11 +64,14 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Engine.Queue.Reordered += () => Dispatcher.UIThread.Post(Main.OnReordered);
         Engine.Queue.Drained += () => Dispatcher.UIThread.Post(OnDrained);
         Engine.Queue.Load();
+        Mark("queue");
         Main.Reload();
+        Mark("viewmodels");
 
         _pipe = new PipeServer(HandleMessageAsync);
         _pipe.Start();
         BuildTray();
+        Mark("pipe+tray");
 
         _timer = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Background, (_, _) => Tick());
         _timer.Start();
@@ -70,6 +80,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         _ = CheckAppUpdateAsync();
 
         if (!args.Contains("--background")) ShowMainWindow();
+        Mark("window");
+        Log.Information("Startup (ms): {Marks}", string.Join(", ", marks));
         _ = HandleArgsAsync([.. args.Where(a => a != "--background")]);
     }
 
@@ -80,8 +92,13 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (Window is null)
         {
             Window = new MainWindow { DataContext = Main };
+            Appearance.ApplyTo(Window, Engine.Settings.Ui);
+            Window.RestoreLayout(Engine.Settings.Ui);
+            Window.Opened += (_, _) => Log.Information("Main window ready {Ms} ms after process start",
+                (int)(DateTime.Now - Process.GetCurrentProcess().StartTime).TotalMilliseconds);
             Window.Closing += (_, e) =>
             {
+                SaveLayout();
                 if (_exiting) return;
                 e.Cancel = true;       // close = minimize to tray; exit only from the tray menu
                 Window.Hide();
@@ -146,9 +163,18 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         }
     }
 
+    /// Window size/position, columns and panel sizes are remembered.
+    public void SaveLayout()
+    {
+        if (Window is null) return;
+        Window.CaptureLayout(Engine.Settings.Ui);
+        _ = Engine.SaveSettingsAsync(Engine.Settings);
+    }
+
     public async Task ExitAsync()
     {
         if (_exiting) return;
+        SaveLayout();
         _exiting = true;
         _timer?.Stop();
         Window?.Close();
@@ -211,6 +237,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         }
         if (_card?.DownloadId == d.Id) _card.Close();
         var w = new DownloadWindow(new DownloadWindowViewModel(this, d, card: false)) { ShowActivated = activate };
+        Appearance.ApplyTo(w, Engine.Settings.Ui);
         w.Closed += (_, _) => _downloadWindows.Remove(d.Id);
         _downloadWindows[d.Id] = w;
         w.Show();
@@ -227,6 +254,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (!Engine.Settings.ShowCompletedCard || _downloadWindows.ContainsKey(d.Id)) return;
         _card?.Close();
         var card = new DownloadWindow(new DownloadWindowViewModel(this, d, card: true)) { ShowActivated = false };
+        Appearance.ApplyTo(card, Engine.Settings.Ui);
         card.Closed += (_, _) => { if (_card == card) _card = null; };
         _card = card;
         card.Show();
