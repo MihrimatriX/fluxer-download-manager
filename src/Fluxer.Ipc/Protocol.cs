@@ -16,8 +16,11 @@ public static class Protocol
     /// Unpacked dev build (fixed "key" in manifest). Store IDs get added at publish time.
     public static readonly string[] AllowedExtensionIds = ["dckkomckipcaglacbgfmbgmapfckpkja"];
 
+    /// Optional side-by-side profile (FLUXER_INSTANCE=dev): own pipe, mutex and data folder, no registry changes.
+    public static string Instance { get; } = Environment.GetEnvironmentVariable("FLUXER_INSTANCE") ?? "";
+
     /// Per-user name; the pipe itself is also created with CurrentUserOnly.
-    public static string PipeName => "Fluxer.v1." + WindowsIdentity.GetCurrent().User!.Value;
+    public static string PipeName => "Fluxer.v1." + WindowsIdentity.GetCurrent().User!.Value + (Instance.Length > 0 ? "." + Instance : "");
 }
 
 public sealed record Envelope(int ProtocolVersion, string Id, string Type, JsonElement Payload)
@@ -60,7 +63,7 @@ public sealed record CookieDto(string Name, string Value, string Domain, string 
 
 public sealed record DownloadAdd(
     string Url, string? FinalUrl, string? FileName, string? Mime, long? TotalBytes, string Source, string? TabUrl,
-    string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito);
+    string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito, string? TorrentPath = null);
 
 public sealed record PageSend(string PageUrl, string? Title, string? Referrer, string? UserAgent, CookieDto[]? Cookies, bool Incognito);
 

@@ -155,3 +155,27 @@ public sealed class MediaTests
         Assert.Equal("ba/b", YtDlp.FormatFor(null, true));
     }
 }
+
+public sealed class ProbeClassifyTests
+{
+    [Theory]
+    [InlineData("application/x-bittorrent", "anything", ProbeKind.Torrent)]
+    [InlineData("application/octet-stream", "d8:announce35:udp://x", ProbeKind.Torrent)]
+    [InlineData(null, "d4:infod6:lengthi1ee", ProbeKind.Torrent)]
+    [InlineData("text/html", "whatever", ProbeKind.Html)]
+    [InlineData("application/octet-stream", "  <!DOCTYPE html><html>", ProbeKind.Html)]
+    [InlineData("application/octet-stream", "<html><head>", ProbeKind.Html)]
+    [InlineData("application/zip", "PK\u0003\u0004", ProbeKind.File)]
+    [InlineData("application/octet-stream", "d", ProbeKind.File)]
+    public void Classify(string? mime, string head, ProbeKind expected) =>
+        Assert.Equal(expected, HttpProbe.Classify(mime, System.Text.Encoding.UTF8.GetBytes(head)));
+
+    [Fact]
+    public void NamesAFile()
+    {
+        Assert.True(FileNameResolver.NamesAFile(new Uri("https://x/a/setup.EXE?x=1")));
+        Assert.True(FileNameResolver.NamesAFile(new Uri("https://x/t/ubuntu.torrent")));
+        Assert.False(FileNameResolver.NamesAFile(new Uri("https://x/download/f3a872698cdea65a0f056f79cc6e0362")));
+        Assert.False(FileNameResolver.NamesAFile(new Uri("https://x/get.php?id=1")));
+    }
+}

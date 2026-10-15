@@ -9,7 +9,8 @@ namespace Fluxer.App;
 internal static class Program
 {
     public static readonly string DataDirectory =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fluxer");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            Protocol.Instance.Length > 0 ? "Fluxer-" + Protocol.Instance : "Fluxer");
 
     public static string[] Args { get; private set; } = [];
 

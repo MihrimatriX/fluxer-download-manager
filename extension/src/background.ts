@@ -1,6 +1,7 @@
 // Service worker: download capture, context menus, native messaging.
 import {
-  DEFAULT_SETTINGS, RecentUrls, buildInterceptMessage, decide, isHttp, outcomeOf, toCookieDto,
+  DEFAULT_SETTINGS, RecentUrls, buildInterceptMessage, buildTorrentFileMessage, decide, isHttp, outcomeOf,
+  rejectReason, toCookieDto,
   type Outcome, type Settings,
 } from './capture';
 import { truncateToFit } from './collector';
@@ -93,7 +94,24 @@ async function activeTab(incognito: boolean): Promise<chrome.tabs.Tab | undefine
 }
 
 // ---- download capture ----
+// The browser download is paused (not cancelled) while Fluxer probes the URL. If Fluxer declines —
+// the server would hand it a web page (Cloudflare, one-time link, missing session) — the browser
+// simply resumes its own request, so nothing is fetched twice.
 chrome.downloads.onCreated.addListener((item) => { void onDownloadCreated(item); });
+chrome.downloads.onChanged.addListener((delta) => {
+  if (delta.state?.current === 'complete') void onDownloadComplete(delta.id);
+});
+
+/** Downloads the browser finishes itself and Fluxer then opens as torrents. Survives worker restarts. */
+const pendingTorrents = {
+  async add(id: number) { await chrome.storage.session.set({ [`torrent:${id}`]: true }); },
+  async take(id: number) {
+    const key = `torrent:${id}`;
+    const hit = Boolean((await chrome.storage.session.get(key))[key]);
+    if (hit) await chrome.storage.session.remove(key);
+    return hit;
+  },
+};
 
 async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<void> {
   const decision = decide(item, {
@@ -103,25 +121,47 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
     postInitiated: postUrls.has(item.url) || postUrls.has(item.finalUrl),
     ownExtensionId: chrome.runtime.id,
   });
+  if (decision === 'torrent') {
+    await pendingTorrents.add(item.id);
+    if (item.state === 'complete') await onDownloadComplete(item.id);
+    return;
+  }
   if (decision !== 'capture') return;
 
   try {
-    await chrome.downloads.cancel(item.id);
-    const [after] = await chrome.downloads.search({ id: item.id });
-    if (after?.state === 'complete') return; // lost the race: leave it to the browser
+    await chrome.downloads.pause(item.id);
   } catch {
-    return;
+    return; // finished or failed already: leave it to the browser
   }
-  await chrome.downloads.erase({ id: item.id }).catch(() => {});
+  const [paused] = await chrome.downloads.search({ id: item.id });
+  if (!paused || paused.state !== 'in_progress') return;
 
   const tab = await activeTab(item.incognito);
-  const msg = buildInterceptMessage(item, {
+  const msg = buildInterceptMessage(paused, {
     cookies: await cookiesFor([item.url, item.finalUrl], tab?.id),
     userAgent: navigator.userAgent,
     tabUrl: tab?.url,
   });
-  const outcome = outcomeOf(await trySend(msg), 'download.add.result');
-  if (outcome === 'ok') return;
+  const reply = await trySend(msg);
+  const outcome = outcomeOf(reply, 'download.add.result');
+  if (outcome === 'ok') {
+    await chrome.downloads.cancel(item.id).catch(() => {});
+    await chrome.downloads.erase({ id: item.id }).catch(() => {});
+    return;
+  }
+
+  const reason = rejectReason(reply);
+  if (reason === 'torrent') await pendingTorrents.add(item.id);
+  try {
+    await chrome.downloads.resume(item.id);
+    // 'html'/'torrent' are normal hand-backs; only tell the user when Fluxer could not be reached.
+    if (reason !== 'html' && reason !== 'torrent') notifyOutcome(outcome, 'fallback');
+    return;
+  } catch {
+    // The paused request died (server timeout): restart it below.
+  }
+  await chrome.downloads.cancel(item.id).catch(() => {});
+  await chrome.downloads.erase({ id: item.id }).catch(() => {});
 
   if (item.incognito) {
     // chrome.downloads.download() would run in the regular profile and leak the URL into normal
@@ -136,6 +176,17 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
     console.warn('Fluxer: could not restart download in browser', e);
   }
   notifyOutcome(outcome, 'fallback');
+}
+
+async function onDownloadComplete(id: number): Promise<void> {
+  if (!(await pendingTorrents.take(id))) return;
+  const [item] = await chrome.downloads.search({ id });
+  if (!item?.filename) return;
+  const tab = await activeTab(item.incognito);
+  const msg = buildTorrentFileMessage(item, { userAgent: navigator.userAgent, tabUrl: tab?.url });
+  // On failure the .torrent simply stays in the browser's downloads, which is what the user would get anyway.
+  const outcome = outcomeOf(await trySend(msg), 'download.add.result');
+  if (outcome === 'unreachable' || outcome === 'update') notifyOutcome(outcome, 'send');
 }
 
 // ---- context menus ----

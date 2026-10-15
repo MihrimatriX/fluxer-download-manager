@@ -55,7 +55,7 @@ public sealed class FluxerEngine : IAsyncDisposable
     };
 
     public IDownload AddHttp(string url, string? fileName = null, RequestContext? ctx = null, string? saveDirectory = null,
-        bool start = true, string? hashAlgorithm = null, string? hashExpected = null)
+        bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null)
     {
         var r = new DownloadRecord
         {
@@ -65,7 +65,8 @@ public sealed class FluxerEngine : IAsyncDisposable
             Http = new HttpInfo
             {
                 Url = url,
-                MaxConnections = Settings.ConnectionsPerDownload,
+                MaxConnections = connections ?? Settings.ConnectionsPerDownload,
+                RejectHtml = rejectHtml,
                 Referrer = ctx?.Referrer,
                 UserAgent = ctx?.UserAgent,
                 Cookies = ctx?.Cookies,

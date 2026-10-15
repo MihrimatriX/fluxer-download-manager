@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_SETTINGS, RecentUrls, basename, buildInterceptMessage, decide, outcomeOf, toCookieDto,
+  DEFAULT_SETTINGS, RecentUrls, basename, buildInterceptMessage, buildTorrentFileMessage, decide, isTorrentLike,
+  outcomeOf, rejectReason, toCookieDto,
   type CaptureContext, type DownloadItemLike,
 } from './capture';
 import { PROTOCOL_VERSION, type Reply } from './protocol';
@@ -133,5 +134,36 @@ describe('outcomeOf', () => {
     expect(outcomeOf(env('error', { code: 'internal' }))).toBe('failed');
     expect(outcomeOf(env('pong', { appVersion: '1' }), 'download.add.result')).toBe('failed');
     expect(outcomeOf(env('pong', { appVersion: '1' }))).toBe('ok');
+  });
+});
+
+describe('torrents', () => {
+  it('recognises torrents by mime or by .torrent in url/filename', () => {
+    expect(isTorrentLike(item({ mime: 'application/x-bittorrent', url: 'https://t.test/download/f3a8', finalUrl: '', filename: '' }))).toBe(true);
+    expect(isTorrentLike(item({ mime: '', url: 'https://t.test/a.torrent?key=1', finalUrl: '' }))).toBe(true);
+    expect(isTorrentLike(item({ mime: '', filename: 'C:\\d\\x.TORRENT' }))).toBe(true);
+    expect(isTorrentLike(item({ url: 'https://t.test/xtorrent', finalUrl: '', filename: '' }))).toBe(false);
+    expect(isTorrentLike(item())).toBe(false);
+  });
+  it('lets the browser fetch small, POST-initiated or completed .torrent files', () => {
+    const t = { mime: 'application/x-bittorrent', totalBytes: 40_000 };
+    expect(decide(item(t), ctx())).toBe('torrent');
+    expect(decide(item(t), ctx({ postInitiated: true }))).toBe('torrent');
+    expect(decide(item({ ...t, state: 'complete' }), ctx())).toBe('torrent');
+    expect(decide(item(t), ctx({ altHeld: true }))).toBe('alt');
+  });
+  it('builds the torrent-file message with the saved path', () => {
+    const m = buildTorrentFileMessage(item({ filename: 'C:\\D\\ubuntu.torrent' }), { userAgent: 'UA' });
+    expect(m.type).toBe('download.add');
+    expect(m.payload.source).toBe('torrent-file');
+    expect(m.payload.torrentPath).toBe('C:\\D\\ubuntu.torrent');
+    expect(m.payload.fileName).toBe('ubuntu.torrent');
+  });
+  it('reads the reject reason', () => {
+    const r = (status: 'accepted' | 'rejected', reason?: string) =>
+      ({ protocolVersion: PROTOCOL_VERSION, id: '1', type: 'download.add.result', payload: { status, reason } }) as Reply;
+    expect(rejectReason(r('rejected', 'html'))).toBe('html');
+    expect(rejectReason(r('accepted'))).toBeUndefined();
+    expect(rejectReason(undefined)).toBeUndefined();
   });
 });

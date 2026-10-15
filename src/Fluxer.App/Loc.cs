@@ -41,6 +41,7 @@ public static class Loc
         return code switch
         {
             "disk-full" => Strings.ErrDiskFull,
+            "got-html" => Strings.ErrGotHtml,
             "file-changed" => Strings.ErrFileChanged,
             "hash-mismatch" => Strings.ErrHashMismatch,
             "link-expired" => Strings.ErrLinkExpired,

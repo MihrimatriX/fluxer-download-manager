@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:Fluxer.App.Controls"
              x:Class="Fluxer.App.App"
              Name="Fluxer"
              RequestedThemeVariant="Default">
@@ -12,24 +13,45 @@
           <SolidColorBrush x:Key="SidebarBrush" Color="#F3F3F5" />
           <SolidColorBrush x:Key="MainBrush" Color="#FCFCFD" />
           <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-          <SolidColorBrush x:Key="SubtleBrush" Color="#66000000" />
+          <SolidColorBrush x:Key="CardBrush" Color="#F6F6F8" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#77000000" />
           <SolidColorBrush x:Key="DividerBrush" Color="#14000000" />
-          <SolidColorBrush x:Key="RowHoverBrush" Color="#0A000000" />
+          <SolidColorBrush x:Key="ChipBrush" Color="#0D000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="SidebarBrush" Color="#1C1C1F" />
           <SolidColorBrush x:Key="MainBrush" Color="#161618" />
-          <SolidColorBrush x:Key="SurfaceBrush" Color="#232327" />
-          <SolidColorBrush x:Key="SubtleBrush" Color="#88FFFFFF" />
+          <SolidColorBrush x:Key="SurfaceBrush" Color="#1E1E21" />
+          <SolidColorBrush x:Key="CardBrush" Color="#222226" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#8CFFFFFF" />
           <SolidColorBrush x:Key="DividerBrush" Color="#1AFFFFFF" />
-          <SolidColorBrush x:Key="RowHoverBrush" Color="#0DFFFFFF" />
+          <SolidColorBrush x:Key="ChipBrush" Color="#14FFFFFF" />
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
+
+      <ControlTheme x:Key="{x:Type c:SettingRow}" TargetType="c:SettingRow">
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="{DynamicResource CardBrush}" CornerRadius="6" Padding="16,11" Margin="0,0,0,3" MinHeight="58">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel VerticalAlignment="Center" Margin="0,0,24,0" Spacing="2">
+                  <TextBlock Text="{TemplateBinding Title}" FontSize="14" TextWrapping="Wrap" />
+                  <TextBlock Text="{TemplateBinding Description}" FontSize="12" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SubtleBrush}"
+                             IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+                <ContentPresenter Grid.Column="1" Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
     </ResourceDictionary>
   </Application.Resources>
 
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
     <Style Selector="Window">
       <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
       <Setter Property="Background" Value="{DynamicResource MainBrush}" />
@@ -46,11 +68,24 @@
       <Setter Property="FontSize" Value="20" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
+    <Style Selector="TextBlock.section">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="2,18,0,8" />
+    </Style>
     <Style Selector="Button.tool">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Padding" Value="10,6" />
       <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Button.icon">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="6" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+      <Setter Property="FontSize" Value="13" />
     </Style>
     <Style Selector="ProgressBar">
       <Setter Property="MinHeight" Value="4" />

@@ -1,0 +1,190 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Fluxer.App.ViewModels"
+             xmlns:c="using:Fluxer.App.Controls"
+             xmlns:app="using:Fluxer.App"
+             x:Class="Fluxer.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="ComboBox">
+      <Setter Property="MinWidth" Value="220" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="Width" Value="150" />
+    </Style>
+    <Style Selector="ToggleSwitch">
+      <Setter Property="OnContent" Value="" />
+      <Setter Property="OffContent" Value="" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <!-- Header -->
+    <Grid DockPanel.Dock="Top" Margin="28,20,28,6" ColumnDefinitions="Auto,*,Auto">
+      <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseSettingsCommand}"
+              AutomationProperties.Name="{x:Static app:Strings.Back}" ToolTip.Tip="{x:Static app:Strings.Back}" Margin="-10,0,8,0">
+        <TextBlock Classes="icon" Text="&#xE72B;" FontSize="16" />
+      </Button>
+      <TextBlock Grid.Column="1" Text="{x:Static app:Strings.Settings}" Classes="h1" VerticalAlignment="Center" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                  IsVisible="{Binding SavedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <TextBlock Classes="icon" Text="&#xE73E;" Foreground="#30A46C" FontSize="12" />
+        <TextBlock Text="{Binding SavedText}" Classes="subtle" />
+      </StackPanel>
+    </Grid>
+
+    <ScrollViewer>
+      <StackPanel Margin="28,0,28,28" MaxWidth="900" HorizontalAlignment="Stretch">
+
+        <!-- General -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecGeneral}" />
+        <c:SettingRow Title="{x:Static app:Strings.Language}">
+          <ComboBox ItemsSource="{Binding Languages}" SelectedIndex="{Binding LanguageIndex}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.Theme}">
+          <ComboBox ItemsSource="{Binding Themes}" SelectedIndex="{Binding ThemeIndex}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ShowNotifications}" Description="{x:Static app:Strings.ShowNotificationsDesc}">
+          <ToggleSwitch IsChecked="{Binding Notifications}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ShowAddDialog}" Description="{x:Static app:Strings.ShowAddDialogDesc}">
+          <ToggleSwitch IsChecked="{Binding ShowAddDialog}" />
+        </c:SettingRow>
+
+        <!-- Downloads -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecDownloads}" />
+        <c:SettingRow Title="{x:Static app:Strings.DownloadFolder}" Description="{Binding DownloadDirectory}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Button Content="{x:Static app:Strings.Browse}" Command="{Binding BrowseFolderCommand}" />
+            <Button Classes="icon" Content="&#xE838;" Command="{Binding OpenDownloadFolderCommand}"
+                    AutomationProperties.Name="{x:Static app:Strings.OpenFolder}" ToolTip.Tip="{x:Static app:Strings.OpenFolder}" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.UseCategoryFolders}" Description="{x:Static app:Strings.UseCategoryFoldersDesc}">
+          <ToggleSwitch IsChecked="{Binding UseCategoryFolders}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.Conflict}">
+          <ComboBox ItemsSource="{Binding Conflicts}" SelectedIndex="{Binding ConflictIndex}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.Connections}" Description="{x:Static app:Strings.ConnectionsDesc}">
+          <NumericUpDown Value="{Binding Connections}" Minimum="1" Maximum="32" Increment="1" FormatString="0" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.HttpSlots}" Description="{x:Static app:Strings.SlotsDesc}">
+          <NumericUpDown Value="{Binding HttpSlots}" Minimum="1" Maximum="20" Increment="1" FormatString="0" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.TorrentSlots}" Description="{x:Static app:Strings.TorrentSlotsDesc}">
+          <NumericUpDown Value="{Binding TorrentSlots}" Minimum="1" Maximum="20" Increment="1" FormatString="0" />
+        </c:SettingRow>
+
+        <!-- Speed limits -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecSpeed}" />
+        <c:SettingRow Title="{x:Static app:Strings.LimitHttp}" Description="{x:Static app:Strings.LimitHttpDesc}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <NumericUpDown Value="{Binding HttpLimitValue}" IsEnabled="{Binding HttpLimitOn}" Minimum="1" Maximum="1000000" Increment="1" FormatString="0.#" Width="120" />
+            <ComboBox ItemsSource="{Binding Units}" SelectedIndex="{Binding HttpLimitUnit}" IsEnabled="{Binding HttpLimitOn}" MinWidth="90" />
+            <ToggleSwitch IsChecked="{Binding HttpLimitOn}" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.LimitTorrentDown}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <NumericUpDown Value="{Binding TorrentDownValue}" IsEnabled="{Binding TorrentDownOn}" Minimum="1" Maximum="1000000" Increment="1" FormatString="0.#" Width="120" />
+            <ComboBox ItemsSource="{Binding Units}" SelectedIndex="{Binding TorrentDownUnit}" IsEnabled="{Binding TorrentDownOn}" MinWidth="90" />
+            <ToggleSwitch IsChecked="{Binding TorrentDownOn}" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.LimitTorrentUp}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <NumericUpDown Value="{Binding TorrentUpValue}" IsEnabled="{Binding TorrentUpOn}" Minimum="1" Maximum="1000000" Increment="1" FormatString="0.#" Width="120" />
+            <ComboBox ItemsSource="{Binding Units}" SelectedIndex="{Binding TorrentUpUnit}" IsEnabled="{Binding TorrentUpOn}" MinWidth="90" />
+            <ToggleSwitch IsChecked="{Binding TorrentUpOn}" />
+          </StackPanel>
+        </c:SettingRow>
+
+        <!-- Torrent -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecTorrent}" />
+        <c:SettingRow Title="{x:Static app:Strings.SeedRatio}" Description="{x:Static app:Strings.SeedRatioDesc}">
+          <NumericUpDown Value="{Binding SeedRatio}" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.0" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.SeedMinutes}" Description="{x:Static app:Strings.SeedMinutesDesc}">
+          <NumericUpDown Value="{Binding SeedMinutes}" Minimum="0" Maximum="100000" Increment="10" FormatString="0" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.RegisterAssociations}" Description="{x:Static app:Strings.RegisterAssociationsDesc}">
+          <ToggleSwitch IsChecked="{Binding FileAssociations}" />
+        </c:SettingRow>
+
+        <!-- Schedule -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecSchedule}" />
+        <c:SettingRow Title="{x:Static app:Strings.ScheduleStart}" Description="{x:Static app:Strings.ScheduleStartDesc}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TimePicker SelectedTime="{Binding ScheduleStart}" ClockIdentifier="24HourClock" IsEnabled="{Binding ScheduleStartOn}" MinuteIncrement="5" />
+            <ToggleSwitch IsChecked="{Binding ScheduleStartOn}" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ScheduleStop}" Description="{x:Static app:Strings.ScheduleStopDesc}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TimePicker SelectedTime="{Binding ScheduleStop}" ClockIdentifier="24HourClock" IsEnabled="{Binding ScheduleStopOn}" MinuteIncrement="5" />
+            <ToggleSwitch IsChecked="{Binding ScheduleStopOn}" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.AfterQueue}" Description="{x:Static app:Strings.AfterQueueDesc}">
+          <ComboBox ItemsSource="{Binding AfterQueueOptions}" SelectedIndex="{Binding AfterQueueIndex}" />
+        </c:SettingRow>
+
+        <!-- Browser -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecBrowser}" />
+        <c:SettingRow Title="{x:Static app:Strings.BrowserStatus}" Description="{x:Static app:Strings.BrowserStatusDesc}">
+          <StackPanel Spacing="8" HorizontalAlignment="Right">
+            <ItemsControl ItemsSource="{Binding Browsers}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:BrowserRow">
+                  <Grid ColumnDefinitions="90,Auto,*" Margin="0,1">
+                    <TextBlock Text="{Binding Browser}" />
+                    <TextBlock Grid.Column="1" Classes="icon" Text="{Binding Glyph}" FontSize="12" Margin="0,0,6,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding Text}" Classes="subtle" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Content="{x:Static app:Strings.Repair}" Command="{Binding RepairIntegrationCommand}" HorizontalAlignment="Right" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ExtensionFolder}" Description="{x:Static app:Strings.ExtensionHowTo}">
+          <Button Content="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenExtensionFolderCommand}" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ExtensionId}" Description="{Binding ExtensionId}">
+          <Button Content="{x:Static app:Strings.Copy}" Command="{Binding CopyExtensionIdCommand}" />
+        </c:SettingRow>
+
+        <!-- Video -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.SecVideo}" />
+        <c:SettingRow Title="{x:Static app:Strings.MediaTools}" Description="{Binding ToolsText}">
+          <Button Content="{x:Static app:Strings.UpdateNow}" Command="{Binding UpdateToolsCommand}" IsEnabled="{Binding CanUpdateTools}" />
+        </c:SettingRow>
+
+        <!-- Advanced -->
+        <TextBlock Classes="section" Text="{x:Static app:Strings.TabAdvanced}" />
+        <c:SettingRow Title="{x:Static app:Strings.Proxy}" Description="{x:Static app:Strings.ProxyDesc}">
+          <TextBox Text="{Binding Proxy}" PlaceholderText="http://host:port" Width="260" />
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.UpdateFeed}" Description="{x:Static app:Strings.UpdateFeedDesc}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="{x:Static app:Strings.RestartToUpdate}" Command="{Binding RestartToUpdateCommand}" IsVisible="{Binding HasPendingUpdate}" Classes="accent" />
+            <TextBox Text="{Binding UpdateFeed}" PlaceholderText="{x:Static app:Strings.UpdateFeedWatermark}" Width="260" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.Diagnostics}" Description="{x:Static app:Strings.DiagnosticsDesc}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="{x:Static app:Strings.OpenLogs}" Command="{Binding OpenLogsCommand}" />
+            <Button Content="{x:Static app:Strings.ExportDiagnostics}" Command="{Binding ExportDiagnosticsCommand}" />
+          </StackPanel>
+        </c:SettingRow>
+        <c:SettingRow Title="{x:Static app:Strings.ResetDefaults}" Description="{x:Static app:Strings.ResetDefaultsDesc}">
+          <Button Content="{x:Static app:Strings.Reset}" Command="{Binding ResetDefaultsCommand}" />
+        </c:SettingRow>
+
+        <TextBlock Classes="subtle" Margin="2,18,0,0" Text="{Binding Version, StringFormat='Fluxer {0}'}" />
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

@@ -32,7 +32,8 @@ export type DownloadAdd = Envelope<'download.add', BrowserContext & {
   fileName?: string;        // name suggested by the browser
   mime?: string;
   totalBytes?: number;      // only when DownloadItem.totalBytes > 0
-  source: 'intercept' | 'context-menu';
+  source: 'intercept' | 'context-menu' | 'torrent-file';
+  torrentPath?: string;     // torrent-file: the .torrent the browser just saved (absolute path)
   tabUrl?: string;
 }>;
 
@@ -50,7 +51,8 @@ export type Request = Ping | DownloadAdd | StatusGet | PageSend | PageResources;
 export type Pong = Envelope<'pong', { appVersion: string }>;
 export type DownloadAddResult = Envelope<'download.add.result', {
   status: 'accepted' | 'rejected';   // rejected → extension hands the download back to the browser
-  reason?: string;
+  /** 'html': the server sends us a web page, 'torrent': let the browser fetch the .torrent, then send torrentPath. */
+  reason?: 'html' | 'torrent' | 'unreachable' | string;
 }>;
 export type Status = Envelope<'status', {
   active: number; queued: number; bytesPerSecond: number;

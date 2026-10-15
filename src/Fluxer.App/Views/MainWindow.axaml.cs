@@ -11,26 +11,25 @@ namespace Fluxer.App.Views;
 public sealed partial class MainWindow : Window
 {
     private readonly DispatcherTimer _timer;
-    private readonly ListBox _list;
 
     public MainWindow()
     {
         AvaloniaXamlLoader.Load(this);
-        _list = this.FindControl<ListBox>("List")!;
-        _list.SelectionChanged += (_, _) =>
+        var list = this.FindControl<DataGrid>("List")!;
+        list.SelectionChanged += (_, _) =>
         {
             if (DataContext is not MainViewModel vm) return;
             vm.Selection.Clear();
-            vm.Selection.AddRange(_list.SelectedItems?.OfType<DownloadItemViewModel>() ?? []);
+            vm.Selection.AddRange(list.SelectedItems.OfType<DownloadItemViewModel>());
         };
-        _list.DoubleTapped += (_, _) => (DataContext as MainViewModel)?.OpenFileCommand.Execute(null);
-        _list.KeyDown += OnListKeyDown;
+        list.DoubleTapped += (_, _) => (DataContext as MainViewModel)?.OpenFileCommand.Execute(null);
+        // DataGrid consumes Enter/Space itself, so listen to handled events too.
+        list.AddHandler(KeyDownEvent, OnListKeyDown, RoutingStrategies.Tunnel);
 
-        // ~4 Hz, and only for rows the virtualizing panel has actually realized.
         _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(250), DispatcherPriority.Background, (_, _) =>
         {
-            if (DataContext is MainViewModel vm && IsVisible && WindowState != WindowState.Minimized)
-                vm.Tick(_list.GetRealizedContainers().Select(c => c.DataContext).OfType<DownloadItemViewModel>());
+            if (DataContext is MainViewModel vm && IsVisible && WindowState != WindowState.Minimized && !vm.IsSettingsOpen)
+                vm.Tick();
         });
         Opened += (_, _) => _timer.Start();
         Closed += (_, _) => _timer.Stop();
@@ -41,7 +40,7 @@ public sealed partial class MainWindow : Window
 
     private void OnListKeyDown(object? sender, KeyEventArgs e)
     {
-        if (DataContext is not MainViewModel vm) return;
+        if (DataContext is not MainViewModel vm || e.KeyModifiers != KeyModifiers.None) return;
         switch (e.Key)
         {
             case Key.Delete: vm.DeleteCommand.Execute(null); e.Handled = true; break;

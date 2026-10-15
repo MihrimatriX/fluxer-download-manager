@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.0 — 2026-10-15
+
+### Düzeltildi: torrent yerine ".html" inmesi
+- Eklenti tarayıcı indirmesini artık **iptal etmiyor, duraklatıyor**. Fluxer adresi 64 baytlık bir yoklamayla kontrol ediyor: gerçek dosya ise alıyor, sunucu Fluxer'a web sayfası (Cloudflare, tek kullanımlık bağlantı, oturum) gönderiyorsa tarayıcı kendi isteğine **kaldığı yerden devam ediyor**; hiçbir şey iki kez istenmiyor.
+- `.torrent` dosyalarını (MIME veya ad) tarayıcı indiriyor, Fluxer biten dosyayı diskten okuyup torrent penceresini açıyor. Boyutu bilinen küçük torrentler artık "küçük dosya" kuralına takılmıyor.
+- Sunucu tarayıcı User-Agent'ını (TLS parmak izi uyuşmadığı için) reddederse Fluxer kendi UA'sıyla bir kez daha deniyor (gerçek sunucuda görüldü).
+- Dosya beklenen bir indirmede HTML gelirse motor dosyayı kaydetmiyor, "got-html" hatasıyla duruyor.
+
+### Arayüz
+- **Ayarlar sayfası:** modal yerine uygulama içinde; açıklamalı satırlar, anında kaydetme, hız sınırları için aç/kapa + KB/MB birimi, saat seçicili zamanlayıcı, tarayıcı entegrasyonu durumu + onar, eklenti klasörü/kimliği, log klasörü, ayarları sıfırla.
+- **Liste:** DataGrid; sıralanabilir, genişletilebilir, yeri değiştirilebilir sütunlar; "Eklenme" sütunu; sayılı durum filtreleri (Etkin/Sırada/Duraklatılan/Tamamlanan/Hatalı); satır üstü duraklat/sürdür/klasör butonu; kuyrukta yukarı/aşağı/başa/sona taşıma (Ctrl+↑/↓/Home/End) ve "Sırada (2.)" gösterimi; bitenleri temizle; durum çubuğunda hızlı hız sınırı.
+- **Torrent:** detayda Dosyalar (canlı seçim, dosya bazında ilerleme) ve Seçenekler (torrent başına indirme/gönderme sınırı, sıralı indirme, kendi paylaşım kuralları).
+- **Ekleme penceresi:** adresi yoklayıp ad/boyut/tür/devam ettirilebilirlik gösteriyor; HTML ve torrent uyarısı; tür klasörü önerisi; son klasörler; gelişmiş seçenekler katlanır bölümde.
+- Erişilebilirlik: satırlar, kategoriler ve filtreler ekran okuyucuya anlamlı adlarla okunuyor.
+- Durum geçişleri loglanıyor (tanılama).
+- Geliştirme: `FLUXER_INSTANCE=dev` ile kurulu sürümün yanında ayrı veri/pipe/mutex ile çalışır, registry'ye dokunmaz.
+
 ## 0.1.0 — 2026-10-15
 
 ### Aşama 0 — Mimari

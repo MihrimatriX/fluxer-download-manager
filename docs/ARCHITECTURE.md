@@ -521,3 +521,8 @@ Kabul kriterleri prompt'taki gibidir; her aşama sonunda `CHANGELOG.md` girdisi 
 | Alt süreçler | yt-dlp/ffmpeg bir Job Object'e (`KILL_ON_JOB_CLOSE`) atanır | Uygulama çökse bile `.part`'a yazan yetim süreç kalmaz |
 | Araç indirme | Motorun paylaşılan `HttpClient`'ı (aynı handler/IPv6 yarışı) kullanılır, kuyruğa eklenmez | Listede görünmesi istenmez |
 | Kayıt | Registry/manifest her açılışta onarılır (Risk 9) | Taşınan kurulum/yeni tarayıcı |
+| Tarayıcı yakalama (0.2) | İptal yerine **duraklat** → Fluxer 64 baytlık yoklama yapar → kabul (tarayıcı iptal eder) ya da ret + `reason` (tarayıcı devam eder) | Cloudflare/tek kullanımlık bağlantı/oturum gerektiren sitelerde Fluxer HTML alıyordu ("…0362.html", 2.118 bayt) |
+| Torrent dosyaları (0.2) | Tarayıcı indirir, eklenti biten dosyanın yolunu (`torrentPath`) gönderir, host yalnızca mutlak `.torrent` yolunu kabul eder | Siteye ikinci istek atmadan torrent açmak |
+| User-Agent (0.2) | Önce tarayıcı UA'sı; istek düşerse/HTML gelirse kendi UA'mızla tekrar | TLS parmak izi ile UA tutarsızlığını bot sayan sunucular (Hetzner'da ölçüldü) |
+| Liste (0.2) | Avalonia DataGrid + `DataGridCollectionView` (filtre/sıralama); 4 Hz yenileme yalnızca çalışan satırlar için | Sütun genişletme/sıralama hazır geliyor |
+| Ayarlar (0.2) | Uygulama içi sayfa, 400 ms gecikmeli otomatik kaydetme; görünüm modeli pencere bağlanmadan önce yüklenir | Gizli sayfanın varsayılan kontrol değerlerinin ayarların üzerine yazılması hatası bulundu |

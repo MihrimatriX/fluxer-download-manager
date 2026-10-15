@@ -120,6 +120,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var menu = new NativeMenu();
         menu.Add(Item(Strings.TrayOpen, ShowMainWindow));
         menu.Add(Item(Strings.AddUrl, () => _ = Main.AddUrlCommand.ExecuteAsync(null)));
+        menu.Add(Item(Strings.Settings, () => { ShowMainWindow(); Main.OpenSettingsCommand.Execute(null); }));
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(Item(Strings.PauseAll, () => _ = Engine.Queue.PauseAllAsync()));
         menu.Add(Item(Strings.ResumeAll, Engine.Queue.ResumeAll));
@@ -196,6 +197,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
     private void OnStateChanged(IDownload d)
     {
+        Log.Information("Download {Id} ({Kind}) → {State} {Error}", d.Id, d.Kind, d.State, d.Record.Error);
         Dispatcher.UIThread.Post(() => Main.OnStateChanged(d));
         if (!Engine.Settings.Notifications) return;
         switch (d.State)
@@ -209,8 +211,9 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         }
     }
 
-    private void RegisterIntegration()
+    public void RegisterIntegration()
     {
+        if (Protocol.Instance.Length > 0) return; // side-by-side dev profile never touches the registry
         try
         {
             var dir = AppContext.BaseDirectory;
@@ -271,29 +274,33 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
     // ================= pipe messages =================
 
-    private Task<Envelope> HandleMessageAsync(Envelope msg)
+    private async Task<Envelope> HandleMessageAsync(Envelope msg)
+    {
+        if (msg.Type == MessageTypes.DownloadAdd && msg.PayloadAs<DownloadAdd>() is { } add)
+            return await OnDownloadAddAsync(msg.Id, add);
+        return HandleOther(msg);
+    }
+
+    private Envelope HandleOther(Envelope msg)
     {
         var accepted = Envelope.Create(msg.Id, MessageTypes.DownloadAddResult, new DownloadAddResult("accepted", null));
         switch (msg.Type)
         {
             case MessageTypes.Ping:
-                return Task.FromResult(Envelope.Create(msg.Id, MessageTypes.Pong, new Pong(typeof(App).Assembly.GetName().Version?.ToString(3) ?? "0")));
+                return Envelope.Create(msg.Id, MessageTypes.Pong, new Pong(typeof(App).Assembly.GetName().Version?.ToString(3) ?? "0"));
             case MessageTypes.StatusGet:
-                return Task.FromResult(Envelope.Create(msg.Id, MessageTypes.Status, BuildStatus()));
-            case MessageTypes.DownloadAdd when msg.PayloadAs<DownloadAdd>() is { } add:
-                Dispatcher.UIThread.Post(() => _ = Guard(OnBrowserDownloadAsync(add)));
-                return Task.FromResult(accepted);
+                return Envelope.Create(msg.Id, MessageTypes.Status, BuildStatus());
             case MessageTypes.PageSend when msg.PayloadAs<PageSend>() is { } page:
                 Dispatcher.UIThread.Post(() => _ = Guard(Flows.MediaAsync(this, page.PageUrl, page.Cookies)));
-                return Task.FromResult(accepted);
+                return accepted;
             case MessageTypes.PageResources when msg.PayloadAs<PageResources>() is { } res:
                 Dispatcher.UIThread.Post(() => _ = Guard(Flows.GrabAsync(this, res)));
-                return Task.FromResult(accepted);
+                return accepted;
             case MessageTypes.InstanceArgs when msg.PayloadAs<InstanceArgs>() is { } ia:
                 Dispatcher.UIThread.Post(() => _ = Guard(HandleArgsAsync(ia.Args, showWindow: true)));
-                return Task.FromResult(accepted);
+                return accepted;
             default:
-                return Task.FromResult(Envelope.Error(msg.Id, ErrorCodes.InvalidMessage, "unknown type"));
+                return Envelope.Error(msg.Id, ErrorCodes.InvalidMessage, "unknown type");
         }
     }
 
@@ -333,19 +340,82 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (showWindow && !handled) ShowMainWindow();
     }
 
-    private async Task OnBrowserDownloadAsync(DownloadAdd add)
+    /// Answers the extension synchronously: "accepted" (Fluxer takes it, the browser cancels its copy)
+    /// or "rejected" with a reason (the browser resumes its paused download). Before accepting we
+    /// probe the URL ourselves — if we would only get a web page (Cloudflare, one-time link, missing
+    /// session), the browser is the one that can download it.
+    private async Task<Envelope> OnDownloadAddAsync(string id, DownloadAdd add)
     {
+        Envelope Reply(string status, string? reason = null) =>
+            Envelope.Create(id, MessageTypes.DownloadAddResult, new DownloadAddResult(status, reason));
+
+        if (add.TorrentPath is { } path)
+        {
+            var bytes = await ReadTorrentFileAsync(path);
+            Log.Information("Browser saved torrent {File}: {Valid}", Path.GetFileName(path), bytes is not null);
+            Dispatcher.UIThread.Post(() => _ = Guard(bytes is not null
+                ? Flows.TorrentAsync(this, bytes, null)
+                : Dialogs.MessageAsync(Owner, Strings.AddTorrent, Strings.InvalidTorrentFile)));
+            return Reply(bytes is not null ? "accepted" : "rejected", bytes is null ? "invalid-torrent" : null);
+        }
+
         if (add.Url.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase))
         {
-            await Flows.TorrentAsync(this, null, add.Url);
-            return;
+            Dispatcher.UIThread.Post(() => _ = Guard(Flows.TorrentAsync(this, null, add.Url)));
+            return Reply("accepted");
         }
 
         var ctx = new RequestContext(add.Referrer, add.UserAgent, CookieHeader(add.Cookies));
-        var name = add.FileName ?? FileNameResolver.Resolve(null, new Uri(add.FinalUrl ?? add.Url), add.Mime);
+        var (probe, workingCtx) = await HttpProbe.RunWithFallbackAsync(Engine.Http, add.Url, ctx, CancellationToken.None);
+        ctx = workingCtx ?? ctx;
+        var host = Uri.TryCreate(add.Url, UriKind.Absolute, out var u) ? u.Host : "?";
+        Log.Information("Browser {Source} from {Host}: probe {Kind} HTTP {Status} {Mime}", add.Source, host, probe.Kind, probe.Status, probe.MediaType);
+
+        var fromMenu = add.Source == "context-menu";
+        var expectsHtml = FileNameResolver.IsHtml(add.Mime)
+                          || add.FileName?.EndsWith(".html", StringComparison.OrdinalIgnoreCase) == true
+                          || add.FileName?.EndsWith(".htm", StringComparison.OrdinalIgnoreCase) == true;
+        switch (probe.Kind)
+        {
+            case ProbeKind.Torrent when fromMenu:
+                Dispatcher.UIThread.Post(() => _ = Guard(Flows.TorrentFromUrlAsync(this, add.Url, ctx)));
+                return Reply("accepted");
+            case ProbeKind.Torrent:
+                return Reply("rejected", "torrent");          // browser finishes it, then sends torrentPath
+            case ProbeKind.Html when !expectsHtml && !fromMenu:
+                return Reply("rejected", "html");             // browser resumes its own (working) request
+            case ProbeKind.Html when !expectsHtml:
+                Dispatcher.UIThread.Post(() => _ = Guard(Dialogs.MessageAsync(Owner, Strings.NewDownload, Strings.WarnHtml)));
+                return Reply("accepted");
+            case ProbeKind.Error when !fromMenu:
+                return Reply("rejected", "unreachable");
+        }
+
+        Dispatcher.UIThread.Post(() => _ = Guard(OnBrowserDownloadAsync(add, ctx, probe)));
+        return Reply("accepted");
+    }
+
+    private static async Task<byte[]?> ReadTorrentFileAsync(string path)
+    {
+        try
+        {
+            var info = new FileInfo(path);
+            if (!info.Exists || info.Length > HttpProbe.MaxTorrentBytes) return null;
+            var bytes = await File.ReadAllBytesAsync(path);
+            return MonoTorrent.Torrent.TryLoad(bytes, out _) ? bytes : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private async Task OnBrowserDownloadAsync(DownloadAdd add, RequestContext ctx, ProbeResult probe)
+    {
+        var name = add.FileName ?? probe.FileName ?? FileNameResolver.Resolve(null, new Uri(add.FinalUrl ?? add.Url), add.Mime);
 
         // An expired download waiting for a fresh link? Never attach without asking.
-        foreach (var candidate in Engine.Queue.FindRefreshCandidates(name, add.TotalBytes).OfType<HttpDownload>())
+        foreach (var candidate in Engine.Queue.FindRefreshCandidates(name, add.TotalBytes ?? probe.Size).OfType<HttpDownload>())
         {
             var attach = await Dialogs.ConfirmAsync(Owner, Strings.LinkMatchTitle,
                 string.Format(CultureInfo.CurrentCulture, Strings.LinkMatchBody, candidate.FileName), Strings.LinkMatchAttach, Strings.LinkMatchNew);
@@ -353,7 +423,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             break;
         }
 
-        await Flows.NewDownloadAsync(this, [add.Url], add.FileName, ctx, add.TotalBytes);
+        await Flows.NewDownloadAsync(this, [add.Url], add.FileName, ctx, probe);
     }
 
     [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16)]

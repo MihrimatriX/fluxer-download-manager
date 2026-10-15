@@ -52,7 +52,10 @@ static string? Validate(Envelope msg)
             return null;
         case MessageTypes.DownloadAdd:
             var add = msg.PayloadAs<DownloadAdd>();
-            return add is not null && IsUrl(add.Url, allowMagnet: true) ? null : "bad url";
+            if (add is null || !IsUrl(add.Url, allowMagnet: true)) return "bad url";
+            // torrent-file: the .torrent the browser just saved; nothing else may be named here.
+            return add.TorrentPath is null || (add.TorrentPath.Length < 1024 && Path.IsPathFullyQualified(add.TorrentPath)
+                   && add.TorrentPath.EndsWith(".torrent", StringComparison.OrdinalIgnoreCase)) ? null : "bad path";
         case MessageTypes.PageSend:
             var page = msg.PayloadAs<PageSend>();
             return page is not null && IsUrl(page.PageUrl, false) ? null : "bad url";

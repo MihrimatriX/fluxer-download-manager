@@ -158,6 +158,10 @@ public sealed class HttpDownload : IDownload
         try
         {
             Http.FinalUrl = resp.RequestMessage?.RequestUri?.ToString() ?? Http.Url;
+            // A login/captcha/Cloudflare page instead of the file: fail clearly rather than save it as "x.html".
+            if (FileNameResolver.IsHtml(resp.Content.Headers.ContentType?.MediaType)
+                && (Http.RejectHtml || FileNameResolver.NamesAFile(new Uri(Http.Url))))
+                throw new StopException(DownloadState.Failed, "got-html");
             ResponseHeaders = [.. resp.Headers.Concat(resp.Content.Headers).Select(h => KeyValuePair.Create(h.Key, string.Join(", ", h.Value)))];
 
             long? size;

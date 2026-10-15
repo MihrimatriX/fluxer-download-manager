@@ -73,13 +73,21 @@ public sealed class FakeServer : IAsyncDisposable
         return sha.GetHashAndReset();
     }
 
-    /// Extra static text responses by path (e.g. checksum files).
+    public string? RejectUserAgentContaining { get; set; }
+
+    /// Extra static text responses by path (e.g. checksum files); "<…" is served as text/html.
     public Dictionary<string, string> Texts { get; } = [];
 
     private async Task HandleAsync(HttpContext ctx)
     {
+        if (RejectUserAgentContaining is { } bad && ctx.Request.Headers.UserAgent.ToString().Contains(bad, StringComparison.Ordinal))
+        {
+            ctx.Abort(); // like a bot filter dropping "Chrome" requests that lack Chrome's TLS fingerprint
+            return;
+        }
         if (Texts.TryGetValue(ctx.Request.Path.Value ?? "", out var text))
         {
+            ctx.Response.ContentType = text.StartsWith('<') ? "text/html" : "text/plain";
             await ctx.Response.WriteAsync(text);
             return;
         }

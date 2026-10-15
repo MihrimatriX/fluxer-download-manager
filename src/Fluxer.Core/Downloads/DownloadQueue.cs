@@ -101,6 +101,45 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         Schedule();
     }
 
+    public enum Move { Top, Up, Down, Bottom }
+
+    /// Reorders the queue (what starts next). Moves the given downloads as a block, keeping their order.
+    public void Reorder(IReadOnlyCollection<long> ids, Move move)
+    {
+        lock (_lock)
+        {
+            var ordered = _items.OrderBy(d => d.Record.QueueOrder).ToList();
+            var picked = ordered.Where(d => ids.Contains(d.Id)).ToList();
+            if (picked.Count == 0) return;
+            var first = ordered.IndexOf(picked[0]);
+            var rest = ordered.Except(picked).ToList();
+            var at = move switch
+            {
+                Move.Top => 0,
+                Move.Bottom => rest.Count,
+                Move.Up => Math.Max(0, first - 1),
+                _ => Math.Min(rest.Count, first + 1),
+            };
+            rest.InsertRange(at, picked);
+            for (var i = 0; i < rest.Count; i++)
+            {
+                if (rest[i].Record.QueueOrder == i + 1) continue;
+                rest[i].Record.QueueOrder = i + 1;
+                db.Update(rest[i].Record);
+            }
+        }
+        foreach (var d in Items) StateChanged?.Invoke(d);
+        Schedule();
+    }
+
+    /// 1-based position among queued downloads (null when not queued).
+    public int? QueuePosition(IDownload d)
+    {
+        if (d.State != DownloadState.Queued) return null;
+        lock (_lock)
+            return 1 + _items.Count(x => x.State == DownloadState.Queued && x.Record.QueueOrder < d.Record.QueueOrder);
+    }
+
     /// Downloads waiting for a fresh link whose name (and size, when known) match.
     public IEnumerable<IDownload> FindRefreshCandidates(string fileName, long? size)
     {

@@ -11,7 +11,8 @@ namespace Fluxer.App.Services;
 /// User-facing flows that combine dialogs with engine calls.
 public static class Flows
 {
-    public static async Task NewDownloadAsync(AppHost host, IReadOnlyList<string> urls, string? fileName, RequestContext? ctx, long? size = null)
+    /// `probe`: what the browser-capture check already learned about a single URL (skips a second probe).
+    public static async Task NewDownloadAsync(AppHost host, IReadOnlyList<string> urls, string? fileName, RequestContext? ctx, ProbeResult? probe = null)
     {
         var engine = host.Engine;
         var s = engine.Settings;
@@ -19,23 +20,48 @@ public static class Flows
         // Browser captures can skip the dialog when the user turned it off.
         if (ctx is not null && !s.ShowAddDialog && urls.Count > 0)
         {
-            foreach (var u in urls) engine.AddHttp(u, fileName, ctx);
+            foreach (var u in urls) engine.AddHttp(u, fileName ?? probe?.FileName, ctx, rejectHtml: true);
             return;
         }
 
-        var r = await Dialogs.NewDownloadAsync(host.Owner, s, urls, fileName, size);
+        var r = await Dialogs.NewDownloadAsync(host.Owner, s, engine.Http, urls, fileName, ctx, probe);
         if (r is null) return;
-        if (s.UseCategoryFolders != engine.Settings.UseCategoryFolders) await engine.SaveSettingsAsync(s);
+        ctx = r.Context ?? ctx; // the dialog may have found that our own User-Agent works better
+
+        // Remember the folder (most recent first) unless it is just the default.
+        if (!string.Equals(r.Folder, s.DownloadDirectory, StringComparison.OrdinalIgnoreCase))
+            s.RecentFolders = [r.Folder, .. s.RecentFolders.Where(f => !string.Equals(f, r.Folder, StringComparison.OrdinalIgnoreCase)).Take(5)];
+        await engine.SaveSettingsAsync(s);
+
         foreach (var url in r.Urls)
         {
             if (url.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase)) { await TorrentAsync(host, null, url); continue; }
-            var d = engine.AddHttp(url, r.FileName, ctx, r.Folder.Length > 0 ? r.Folder : null, r.Start, r.HashAlgorithm, r.Hash);
-            if (r.Connections != s.ConnectionsPerDownload && d.Record.Http is { } h)
+            if (r.Kind == ProbeKind.Torrent || Path.GetExtension(new Uri(url).AbsolutePath).Equals(".torrent", StringComparison.OrdinalIgnoreCase))
             {
-                h.MaxConnections = r.Connections;
-                engine.Db.Update(d.Record);
+                await TorrentFromUrlAsync(host, url, ctx);
+                continue;
             }
+            var folder = string.Equals(r.Folder, s.DownloadDirectory, StringComparison.OrdinalIgnoreCase) ? null : r.Folder;
+            engine.AddHttp(url, r.FileName, ctx, folder, r.Start, r.HashAlgorithm, r.Hash,
+                rejectHtml: ctx is not null || r.Kind == ProbeKind.File, connections: r.Connections);
         }
+    }
+
+    /// A .torrent link: fetch it (small) and open the torrent dialog instead of saving the file.
+    public static async Task TorrentFromUrlAsync(AppHost host, string url, RequestContext? ctx)
+    {
+        byte[]? bytes = null;
+        try
+        {
+            bytes = await Dialogs.BusyAsync(host.Owner, Strings.AddTorrent, Strings.Probing,
+                _ => HttpProbe.FetchTorrentAsync(host.Engine.Http, url, ctx, CancellationToken.None));
+        }
+        catch (Exception e) when (e is HttpRequestException or IOException or OperationCanceledException)
+        {
+            Log.Warning("Fetching torrent failed: {Error}", e.Message);
+        }
+        if (bytes is null) await Dialogs.MessageAsync(host.Owner, Strings.AddTorrent, Strings.TorrentFetchFailed);
+        else await TorrentAsync(host, bytes, null);
     }
 
     /// Multi-line paste/drop: http(s) and magnet links, one per line (or space separated).

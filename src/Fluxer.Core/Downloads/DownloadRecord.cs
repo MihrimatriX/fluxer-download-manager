@@ -37,6 +37,8 @@ public sealed class HttpInfo
     public string? Cookies { get; set; }           // "a=b; c=d"; encrypted at rest
     public string? HashAlgorithm { get; set; }     // "MD5" | "SHA256"
     public string? HashExpected { get; set; }
+    /// A web page instead of a file means failure (browser captures, URLs that name a file).
+    public bool RejectHtml { get; set; }
 
     public RequestContext Context => new(Referrer, UserAgent, Cookies);
 }
@@ -52,6 +54,8 @@ public sealed class TorrentInfo
     public int? SeedMinutes { get; set; }
     public long UploadedBytes { get; set; }
     public long SeedingStartedAt { get; set; }
+    /// B/s, 0 = only the global limit. (Download limit: DownloadRecord.SpeedLimit.)
+    public long UploadLimit { get; set; }
     /// null = all files selected.
     public HashSet<int>? DeselectedFiles { get; set; }
 }

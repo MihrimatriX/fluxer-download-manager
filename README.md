@@ -27,7 +27,9 @@ Durum: **Ayarlar → Entegrasyon**.
 | Boşluk / Delete / Enter | Duraklat-sürdür / sil / dosyayı aç |
 | Ctrl+Shift+P / R | Tümünü duraklat / sürdür |
 
-- Pencereyi kapatmak tepsiye küçültür; çıkış tepsi menüsünden.
+- Pencereyi kapatmak tepsiye küçültür; çıkış tepsi menüsünden. Ayarlar: kenar çubuğu → **Ayarlar** (Ctrl+,), değişiklikler anında kaydedilir.
+- Kuyruk: satırları Ctrl+↑/↓ ile taşıyın; sütun başlıklarına tıklayarak sıralayın, kenarlarından sürükleyerek genişletin.
+- Torrent bağlantılarını tarayıcı indirir, Fluxer torrent olarak açar. Bir site Fluxer'a web sayfası döndürürse indirme otomatik olarak tarayıcıda kalır.
 - Süresi dolan bağlantılar "Bağlantı yenilenmeli" durumuna geçer: sayfadan dosyayı tekrar tıklayın
   (Fluxer eşleştirip sorar) ya da sağ tık → **Bağlantıyı yenile**.
 - Sayfa yakalayıcı ve video: sayfada sağ tık → **Sayfadaki dosyaları/resimleri yakala** veya
@@ -43,9 +45,9 @@ dotnet build                                              # tüm çözüm
 dotnet test --project tests/Fluxer.Core.Tests             # birim testleri
 dotnet test --project tests/Fluxer.Integration.Tests      # Kestrel sahte sunuculu entegrasyon testleri
 cd extension; npm ci; npm test; npm run build             # eklenti → extension/dist
-dotnet run --project src/Fluxer.App                       # uygulama (geliştirme)
+$env:FLUXER_INSTANCE="dev"; dotnet run --project src/Fluxer.App   # kurulu sürümün yanında ayrı profil
 dotnet run --project src/Fluxer.Cli -- get <url> -c 8     # motor konsol aracı
-pwsh build/pack.ps1 -Version 0.1.0                        # installer → artifacts/releases
+pwsh build/pack.ps1 -Version 0.2.0                        # installer → artifacts/releases
 ```
 
 Mimari: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Değişiklikler: [CHANGELOG.md](CHANGELOG.md)

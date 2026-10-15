@@ -108,9 +108,57 @@ public sealed class TorrentDownload : IDownload
         }
     }
 
+    private TorrentSettings BuildSettings() => new TorrentSettingsBuilder
+    {
+        AllowDht = true,
+        AllowPeerExchange = true,
+        CreateContainingDirectory = true,
+        MaximumDownloadRate = (int)Math.Min(int.MaxValue, Record.SpeedLimit),
+        MaximumUploadRate = (int)Math.Min(int.MaxValue, Info.UploadLimit),
+    }.ToSettings();
+
+    /// Per-torrent limits in B/s (0 = global limit only), applied live.
+    public async Task SetLimitsAsync(long download, long upload)
+    {
+        Record.SpeedLimit = Math.Max(0, download);
+        Info.UploadLimit = Math.Max(0, upload);
+        _db.Update(Record);
+        if (_manager is { } m) await m.UpdateSettingsAsync(BuildSettings());
+    }
+
+    public async Task SetSequentialAsync(bool sequential)
+    {
+        Info.Sequential = sequential;
+        _db.Update(Record);
+        if (_manager is { } m)
+            await m.ChangePickerAsync(sequential
+                ? new MonoTorrent.PiecePicking.StreamingPieceRequester()
+                : new MonoTorrent.PiecePicking.StandardPieceRequester(new MonoTorrent.PiecePicking.PieceRequesterSettings()));
+    }
+
+    /// null = use the global setting.
+    public void SetSeedRules(double? ratio, int? minutes)
+    {
+        Info.SeedRatio = ratio;
+        Info.SeedMinutes = minutes;
+        _db.Update(Record);
+    }
+
+    public sealed record FileRow(int Index, string Path, long Length, double Percent, bool Selected);
+
+    /// Empty until metadata is known (magnet links).
+    public IReadOnlyList<FileRow> GetFiles()
+    {
+        if (_manager is { HasMetadata: true } m)
+            return [.. m.Files.Select((f, i) => new FileRow(i, f.Path.ToString(), f.Length, f.BitField.PercentComplete, Info.DeselectedFiles?.Contains(i) != true))];
+        if (Info.TorrentFile is { } bytes && MonoTorrent.Torrent.TryLoad(bytes, out var t))
+            return [.. t.Files.Select((f, i) => new FileRow(i, f.Path.ToString(), f.Length, 0, Info.DeselectedFiles?.Contains(i) != true))];
+        return [];
+    }
+
     private async Task<TorrentManager> AddAsync()
     {
-        var settings = new TorrentSettingsBuilder { AllowDht = true, AllowPeerExchange = true, CreateContainingDirectory = true }.ToSettings();
+        var settings = BuildSettings();
         Directory.CreateDirectory(Record.SaveDirectory);
         var m = Info.TorrentFile is { } bytes
             ? await _host.Engine.AddAsync(MonoTorrent.Torrent.Load(bytes), Record.SaveDirectory, settings)

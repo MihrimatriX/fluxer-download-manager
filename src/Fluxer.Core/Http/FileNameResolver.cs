@@ -36,5 +36,17 @@ public static class FileNameResolver
         return FileNameSanitizer.Sanitize(name);
     }
 
+    private static readonly HashSet<string> FileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".iso", ".img", ".dmg", ".bin", ".exe", ".msi", ".msix", ".apk",
+        ".mp4", ".mkv", ".avi", ".mov", ".webm", ".mp3", ".flac", ".wav", ".m4a", ".ogg", ".pdf", ".epub", ".docx", ".xlsx",
+        ".pptx", ".torrent", ".jpg", ".jpeg", ".png", ".gif", ".webp",
+    };
+
+    /// The URL path itself names a non-web file (".../setup.exe"), so an HTML answer is wrong.
+    public static bool NamesAFile(Uri url) => FileExtensions.Contains(Path.GetExtension(url.AbsolutePath));
+
+    public static bool IsHtml(string? mediaType) => mediaType is "text/html" or "application/xhtml+xml";
+
     private static string? Unquote(string? s) => s?.Trim().Trim('"');
 }

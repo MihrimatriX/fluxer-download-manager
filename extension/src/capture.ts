@@ -23,7 +23,13 @@ export interface CaptureContext {
   ownExtensionId?: string;
 }
 
-export type Decision = 'capture' | 'disabled' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small';
+export type Decision = 'capture' | 'torrent' | 'disabled' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small';
+
+const TORRENT_RE = /\.torrent(?:[?#]|$)/i;
+
+/** Browser-reported mime or a .torrent name/URL. */
+export const isTorrentLike = (item: Pick<DownloadItemLike, 'mime' | 'url' | 'finalUrl' | 'filename'>): boolean =>
+  item.mime === 'application/x-bittorrent' || [item.url, item.finalUrl, item.filename].some((s) => !!s && TORRENT_RE.test(s));
 
 export const isHttp = (url: string | undefined): boolean => !!url && /^https?:\/\//i.test(url);
 
@@ -32,6 +38,8 @@ export function decide(item: DownloadItemLike, ctx: CaptureContext): Decision {
   if (ctx.altHeld) return 'alt';
   if (ctx.bypassed || (ctx.ownExtensionId && item.byExtensionId === ctx.ownExtensionId)) return 'bypass';
   if (!isHttp(item.url) || (item.finalUrl && !isHttp(item.finalUrl))) return 'scheme';
+  // .torrent files are tiny and often behind Cloudflare or one-time links: the browser fetches them, Fluxer reads the file.
+  if (isTorrentLike(item)) return 'torrent';
   if (item.state === 'complete') return 'complete';
   if (ctx.postInitiated) return 'post';
   if (item.totalBytes > 0 && item.totalBytes < ctx.settings.minSizeMiB * 1024 * 1024) return 'small';
@@ -90,6 +98,27 @@ export function buildInterceptMessage(
     incognito: item.incognito,
   });
 }
+
+export function buildTorrentFileMessage(
+  item: DownloadItemLike,
+  ctx: { userAgent: string; tabUrl?: string },
+): DownloadAdd {
+  return envelope<DownloadAdd>('download.add', {
+    url: item.finalUrl || item.url,
+    fileName: basename(item.filename),
+    torrentPath: item.filename,
+    source: 'torrent-file',
+    tabUrl: ctx.tabUrl,
+    referrer: item.referrer || undefined,
+    userAgent: ctx.userAgent,
+    cookies: [],
+    incognito: item.incognito,
+  });
+}
+
+/** Why the app declined a download (undefined when it did not decline). */
+export const rejectReason = (reply: Reply | undefined): string | undefined =>
+  reply?.type === 'download.add.result' && reply.payload?.status === 'rejected' ? reply.payload.reason : undefined;
 
 /** What to do with a reply. `undefined` means sendNativeMessage failed (host missing, crashed, …). */
 export type Outcome = 'ok' | 'unreachable' | 'failed' | 'update';
