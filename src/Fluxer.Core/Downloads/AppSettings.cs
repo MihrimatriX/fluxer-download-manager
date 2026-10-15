@@ -22,6 +22,10 @@ public sealed class AppSettings
     public string? ScheduleStart { get; set; }     // "HH:mm" or null
     public string? ScheduleStop { get; set; }
     public string AfterQueue { get; set; } = "None"; // None | Sleep | Shutdown
+    public bool ShowAddDialog { get; set; } = true;
+    public bool Notifications { get; set; } = true;
+    public bool RegisterFileAssociations { get; set; } = true;
+    public string? UpdateFeed { get; set; }        // Velopack feed URL or folder; null = no auto-update
     public bool MediaDisclaimerAccepted { get; set; }
     public bool ToolsConsentGiven { get; set; }
     public long LastYtDlpCheck { get; set; }

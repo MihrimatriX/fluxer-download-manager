@@ -7,4 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Fluxer.Core\Fluxer.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
 </Project>

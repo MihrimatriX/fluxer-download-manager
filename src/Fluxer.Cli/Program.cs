@@ -3,6 +3,7 @@ using System.Globalization;
 using Fluxer.Core;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Platform.Windows;
+using Serilog;
 
 // Developer tool for the engine (not shipped).
 //   fluxer-cli get <url> [--out DIR] [--data DIR] [-c N] [--limit BYTES_PER_SEC]
@@ -22,6 +23,8 @@ string Opt(string name, string def) { var i = Array.IndexOf(args, name); return 
 var data = Path.GetFullPath(Opt("--data", "fluxer-cli-data"));
 var output = Path.GetFullPath(Opt("--out", "."));
 
+Serilog.Log.Logger = new Serilog.LoggerConfiguration().MinimumLevel.Debug()
+    .WriteTo.File(Path.Combine(data, "cli.log")).CreateLogger();
 await using var engine = new FluxerEngine(data);
 var settings = engine.Settings;
 settings.DownloadDirectory = output;

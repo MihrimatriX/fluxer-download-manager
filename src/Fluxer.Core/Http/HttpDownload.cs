@@ -39,6 +39,7 @@ public sealed class HttpDownload : IDownload
     private string? _stopError;
     private string? _lastError;
     private long _lastReresolve;
+    private volatile bool _throttled;
 
     public HttpDownload(DownloadRecord record, HttpEngine engine, Database db, Func<AppSettings> settings)
     {
@@ -51,6 +52,10 @@ public sealed class HttpDownload : IDownload
     }
 
     public DownloadRecord Record { get; }
+    public long Id => Record.Id;
+    public DownloadKind Kind => Record.Kind;
+    public DownloadState State => Record.State;
+    public string FileName => Record.FileName;
     private HttpInfo Http => Record.Http!;
     private string PartPath => Record.FullPath + ".part";
 
@@ -58,6 +63,7 @@ public sealed class HttpDownload : IDownload
     internal TimeSpan BackoffUnit { get; init; } = TimeSpan.FromSeconds(1);
     internal TimeSpan StallTimeout { get; init; } = TimeSpan.FromSeconds(30);
     internal TimeSpan CheckpointInterval { get; init; } = TimeSpan.FromSeconds(2);
+    internal TimeSpan RampStep { get; init; } = TimeSpan.FromMilliseconds(150);
 
     public IReadOnlyList<KeyValuePair<string, string>> ResponseHeaders { get; private set; } = [];
 
@@ -100,9 +106,15 @@ public sealed class HttpDownload : IDownload
             _connectionLimit = Http.Resumable ? Math.Clamp(Http.MaxConnections, 1, 32) : 1;
             SetState(DownloadState.Downloading, null);
 
+            // Slow start: open connections one by one and stop at the first push-back, instead of a
+            // burst that trips per-IP limits (some servers answer a burst with a temporary IP ban).
+            _throttled = false;
             var workers = new List<Task>();
             if (first is { } f) workers.Add(WorkerAsync(f.Response, f.Segment, stop.Token));
-            while (workers.Count < _connectionLimit) workers.Add(WorkerAsync(null, null, stop.Token));
+            for (var i = workers.Count; i < _connectionLimit; i++)
+            {
+                workers.Add(DelayedWorkerAsync(RampStep * i, stop.Token));
+            }
             checkpoints = CheckpointLoopAsync(stop.Token);
             await Task.WhenAll(workers);
         }
@@ -229,7 +241,8 @@ public sealed class HttpDownload : IDownload
             }
             catch (Exception e) when (e is HttpRequestException or IOException)
             {
-                _lastError = e.Message;
+                _lastError = "network";
+                Log.Information("Download {Id} probe failed: {Error}", Record.Id, e.Message);
             }
             if (attempt >= MaxRetries) throw new StopException(DownloadState.Failed, _lastError ?? "network");
             await BackoffAsync(attempt, null, ct);
@@ -238,14 +251,25 @@ public sealed class HttpDownload : IDownload
 
     // ================= workers =================
 
+    private async Task DelayedWorkerAsync(TimeSpan delay, CancellationToken ct)
+    {
+        try { await Task.Delay(delay, ct); }
+        catch (OperationCanceledException) { return; }
+        if (!_throttled) await WorkerAsync(null, null, ct);
+    }
+
+    /// Worker accounting (_activeWorkers) changes only under _lock, together with the segment
+    /// hand-off it belongs to, so a released segment always has a live worker to pick it up.
     private async Task WorkerAsync(HttpResponseMessage? response, Segment? seg, CancellationToken ct)
     {
-        Interlocked.Increment(ref _activeWorkers);
+        lock (_lock) _activeWorkers++;
+        var retired = false;
         var failures = 0;
         try
         {
             await Task.Yield();
-            seg ??= TakeWork(null);
+            seg ??= TakeWorkOrRetire(null);
+            retired = seg is null;
             while (seg is not null)
             {
                 try
@@ -256,8 +280,9 @@ public sealed class HttpDownload : IDownload
                 }
                 catch (ThrottledException e)
                 {
+                    _throttled = true;
                     Rewind(seg);
-                    if (ReduceConnections()) { Release(seg); return; }
+                    if (TryRetireForThrottle(seg)) { retired = true; return; }
                     await BackoffAsync(++failures, e.RetryAfter, ct);
                 }
                 catch (LinkExpiredException)
@@ -269,9 +294,9 @@ public sealed class HttpDownload : IDownload
                 catch (Exception e) when (e is HttpRequestException or IOException && !DiskErrors.IsDiskFull(e))
                 {
                     Rewind(seg);
-                    _lastError = e.Message;
-                    Log.Debug("Download {Id} segment {Seg}: {Error}", Record.Id, seg.Index, e.Message);
-                    if (++failures > MaxRetries) { Release(seg); return; }
+                    _lastError = "network";
+                    Log.Information(e, "Download {Id} segment {Seg} retry {N}", Record.Id, seg.Index, failures + 1);
+                    if (++failures > MaxRetries) return; // finally retires and releases seg
                     await BackoffAsync(failures, null, ct);
                 }
                 finally
@@ -280,7 +305,11 @@ public sealed class HttpDownload : IDownload
                     response = null;
                 }
 
-                if (seg.IsDone) seg = TakeWork(seg);
+                if (seg.IsDone)
+                {
+                    seg = TakeWorkOrRetire(seg);
+                    retired = seg is null;
+                }
             }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
@@ -294,21 +323,26 @@ public sealed class HttpDownload : IDownload
         finally
         {
             response?.Dispose();
-            Interlocked.Decrement(ref _activeWorkers);
+            if (!retired)
+                lock (_lock)
+                {
+                    if (seg is not null) seg.Active = false;
+                    _activeWorkers--;
+                }
         }
     }
 
-    private Segment? TakeWork(Segment? finished)
+    /// Next piece of work, or null — in which case this worker is already counted out.
+    private Segment? TakeWorkOrRetire(Segment? finished)
     {
         lock (_lock)
         {
             if (finished is not null) finished.Active = false;
-            if (_stopState is not null) return null;
-            return SegmentPlanner.Take(_segments, Http.Resumable, MinSplit);
+            var next = _stopState is null ? SegmentPlanner.Take(_segments, Http.Resumable, MinSplit) : null;
+            if (next is null) _activeWorkers--;
+            return next;
         }
     }
-
-    private void Release(Segment seg) { lock (_lock) seg.Active = false; }
 
     /// Drop received-but-unwritten bytes so the retry starts exactly where the file ends.
     private void Rewind(Segment seg)
@@ -321,13 +355,16 @@ public sealed class HttpDownload : IDownload
         }
     }
 
-    private bool ReduceConnections()
+    /// Server pushed back (429/503/refused): this worker leaves and hands its segment back,
+    /// unless it is the last one — then it stays and backs off instead.
+    private bool TryRetireForThrottle(Segment seg)
     {
         lock (_lock)
         {
-            var active = Volatile.Read(ref _activeWorkers);
-            if (active <= 1) return false;
-            _connectionLimit = Math.Max(1, active - 1);
+            if (_activeWorkers <= 1) return false;
+            seg.Active = false;
+            _activeWorkers--;
+            _connectionLimit = _activeWorkers;
             Log.Information("Download {Id}: server pushed back, connections → {N}", Record.Id, _connectionLimit);
             return true;
         }

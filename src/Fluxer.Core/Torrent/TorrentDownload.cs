@@ -25,6 +25,10 @@ public sealed class TorrentDownload : IDownload
     }
 
     public DownloadRecord Record { get; }
+    public long Id => Record.Id;
+    public DownloadKind Kind => Record.Kind;
+    public DownloadState State => Record.State;
+    public string FileName => Record.FileName;
     private TorrentInfo Info => Record.Torrent!;
     public TorrentManager? Manager => _manager;
 

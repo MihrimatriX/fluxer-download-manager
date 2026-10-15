@@ -20,10 +20,10 @@ public enum DownloadState
 public interface IDownload
 {
     DownloadRecord Record { get; }
-    long Id => Record.Id;
-    DownloadKind Kind => Record.Kind;
-    DownloadState State => Record.State;
-    string FileName => Record.FileName;
+    long Id { get; }
+    DownloadKind Kind { get; }
+    DownloadState State { get; }
+    string FileName { get; }
 
     /// Does it hold a queue slot right now? (Seeding torrents do not.)
     bool OccupiesSlot => State is DownloadState.Starting or DownloadState.Downloading or DownloadState.Verifying;

@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.AccessControl;
-using System.Security.Principal;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Storage;
 using Serilog;
@@ -34,6 +32,10 @@ public sealed class MediaDownload : IDownload
     }
 
     public DownloadRecord Record { get; }
+    public long Id => Record.Id;
+    public DownloadKind Kind => Record.Kind;
+    public DownloadState State => Record.State;
+    public string FileName => Record.FileName;
     private MediaInfo Info => Record.Media!;
     public (int Index, int Count) Fragments => (_fragment, _fragments);
 
@@ -56,7 +58,7 @@ public sealed class MediaDownload : IDownload
         var errors = new Queue<string>();
         try
         {
-            cookieFile = Info.Cookies is { Length: > 0 } c ? WritePrivateCookieFile(c) : null;
+            cookieFile = Info.Cookies is { Length: > 0 } c ? Cookies.WritePrivateFile(TempDirectory(_tools), c) : null;
             var psi = YtDlp.BaseStartInfo(_tools, cookieFile);
             Directory.CreateDirectory(Record.SaveDirectory);
             var stem = Record.FileName; // sanitized title; gets its extension only on completion
@@ -163,26 +165,12 @@ public sealed class MediaDownload : IDownload
             double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ? (long)v : null;
     }
 
-    /// Netscape cookie file readable only by the current user; deleted when the run ends.
-    private string WritePrivateCookieFile(string content)
-    {
-        var dir = Path.Combine(_tools.Directory, "..", "tmp");
-        Directory.CreateDirectory(dir);
-        var path = Path.GetFullPath(Path.Combine(dir, $"cookies-{Record.Id}-{Guid.NewGuid():N}.txt"));
-
-        var security = new FileSecurity();
-        security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
-        security.AddAccessRule(new FileSystemAccessRule(WindowsIdentity.GetCurrent().User!, FileSystemRights.FullControl, AccessControlType.Allow));
-        using (var fs = new FileInfo(path).Create(FileMode.CreateNew, FileSystemRights.FullControl, FileShare.None, 4096, FileOptions.None, security))
-        using (var w = new StreamWriter(fs))
-            w.Write(content);
-        return path;
-    }
-
     /// Removes cookie files left behind by a crash.
+    private static string TempDirectory(ToolManager tools) => Path.GetFullPath(Path.Combine(tools.Directory, "..", "tmp"));
+
     public static void CleanupTemp(ToolManager tools)
     {
-        var dir = Path.GetFullPath(Path.Combine(tools.Directory, "..", "tmp"));
+        var dir = TempDirectory(tools);
         if (!Directory.Exists(dir)) return;
         foreach (var f in Directory.EnumerateFiles(dir, "cookies-*.txt"))
             try { File.Delete(f); } catch (IOException) { }

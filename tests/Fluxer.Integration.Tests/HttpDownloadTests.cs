@@ -35,6 +35,7 @@ public sealed class Harness : IDisposable
             BackoffUnit = TimeSpan.FromMilliseconds(50),
             StallTimeout = TimeSpan.FromSeconds(5),
             CheckpointInterval = TimeSpan.FromMilliseconds(200),
+            RampStep = TimeSpan.FromMilliseconds(20),
         };
     }
 
@@ -256,6 +257,38 @@ public sealed class HttpDownloadTests
         Assert.Equal(DownloadState.Completed, d.Record.State);
         Assert.False(d.Record.Http!.Resumable);
         Assert.Equal(server.Size, d.Record.TotalBytes);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(d.Record.FullPath));
+    }
+
+    [Fact]
+    public async Task HostnameWithUnreachableAddressFamily_FallsBackToTheOther()
+    {
+        // FakeServer listens on 127.0.0.1 only; "localhost" also resolves to ::1, which must not stall us.
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 512 * 1024;
+        using var h = new Harness();
+        var d = h.Create(server.Url().Replace("127.0.0.1", "localhost", StringComparison.Ordinal), connections: 4);
+
+        var sw = Stopwatch.StartNew();
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
+        Assert.True(sw.Elapsed < TimeSpan.FromSeconds(5), $"took {sw.Elapsed}");
+    }
+
+    [Fact]
+    public async Task ManyConnectionsThrottledToOne_NeverLosesTheLastWorker()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 8 * 1024 * 1024;
+        server.MaxConcurrent = 1;
+        server.RateFor = _ => 8 * 1024 * 1024;
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 16);
+
+        await Harness.RunAsync(d, TimeSpan.FromSeconds(60));
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
         Assert.Equal(server.ExpectedSha256(), Harness.Sha(d.Record.FullPath));
     }
 

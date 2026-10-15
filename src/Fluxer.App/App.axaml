@@ -1,0 +1,61 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Fluxer.App.App"
+             Name="Fluxer"
+             RequestedThemeVariant="Default">
+  <Application.Resources>
+    <ResourceDictionary>
+      <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+      <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI, avares://Avalonia.Fonts.Inter/Assets#Inter</FontFamily>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="SidebarBrush" Color="#F3F3F5" />
+          <SolidColorBrush x:Key="MainBrush" Color="#FCFCFD" />
+          <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#66000000" />
+          <SolidColorBrush x:Key="DividerBrush" Color="#14000000" />
+          <SolidColorBrush x:Key="RowHoverBrush" Color="#0A000000" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="SidebarBrush" Color="#1C1C1F" />
+          <SolidColorBrush x:Key="MainBrush" Color="#161618" />
+          <SolidColorBrush x:Key="SurfaceBrush" Color="#232327" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#88FFFFFF" />
+          <SolidColorBrush x:Key="DividerBrush" Color="#1AFFFFFF" />
+          <SolidColorBrush x:Key="RowHoverBrush" Color="#0DFFFFFF" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window">
+      <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+      <Setter Property="Background" Value="{DynamicResource MainBrush}" />
+    </Style>
+    <Style Selector="TextBlock.icon">
+      <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.subtle">
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="20" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="ProgressBar">
+      <Setter Property="MinHeight" Value="4" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="2" />
+    </Style>
+  </Application.Styles>
+</Application>
