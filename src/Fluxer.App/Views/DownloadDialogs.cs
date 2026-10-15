@@ -1,9 +1,11 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Fluxer.App.Services;
+using Fluxer.App.ViewModels;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Http;
 using Fluxer.Core.Media;
@@ -22,17 +24,13 @@ public static partial class Dialogs
     public static async Task<TorrentChoice?> TorrentAsync(Window? owner, AppSettings s, string name, IReadOnlyList<(string Path, long Length)> files)
     {
         TorrentChoice? result = null;
-        var checks = files.Select(f => new CheckBox
-        {
-            IsChecked = true,
-            // long paths end in "…" (full path in the tooltip) instead of being cut at the window edge
-            Content = new TextBlock { Text = $"{f.Path}   ({Loc.Bytes(f.Length)})", TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis, [ToolTip.TipProperty] = f.Path },
-        }).ToList();
-        var list = new StackPanel { Spacing = 2 };
-        foreach (var c in checks) list.Children.Add(c);
+        // Rows use the shared TorrentFileItem template (App.axaml); the panel virtualizes, so a torrent
+        // with thousands of files only creates the rows that fit in the box.
         var total = new TextBlock { Opacity = 0.7 };
-        void UpdateTotal() => total.Text = $"{Strings.InfoSize}: {Loc.Bytes(files.Where((_, i) => checks[i].IsChecked == true).Sum(f => f.Length))}";
-        foreach (var c in checks) c.IsCheckedChanged += (_, _) => UpdateTotal();
+        List<TorrentFileItem> items = [];
+        items.AddRange(files.Select((f, i) => new TorrentFileItem(i, f.Path, f.Length, true, UpdateTotal)));
+        var list = new ItemsControl { ItemsSource = items, ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()), Margin = new Thickness(0, 0, 14, 0) };
+        void UpdateTotal() => total.Text = $"{Strings.InfoSize}: {Loc.Bytes(items.Where(x => x.IsSelected).Sum(x => x.Length))}";
         UpdateTotal();
         var sequential = new CheckBox { Content = Strings.Sequential };
         var defaultDir = s.UseCategoryFolders ? Path.Combine(s.DownloadDirectory, "Torrent") : s.DownloadDirectory;
@@ -54,7 +52,7 @@ public static partial class Dialogs
             new Button(Strings.Cancel, false, () => true),
             new Button(Strings.Download, true, () =>
             {
-                var deselected = checks.Select((c, i) => (c, i)).Where(x => x.c.IsChecked != true).Select(x => x.i).ToHashSet();
+                var deselected = items.Where(x => !x.IsSelected).Select(x => x.Index).ToHashSet();
                 if (files.Count > 0 && deselected.Count == files.Count) return false;
                 result = new TorrentChoice(deselected, sequential.IsChecked == true, folderValue());
                 return true;

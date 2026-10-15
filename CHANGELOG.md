@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.1 — 2026-10-16
+
+### Düzeltildi
+- **Çok dosyalı torrentlerde arayüz donuyordu:** torrent ekleme penceresi ve ayrıntı panelinin Dosyalar sekmesi her dosya için ayrı satır kontrolleri oluşturuyordu. Bu satırlar artık sanallaştırılıyor; yalnızca ekranda görünenler oluşuyor. 5.000 dosyalı bir torrentte ölçülen donmalar: ekleme penceresi 8,3 sn → 0,4 sn, torrent satırını seçmek 4,5 sn → anlık, Dosyalar sekmesi 16,4 sn → anlık. Bellek 1,4 GB → 250 MB.
+- Dosya listesi yalnızca Dosyalar sekmesi açıkken kuruluyor ve güncelleniyor; diğer sekmeler bu maliyeti ödemiyor.
+- Duraklatılmış torrentlerde `.torrent` dosyası artık her saniye yeniden çözümlenmiyor, bir kez okunup saklanıyor.
+- Bir dosyanın işaretini değiştirmek artık tüm dosyaların önceliğini yeniden yazmıyor; yalnızca değişen dosya motora gönderiliyor.
+
 ## 0.8.0 — 2026-10-16
 
 Nihai tasarım (`docs/d-m.html`) uygulandı: koyu lacivert degrade, turuncu vurgu, çizgi ikonlar, Segoe UI Variable 13 px.

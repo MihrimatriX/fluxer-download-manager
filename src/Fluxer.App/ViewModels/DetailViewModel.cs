@@ -17,17 +17,19 @@ public sealed record TrackerRow(string Url, string Status, bool Ok);
 public sealed record ConnRow(string Number, double Percent, string Text, IBrush Brush);
 public sealed record DetailTab(string Key, string Label);
 
-/// A file inside a torrent; unticking it stops downloading that file (applied live).
-public sealed partial class TorrentFileItem(int index, string path, long length, Action changed) : ObservableObject
+/// A file inside a torrent; unticking it stops downloading that file (applied live). Row template: App.axaml.
+public sealed partial class TorrentFileItem(int index, string path, long length, bool selected, Action changed) : ObservableObject
 {
+    private readonly string _size = Loc.Bytes(length);
     public int Index { get; } = index;
     public string Path { get; } = path;
-    public string SizeText { get; } = Loc.Bytes(length);
-    [ObservableProperty] private bool _isSelected;
-    [ObservableProperty] private string _percentText = "";
-    [ObservableProperty] private double _percent;
+    public long Length { get; } = length;
+    [ObservableProperty] private bool _isSelected = selected;
+    /// "12 MB" or, once progress is known, "12 MB · 40 %".
+    [ObservableProperty] private string _meta = Loc.Bytes(length);
     public bool Loading { get; set; }
     partial void OnIsSelectedChanged(bool value) { if (!Loading) changed(); }
+    public void SetPercent(double percent) => Meta = $"{_size} · {Loc.Percent(percent / 100)}";
 }
 
 /// Detail panel (right side) for the selected download: progress, speed graph and tabs —
@@ -62,15 +64,21 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
     [ObservableProperty] private bool _seedOverride;
     [ObservableProperty] private decimal? _seedRatio;
     [ObservableProperty] private decimal? _seedMinutes;
+    /// Replaced as a whole (one reset) rather than filled row by row: torrents can hold thousands of files.
+    [ObservableProperty] private IReadOnlyList<TorrentFileItem> _files = [];
 
     public ObservableCollection<InfoRow> Info { get; } = [];
     public ObservableCollection<InfoRow> Headers { get; } = [];
     public ObservableCollection<PeerRow> Peers { get; } = [];
     public ObservableCollection<TrackerRow> Trackers { get; } = [];
-    public ObservableCollection<TorrentFileItem> Files { get; } = [];
     public ObservableCollection<ConnRow> Connections { get; } = [];
 
-    partial void OnSelectedTabChanged(DetailTab? value) { if (value is not null) TabKey = value.Key; }
+    partial void OnSelectedTabChanged(DetailTab? value)
+    {
+        if (value is null) return;
+        TabKey = value.Key;
+        if (value.Key == "files" && Item?.Download is TorrentDownload td) SyncFiles(td);
+    }
 
     public void Show(DownloadItemViewModel? item)
     {
@@ -98,7 +106,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         var r = d.Record;
         KindLong = d switch
         {
-            TorrentDownload td => string.Format(CultureInfo.CurrentCulture, Strings.KindTorrentFiles, Math.Max(1, td.GetFiles().Count)),
+            TorrentDownload td => string.Format(CultureInfo.CurrentCulture, Strings.KindTorrentFiles, Math.Max(1, td.FileCount)),
             HttpDownload => Strings.KindHttpMulti,
             _ => Strings.KindMedia,
         };
@@ -157,28 +165,20 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         SeedRatio = (decimal)(info.SeedRatio ?? host.Engine.Settings.SeedRatio);
         SeedMinutes = info.SeedMinutes ?? host.Engine.Settings.SeedMinutes;
         _loading = false;
-        Files.Clear();
-        SyncFiles(td);
+        Files = [];
+        FilesPending = td.FileCount == 0;
+        if (TabKey == "files") SyncFiles(td);
     }
 
-    /// Fills the list once metadata exists, then just updates per-file progress.
+    /// Builds the list once metadata exists, then just updates per-file progress.
+    /// Called only while the Files tab is showing; other tabs never pay for thousands of rows.
     private void SyncFiles(TorrentDownload td)
     {
         var rows = td.GetFiles();
         FilesPending = rows.Count == 0;
         if (Files.Count != rows.Count)
-        {
-            Files.Clear();
-            foreach (var r in rows)
-                Files.Add(new TorrentFileItem(r.Index, r.Path, r.Length, () => _ = ApplySelectionAsync(td)) { Loading = true, IsSelected = r.Selected });
-            foreach (var f in Files) f.Loading = false;
-        }
-        foreach (var r in rows)
-        {
-            var f = Files[r.Index];
-            f.Percent = r.Percent;
-            f.PercentText = Loc.Percent(r.Percent / 100);
-        }
+            Files = [.. rows.Select(r => new TorrentFileItem(r.Index, r.Path, r.Length, r.Selected, () => _ = ApplySelectionAsync(td)))];
+        foreach (var r in rows) Files[r.Index].SetPercent(r.Percent);
     }
 
     private async Task ApplySelectionAsync(TorrentDownload td)
@@ -236,7 +236,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         }
         if (d is TorrentDownload td && ++_slowTick % 4 == 0)
         {
-            SyncFiles(td);
+            if (TabKey == "files") SyncFiles(td);
             _ = RefreshPeersAsync(td);
         }
 

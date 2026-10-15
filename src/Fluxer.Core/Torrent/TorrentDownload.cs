@@ -13,6 +13,7 @@ public sealed class TorrentDownload : IDownload
     private readonly Database _db;
     private readonly Func<AppSettings> _settings;
     private TorrentManager? _manager;
+    private MonoTorrent.Torrent? _parsed;
     private long _uploadedBase;
 
     public TorrentDownload(DownloadRecord record, TorrentEngineHost host, Database db, Func<AppSettings> settings)
@@ -152,9 +153,18 @@ public sealed class TorrentDownload : IDownload
     {
         if (_manager is { HasMetadata: true } m)
             return [.. m.Files.Select((f, i) => new FileRow(i, f.Path.ToString(), f.Length, f.BitField.PercentComplete, Info.DeselectedFiles?.Contains(i) != true))];
-        if (Info.TorrentFile is { } bytes && MonoTorrent.Torrent.TryLoad(bytes, out var t))
+        if (Parsed() is { } t)
             return [.. t.Files.Select((f, i) => new FileRow(i, f.Path.ToString(), f.Length, 0, Info.DeselectedFiles?.Contains(i) != true))];
         return [];
+    }
+
+    public int FileCount => _manager is { HasMetadata: true } m ? m.Files.Count : Parsed()?.Files.Count ?? 0;
+
+    /// The .torrent parsed once (for the file list while no manager exists); large torrents take a while to parse.
+    private MonoTorrent.Torrent? Parsed()
+    {
+        if (_parsed is null && Info.TorrentFile is { } bytes && MonoTorrent.Torrent.TryLoad(bytes, out var t)) _parsed = t;
+        return _parsed;
     }
 
     private async Task<TorrentManager> AddAsync()
@@ -168,12 +178,14 @@ public sealed class TorrentDownload : IDownload
         return m;
     }
 
+    /// Touches only files whose priority changes: each call is a round trip to the engine loop,
+    /// and one check box change must not re-apply every file of a big torrent.
     private async Task ApplySelectionAsync(TorrentManager m)
     {
         for (var i = 0; i < m.Files.Count; i++)
         {
-            var wanted = Info.DeselectedFiles?.Contains(i) != true;
-            await m.SetFilePriorityAsync(m.Files[i], wanted ? Priority.Normal : Priority.DoNotDownload);
+            var priority = Info.DeselectedFiles?.Contains(i) == true ? Priority.DoNotDownload : Priority.Normal;
+            if (m.Files[i].Priority != priority) await m.SetFilePriorityAsync(m.Files[i], priority);
         }
     }
 

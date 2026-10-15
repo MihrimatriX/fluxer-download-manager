@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="using:Fluxer.App.Controls"
+             xmlns:vm="using:Fluxer.App.ViewModels"
              x:Class="Fluxer.App.App"
              Name="Fluxer"
              RequestedThemeVariant="Dark">
@@ -224,6 +225,21 @@
       </ControlTheme>
     </ResourceDictionary>
   </Application.Resources>
+
+  <Application.DataTemplates>
+    <!-- One torrent file row: the add-torrent dialog and the detail panel's Files tab (both virtualized). -->
+    <DataTemplate DataType="vm:TorrentFileItem" x:DataType="vm:TorrentFileItem">
+      <Border MinHeight="36" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
+          <CheckBox IsChecked="{Binding IsSelected}" MinWidth="0" Padding="0" AutomationProperties.Name="{Binding Path}" />
+          <c:Icon Grid.Column="1" Data="{StaticResource IcFile}" Size="14" Foreground="{DynamicResource SubtleBrush}" />
+          <TextBlock Grid.Column="2" Text="{Binding Path}" FontSize="12" ToolTip.Tip="{Binding Path}"
+                     VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          <TextBlock Grid.Column="3" Text="{Binding Meta}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </Application.DataTemplates>
 
   <Application.Styles>
     <FluentTheme />

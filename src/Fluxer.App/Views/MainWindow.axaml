@@ -488,21 +488,11 @@
                 <!-- files -->
                 <StackPanel IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=files}">
                   <TextBlock IsVisible="{Binding FilesPending}" Text="{x:Static app:Strings.MagnetNoFiles}" Classes="subtle" TextWrapping="Wrap" />
+                  <!-- virtualized against the panel's scroll viewport, so only visible rows exist (row template in App.axaml) -->
                   <ItemsControl ItemsSource="{Binding Files}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:TorrentFileItem">
-                        <Border MinHeight="36" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
-                          <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
-                            <CheckBox IsChecked="{Binding IsSelected}" MinWidth="0" Padding="0" AutomationProperties.Name="{Binding Path}" />
-                            <c:Icon Grid.Column="1" Data="{StaticResource IcFile}" Size="14" Foreground="{DynamicResource SubtleBrush}" />
-                            <TextBlock Grid.Column="2" Classes="cell" Text="{Binding Path}" FontSize="12" ToolTip.Tip="{Binding Path}" />
-                            <TextBlock Grid.Column="3" Classes="cell" FontSize="12" Foreground="{DynamicResource SubtleBrush}">
-                              <Run Text="{Binding SizeText}" /><Run Text=" · " /><Run Text="{Binding PercentText}" />
-                            </TextBlock>
-                          </Grid>
-                        </Border>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                   </ItemsControl>
                 </StackPanel>
 
