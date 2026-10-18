@@ -347,7 +347,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         {
             var dir = AppContext.BaseDirectory;
             ShellIntegration.Register(Path.Combine(dir, "Fluxer.exe"), Path.Combine(dir, "Fluxer.NativeHost.exe"),
-                Program.DataDirectory, Protocol.AllowedExtensionIds, Engine.Settings.RegisterFileAssociations);
+                Program.DataDirectory, Protocol.AllowedExtensionIds, Protocol.AllowedFirefoxIds, Engine.Settings.RegisterFileAssociations);
         }
         catch (Exception e)
         {

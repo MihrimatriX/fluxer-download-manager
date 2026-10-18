@@ -6,7 +6,8 @@
   "scripts": {
     "icons": "node scripts/icons.mjs",
     "typecheck": "tsc --noEmit",
-    "build": "node scripts/icons.mjs && tsc --noEmit && vite build && vite build --mode content",
+    "build": "node scripts/icons.mjs && tsc --noEmit && vite build && vite build --mode content && node scripts/firefox.mjs",
+    "build:firefox": "node scripts/firefox.mjs",
     "test": "vitest run",
     "store": "node scripts/store-zip.mjs"
   },

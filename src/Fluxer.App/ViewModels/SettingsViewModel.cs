@@ -88,6 +88,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public string[] Encryptions => [Strings.EncPrefer, Strings.EncRequire, Strings.EncOff];
     public ObservableCollection<BrowserRow> Browsers { get; } = [];
     public string ExtensionFolder => Path.Combine(AppContext.BaseDirectory, "extension");
+    public string FirefoxExtensionFolder => Path.Combine(AppContext.BaseDirectory, "extension-firefox");
     public string ExtensionId => Protocol.AllowedExtensionIds[0];
     public string Version => typeof(App).Assembly.GetName().Version?.ToString(3) ?? "";
 
@@ -389,6 +390,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void OpenExtensionFolder()
     {
         if (Directory.Exists(ExtensionFolder)) Process.Start("explorer.exe", $"\"{ExtensionFolder}\"");
+    }
+
+    [RelayCommand]
+    private void OpenFirefoxExtensionFolder()
+    {
+        if (Directory.Exists(FirefoxExtensionFolder)) Process.Start("explorer.exe", $"\"{FirefoxExtensionFolder}\"");
     }
 
     [RelayCommand]

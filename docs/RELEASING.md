@@ -43,6 +43,20 @@ sabit `dckkomckipcaglacbgfmbgmapfckpkja` kimliğini korur). CI her etikette bu z
    her açılışta bu listeden yazar; uygulama güncellemesiyle kullanıcılara ulaşır.
 4. README'deki "Load unpacked" adımını mağaza bağlantılarıyla değiştir.
 
+### Firefox (addons.mozilla.org)
+
+`npm run store` Firefox için ayrıca `extension/store/fluxer-extension-firefox-<sürüm>.zip` üretir. Firefox'un
+kararlı sürümü imzasız eklentiyi kalıcı kurmaz; iki yol var:
+
+- **Listelenmemiş (önerilen başlangıç):** AMO'da geliştirici hesabı (ücretsiz) → Tools → Manage API Keys →
+  depoya `AMO_API_KEY` (JWT issuer) ve `AMO_API_SECRET` (JWT secret) sırlarını ekle. Bundan sonra her `v*`
+  etiketinde CI `web-ext sign --channel unlisted` ile imzalı `.xpi` üretip release'e ekler. Aynı sürüm AMO'ya
+  iki kez yüklenemez; etiketi yeniden basmadan önce `manifest.json` → `version`'ı artır.
+- **Listelenmiş:** zip'i AMO'ya elle yükle; inceleme sonrası mağazada görünür. İzin gerekçeleri yukarıdakiyle aynı.
+
+Eklenti kimliği her iki yolda da `fluxer@fluxer-download-manager` kalır (`Protocol.AllowedFirefoxIds`), yani
+uygulama tarafında değişiklik gerekmez.
+
 ## 3. Sürüm ve kanallar
 
 - `git tag v0.9.0 && git push origin v0.9.0` → kararlı sürüm; kurulu kopyalar birkaç saat içinde indirir, çıkışta kurar.
