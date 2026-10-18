@@ -10,6 +10,11 @@
 - **Çökme sonrası tanılama:** yakalanmamış istisnalar (UI thread'i, `_ = …Async()` görevleri, diğer thread'ler) günlüğe yazılır. Uygulama böyle bir hatayla kapanırsa sonraki açılışta tanılama paketini kaydetmeyi önerir. Hiçbir şey kendiliğinden gönderilmez.
 
 ### Düzeltildi
+- **Değişmiş dosyaya devam edilmiyor:** link yenilenirken sunucu farklı bir sürüm bildirirse (ETag/Last-Modified) "Yine de devam et" yerine "Baştan başlat" sunulur; önceden iki sürümün baytları tek dosyada birleşip bozuk bir dosya "Tamamlandı" görünebiliyordu. `file-changed` ile duran indirmede "Tekrar dene" baştan başlar.
+- İlerleme kaydeden ama sık kopan bir bağlantı ya da range yanıtlarını parça parça gönderen bir CDN indirmeyi artık "Başarısız" yapmıyor.
+- Bağlantı limiti için 403 döndüren sunucularda bağlantı sayısı düşer, indirme "Bağlantı yenilenmeli" olmaz. 401 ve imzası dolmuş linkler (400/404) yenileme akışına düşer.
+- Yeni link range desteklemiyorsa ya da giriş sayfası (HTML) döndürüyorsa yenilemede yakalanır. 0 baytlık dosyalar iner; dışarıdan kırpılmış `.part` dosyası baştan indirilir.
+- Link yenileme başarısız olursa çalışan indirme duraklatılmış kalmıyor.
 - Proxy ayarı yt-dlp'ye de uygulanıyor; önceden video trafiği proxy'yi atlıyordu. Ayar açıklaması torrent eşlerinin proxy'den geçmediğini söylüyor.
 - **Video araçları kurulumu:** pencerede İptal düğmesi var; 30 saniye veri gelmeyen indirme "yanıt vermiyor" uyarısıyla durur (önceden pencere sonsuza kadar açık kalabiliyordu).
 - Zip'ten çıkarılan araçlar önce geçici dosyaya yazılıp sonra yerine taşınıyor; yarım kalan `ffmpeg.exe` artık "kurulu" sayılmıyor ve `ffprobe.exe` de kontrol ediliyor.

@@ -293,6 +293,182 @@ public sealed class HttpDownloadTests
     }
 
     [Fact]
+    public async Task RangesAnsweredInCappedChunks_SingleConnection_Completes()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 20 * 1024 * 1024;
+        server.MaxChunk = 1024 * 1024; // 20 short 206s, each one "closes early"
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 1);
+
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(d.Record.FullPath));
+    }
+
+    [Fact]
+    public async Task ConnectionDroppingMoreThanMaxRetries_ButProgressing_Completes()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 16 * 1024 * 1024;
+        server.DropAfter = 1024 * 1024;
+        server.DropResponses = 14; // more drops than MaxRetries, each after real progress
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 1);
+
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(d.Record.FullPath));
+    }
+
+    [Fact]
+    public async Task FileChanged_ThenRetry_StartsOverWithTheNewFile()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 16 * 1024 * 1024;
+        server.RateFor = _ => 1024 * 1024;
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 2);
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
+            await d.RunAsync(cts.Token);
+
+        server.Version = 2;
+        server.RateFor = _ => 0;
+        var resumed = h.Create(server.Url(), existing: h.Db.LoadAll().Single());
+        await Harness.RunAsync(resumed);
+        Assert.Equal("file-changed", resumed.Record.Error);
+        Assert.Equal(0, resumed.Record.DoneBytes);
+
+        await Harness.RunAsync(resumed); // Retry
+        Assert.Equal(DownloadState.Completed, resumed.Record.State);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(resumed.Record.FullPath));
+    }
+
+    [Fact]
+    public async Task RefreshedLink_WithChangedFile_RestartsInsteadOfSplicing()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.ValidTokens = ["a"];
+        server.Size = 16 * 1024 * 1024;
+        server.RateFor = _ => 1024 * 1024;
+        using var h = new Harness();
+        var d = h.Create(server.Url("a"), connections: 4);
+        var run = Harness.RunAsync(d);
+        await Task.Delay(1000);
+        server.ValidTokens = ["b"];
+        await run;
+        Assert.Equal(DownloadState.NeedsLinkRefresh, d.Record.State);
+
+        server.Version = 2; // same size, different content
+        server.RateFor = _ => 0;
+        var check = await d.CheckNewLinkAsync(server.Url("b"), null, CancellationToken.None);
+        Assert.True(check.SizeMatches);
+        Assert.True(check.ValidatorChanged);
+        d.ApplyNewLink(server.Url("b"), null, check);
+        d.ResetForRestart(); // what the refresh dialog does on "Restart from the beginning"
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(d.Record.FullPath));
+    }
+
+    [Fact]
+    public async Task NewLinkWithoutRangeSupport_IsReported()
+    {
+        await using var server = await FakeServer.StartAsync();
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 2);
+        await Harness.RunAsync(d);
+
+        server.Ranges = false;
+        var check = await d.CheckNewLinkAsync(server.Url(), null, CancellationToken.None);
+        Assert.True(check.Reachable);
+        Assert.True(check.SizeMatches);
+        Assert.False(check.SupportsRanges);
+    }
+
+    [Fact]
+    public async Task NewLinkServingHtml_IsUnreachable()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Texts["/login"] = "<html>sign in</html>";
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 1);
+        await Harness.RunAsync(d);
+
+        var check = await d.CheckNewLinkAsync(server.BaseUrl + "/login", null, CancellationToken.None);
+        Assert.False(check.Reachable);
+    }
+
+    [Fact]
+    public async Task ForbiddenOverConnectionLimit_ReducesConnections_AndCompletes()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 16 * 1024 * 1024;
+        server.MaxConcurrent = 2;
+        server.OverLimitStatus = 403;
+        server.RateFor = _ => 4 * 1024 * 1024;
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 8);
+
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(d.Record.FullPath));
+    }
+
+    [Fact]
+    public async Task Unauthorized_NeedsLinkRefresh()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.ValidTokens = ["a"];
+        server.ExpiredStatus = 401;
+        using var h = new Harness();
+        var d = h.Create(server.Url("old"), connections: 1);
+
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.NeedsLinkRefresh, d.Record.State);
+    }
+
+    [Fact]
+    public async Task EmptyFile_Completes()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 0;
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 4);
+
+        await Harness.RunAsync(d);
+
+        Assert.Equal(DownloadState.Completed, d.Record.State);
+        Assert.Equal(0, new FileInfo(d.Record.FullPath).Length);
+    }
+
+    [Fact]
+    public async Task TruncatedPartFile_OnResume_StartsOver()
+    {
+        await using var server = await FakeServer.StartAsync();
+        server.Size = 16 * 1024 * 1024;
+        server.RateFor = _ => 1024 * 1024;
+        using var h = new Harness();
+        var d = h.Create(server.Url(), connections: 4);
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1.2)))
+            await d.RunAsync(cts.Token);
+        Assert.True(d.Record.DoneBytes > 0);
+
+        using (var fs = new FileStream(d.Record.FullPath + ".part", FileMode.Open)) fs.SetLength(1024);
+        server.RateFor = _ => 0;
+        var resumed = h.Create(server.Url(), existing: h.Db.LoadAll().Single());
+        await Harness.RunAsync(resumed);
+
+        Assert.Equal(DownloadState.Completed, resumed.Record.State);
+        Assert.Equal(server.ExpectedSha256(), Harness.Sha(resumed.Record.FullPath));
+    }
+
+    [Fact]
     public void SparsePreallocation_FirstWriteAtEnd_DoesNotBlock()
     {
         using var h = new Harness();

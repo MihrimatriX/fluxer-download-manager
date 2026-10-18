@@ -39,6 +39,8 @@ public sealed class HttpDownload : IDownload
     private string? _stopError;
     private string? _lastError;
     private long _lastReresolve;
+    private long _lastBytesAt;      // Stopwatch timestamp of the last received chunk, any connection
+    private int _rangeIgnored;      // 200s to ranged requests in this run (one may be a stray proxy/edge)
     private volatile bool _throttled;
 
     public HttpDownload(DownloadRecord record, HttpEngine engine, Database db, Func<AppSettings> settings)
@@ -102,6 +104,7 @@ public sealed class HttpDownload : IDownload
         _stop = stop;
         _stopState = null;
         _stopError = _lastError = null;
+        _rangeIgnored = 0;
         _speed.Reset();
         SetState(DownloadState.Starting, null);
 
@@ -146,6 +149,13 @@ public sealed class HttpDownload : IDownload
         if (Http.Resumable && Record.TotalBytes is { } total && File.Exists(PartPath))
         {
             var rows = _db.LoadSegments(Record.Id);
+            // A .part shorter or longer than the file was touched from outside; extending it would
+            // leave zeros where the DB says data is, so start over instead.
+            if (rows.Count > 0 && new FileInfo(PartPath).Length != total)
+            {
+                Log.Warning("Download {Id}: .part has the wrong size, restarting", Record.Id);
+                rows = [];
+            }
             if (rows.Count > 0)
             {
                 lock (_lock)
@@ -164,14 +174,20 @@ public sealed class HttpDownload : IDownload
         try
         {
             Http.FinalUrl = resp.RequestMessage?.RequestUri?.ToString() ?? Http.Url;
+            var empty = IsEmptyRangeResponse(resp);
             // A login/captcha/Cloudflare page instead of the file: fail clearly rather than save it as "x.html".
-            if (FileNameResolver.IsHtml(resp.Content.Headers.ContentType?.MediaType)
+            if (!empty && FileNameResolver.IsHtml(resp.Content.Headers.ContentType?.MediaType)
                 && (Http.RejectHtml || FileNameResolver.NamesAFile(new Uri(Http.Url))))
                 throw new StopException(DownloadState.Failed, "got-html");
             ResponseHeaders = [.. resp.Headers.Concat(resp.Content.Headers).Select(h => KeyValuePair.Create(h.Key, string.Join(", ", h.Value)))];
 
             long? size;
-            if (resp.StatusCode == HttpStatusCode.PartialContent)
+            if (empty)
+            {
+                size = 0;
+                Http.Resumable = false;
+            }
+            else if (resp.StatusCode == HttpStatusCode.PartialContent)
             {
                 size = resp.Content.Headers.ContentRange?.Length;
                 Http.Resumable = size is not null && resp.Content.Headers.ContentRange?.From == 0;
@@ -243,9 +259,9 @@ public sealed class HttpDownload : IDownload
                 req.Headers.Range = new RangeHeaderValue(0, null);
                 var resp = await SendWithTimeoutAsync(req, ct);
                 var code = (int)resp.StatusCode;
-                if (code is 200 or 206) return resp;
+                if (code is 200 or 206 || IsEmptyRangeResponse(resp)) return resp;
                 resp.Dispose();
-                if (code is 403 or 410) throw new StopException(DownloadState.NeedsLinkRefresh, "link-expired");
+                if (code is 401 or 403 or 410) throw new StopException(DownloadState.NeedsLinkRefresh, "link-expired");
                 if (code is not (429 or 503) && code < 500) throw new StopException(DownloadState.Failed, $"http-{code}");
                 _lastError = $"http-{code}";
             }
@@ -258,6 +274,10 @@ public sealed class HttpDownload : IDownload
             await BackoffAsync(attempt, null, ct);
         }
     }
+
+    /// "bytes=0-" on a zero-length resource is unsatisfiable by definition: 416 with "*/0".
+    private static bool IsEmptyRangeResponse(HttpResponseMessage resp) =>
+        resp.StatusCode == HttpStatusCode.RequestedRangeNotSatisfiable && resp.Content.Headers.ContentRange is { HasLength: true, Length: 0 };
 
     // ================= workers =================
 
@@ -275,6 +295,7 @@ public sealed class HttpDownload : IDownload
         lock (_lock) _activeWorkers++;
         var retired = false;
         var failures = 0;
+        var linkFailures = 0;
         try
         {
             await Task.Yield();
@@ -282,11 +303,13 @@ public sealed class HttpDownload : IDownload
             retired = seg is null;
             while (seg is not null)
             {
+                long writtenBefore;
+                lock (_lock) writtenBefore = seg.Written;
                 try
                 {
                     response ??= await RequestAsync(seg, ct);
                     await PumpAsync(response, seg, ct);
-                    failures = 0;
+                    failures = linkFailures = 0;
                 }
                 catch (ThrottledException e)
                 {
@@ -298,13 +321,19 @@ public sealed class HttpDownload : IDownload
                 catch (LinkExpiredException)
                 {
                     Rewind(seg);
-                    if (++failures > 3 || !await ReresolveAsync(ct))
+                    if (++linkFailures > 3 || !await ReresolveAsync(ct))
                         throw new StopException(DownloadState.NeedsLinkRefresh, "link-expired");
+                    await BackoffAsync(linkFailures, null, ct);
                 }
                 catch (Exception e) when (e is HttpRequestException or IOException && !DiskErrors.IsDiskFull(e))
                 {
                     Rewind(seg);
                     _lastError = "network";
+                    // A connection that moved the file forward is not failing, even if it keeps dropping
+                    // (flaky line, or a server that answers ranges in capped chunks): ask again at once.
+                    bool progressed;
+                    lock (_lock) progressed = seg.Written > writtenBefore;
+                    if (progressed) { failures = linkFailures = 0; continue; }
                     Log.Information(e, "Download {Id} segment {Seg} retry {N}", Record.Id, seg.Index, failures + 1);
                     if (++failures > MaxRetries) return; // finally retires and releases seg
                     await BackoffAsync(failures, null, ct);
@@ -415,12 +444,33 @@ public sealed class HttpDownload : IDownload
         resp.Dispose();
         throw code switch
         {
-            200 or 416 => new StopException(DownloadState.Failed, "file-changed"), // If-Range failed → full body
-            403 or 410 => new LinkExpiredException(),
+            // If-Range failed → full body. A single stray 200 can also be an edge/proxy that drops Range, so retry once.
+            200 when Interlocked.Increment(ref _rangeIgnored) == 1 => new IOException("range ignored"),
+            200 or 416 => new StopException(DownloadState.Failed, "file-changed"),
+            // Some servers answer "too many connections" with 403: if another connection is streaming
+            // from the same URL right now, the link is fine.
+            403 when OthersStreaming() => new ThrottledException(null),
+            401 or 403 or 410 => new LinkExpiredException(),
+            400 or 404 when LooksSigned(req.RequestUri) && Record.DoneBytes > 0 => new LinkExpiredException(),
             429 or 503 => new ThrottledException(retryAfter),
             >= 500 => new HttpRequestException($"http-{code}"),
             _ => new StopException(DownloadState.Failed, $"http-{code}"),
         };
+    }
+
+    private bool OthersStreaming() =>
+        Volatile.Read(ref _activeWorkers) > 1
+        && Interlocked.Read(ref _lastBytesAt) is var t and not 0
+        && Stopwatch.GetElapsedTime(t) < TimeSpan.FromSeconds(2);
+
+    /// Pre-signed CDN/S3 links answer 400/404 instead of 403 once their signature expires.
+    private static bool LooksSigned(Uri? uri)
+    {
+        var q = uri?.Query;
+        if (string.IsNullOrEmpty(q)) return false;
+        foreach (var key in (ReadOnlySpan<string>)["signature", "x-amz-", "token", "expires", "sig=", "hdnts", "auth"])
+            if (q.Contains(key, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
     }
 
     private async Task<HttpResponseMessage> SendWithTimeoutAsync(HttpRequestMessage req, CancellationToken ct)
@@ -477,6 +527,7 @@ public sealed class HttpDownload : IDownload
                 }
                 fill += n;
                 Interlocked.Add(ref _received, n);
+                if (n > 0) Interlocked.Exchange(ref _lastBytesAt, Stopwatch.GetTimestamp());
 
                 if (fill == buffer.Length || end)
                 {
@@ -518,7 +569,7 @@ public sealed class HttpDownload : IDownload
         {
             if (_lastReresolve != 0 && Stopwatch.GetElapsedTime(_lastReresolve) < TimeSpan.FromSeconds(10)) return true;
             var check = await CheckNewLinkAsync(Http.Url, null, ct);
-            if (!check.Reachable || !check.SizeMatches) return false;
+            if (!check.Reachable || !check.SizeMatches || (Http.Resumable && !check.SupportsRanges)) return false;
             Http.FinalUrl = check.FinalUrl;
             _lastReresolve = Stopwatch.GetTimestamp();
             Log.Information("Download {Id}: re-resolved redirect", Record.Id);
@@ -612,6 +663,9 @@ public sealed class HttpDownload : IDownload
         }
 
         lock (_checkpointLock) { _file?.Dispose(); _file = null; }
+        // The server now has a different file: what we hold can never be completed, so the next
+        // retry starts from byte 0 instead of failing the same way again.
+        if (_stopError == "file-changed") DiscardProgress();
         if (_stopState is { } s) SetState(s, _stopError);
         else if (paused) SetState(DownloadState.Paused, null);
         else SetState(DownloadState.Failed, _lastError ?? "network");
@@ -673,16 +727,24 @@ public sealed class HttpDownload : IDownload
         var req = HttpEngine.NewRequest(HttpMethod.Get, url, ctx ?? Http.Context);
         req.Headers.Range = new RangeHeaderValue(0, 0);
         using var resp = await SendWithTimeoutAsync(req, ct);
-        if (resp.StatusCode is not (HttpStatusCode.OK or HttpStatusCode.PartialContent))
+        // A login or captcha page is not the file, unless the file itself is a web page.
+        if (resp.StatusCode is not (HttpStatusCode.OK or HttpStatusCode.PartialContent)
+            || (FileNameResolver.IsHtml(resp.Content.Headers.ContentType?.MediaType) && !IsHtmlName(Record.FileName)))
             return new LinkCheck(false, false, false, url, null, null);
 
-        var size = resp.StatusCode == HttpStatusCode.PartialContent ? resp.Content.Headers.ContentRange?.Length : resp.Content.Headers.ContentLength;
+        var partial = resp.StatusCode == HttpStatusCode.PartialContent;
+        var size = partial ? resp.Content.Headers.ContentRange?.Length : resp.Content.Headers.ContentLength;
+        var ranges = partial && resp.Content.Headers.ContentRange?.From == 0;
         var etag = resp.Headers.ETag is { IsWeak: false } e ? e.Tag : null;
         var lm = resp.Content.Headers.LastModified;
         var sizeMatches = Record.TotalBytes is null || size == Record.TotalBytes;
-        var changed = (Http.ETag is not null && etag is not null && etag != Http.ETag)
-                      || (Http.LastModified is not null && lm is not null && lm != Http.LastModified);
-        return new LinkCheck(true, sizeMatches, changed, resp.RequestMessage?.RequestUri?.ToString() ?? url, etag, lm);
+        // A validator that disappeared counts as changed: we can no longer prove it is the same file.
+        var changed = (Http.ETag is not null && etag != Http.ETag)
+                      || (Http.LastModified is not null && lm != Http.LastModified);
+        return new LinkCheck(true, sizeMatches, changed, resp.RequestMessage?.RequestUri?.ToString() ?? url, etag, lm) { SupportsRanges = ranges };
+
+        static bool IsHtmlName(string name) =>
+            Path.GetExtension(name).ToLowerInvariant() is ".htm" or ".html" or ".xhtml" or ".mhtml";
     }
 
     /// Caller must have checked SizeMatches. The download must not be running.
@@ -702,6 +764,31 @@ public sealed class HttpDownload : IDownload
         _db.Update(Record);
     }
 
+    /// Throws away everything received so far; the next run probes the link and starts from byte 0.
+    /// For a server-side change of the file, where resuming would splice two versions together.
+    /// The download must not be running.
+    public void ResetForRestart()
+    {
+        DiscardProgress();
+        Record.Error = null;
+        _db.Update(Record);
+    }
+
+    private void DiscardProgress()
+    {
+        lock (_lock)
+        {
+            _segments.Clear();
+            _received = 0;
+        }
+        try { File.Delete(PartPath); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { Log.Warning(e, "Could not delete {Part}", PartPath); }
+        Http.ETag = null;
+        Http.LastModified = null;
+        Record.DoneBytes = 0;
+        _db.SaveSegments(Record.Id, 0, []);
+    }
+
     private sealed class StopException(DownloadState state, string code) : Exception(code)
     {
         public DownloadState State { get; } = state;
@@ -715,4 +802,8 @@ public sealed class HttpDownload : IDownload
     }
 }
 
-public sealed record LinkCheck(bool Reachable, bool SizeMatches, bool ValidatorChanged, string FinalUrl, string? ETag, DateTimeOffset? LastModified);
+public sealed record LinkCheck(bool Reachable, bool SizeMatches, bool ValidatorChanged, string FinalUrl, string? ETag, DateTimeOffset? LastModified)
+{
+    /// The new link answered the probe range with 206, so a partial download can continue from it.
+    public bool SupportsRanges { get; init; }
+}

@@ -28,6 +28,12 @@ public sealed class FakeServer : IAsyncDisposable
     /// Bytes/second per response for a given range start; 0 = unlimited.
     public Func<long, long> RateFor { get; set; } = _ => 0;
     public int MaxConcurrent { get; set; }
+    /// Status for requests over MaxConcurrent: 429, or 403 like some hosts' per-IP limit.
+    public int OverLimitStatus { get; set; } = 429;
+    /// Status for an invalid token (403 for most CDNs, 401 for session-cookie sites).
+    public int ExpiredStatus { get; set; } = 403;
+    /// Largest body a ranged response carries; the client must ask again for the rest (0 = no cap).
+    public long MaxChunk { get; set; }
     public long DropAfter { get; set; }
     public int DropResponses { set => _dropBudget = value; }
     public HashSet<string>? ValidTokens { get; set; }
@@ -108,13 +114,13 @@ public sealed class FakeServer : IAsyncDisposable
         {
             if (ValidTokens is not null && !ValidTokens.Contains(ctx.Request.Query["token"].ToString()))
             {
-                ctx.Response.StatusCode = 403;
+                ctx.Response.StatusCode = ExpiredStatus;
                 return;
             }
             if (MaxConcurrent > 0 && c > MaxConcurrent)
             {
                 Interlocked.Increment(ref Throttled);
-                ctx.Response.StatusCode = 429;
+                ctx.Response.StatusCode = OverLimitStatus;
                 ctx.Response.Headers.RetryAfter = "0";
                 return;
             }
@@ -129,7 +135,8 @@ public sealed class FakeServer : IAsyncDisposable
                 from = r.From ?? Size - r.To!.Value;
                 to = r.To is { } t && r.From is not null ? Math.Min(t, Size - 1) : Size - 1;
                 partial = true;
-                if (from >= Size) { ctx.Response.StatusCode = 416; return; }
+                if (from >= Size) { ctx.Response.StatusCode = 416; ctx.Response.Headers.ContentRange = $"bytes */{Size}"; return; }
+                if (MaxChunk > 0) to = Math.Min(to, from + MaxChunk - 1);
             }
 
             var res = ctx.Response;

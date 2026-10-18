@@ -60,7 +60,6 @@
   <data name="ConnectionsDesc" xml:space="preserve"><value>Parallel connections for one HTTP download (1–32). Fluxer lowers it automatically if the server pushes back.</value></data>
   <data name="ConnRange" xml:space="preserve"><value>Byte range</value></data>
   <data name="ConnWaiting" xml:space="preserve"><value>waiting</value></data>
-  <data name="ContinueAnyway" xml:space="preserve"><value>Continue anyway</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
   <data name="CopyUrl" xml:space="preserve"><value>Copy address</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>
@@ -74,7 +73,7 @@
   <data name="EmptyBody" xml:space="preserve"><value>Paste a link (Ctrl+V), drop a .torrent file here, or download something in your browser.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Nothing here yet</value></data>
   <data name="ErrDiskFull" xml:space="preserve"><value>Not enough disk space</value></data>
-  <data name="ErrFileChanged" xml:space="preserve"><value>The file on the server has changed</value></data>
+  <data name="ErrFileChanged" xml:space="preserve"><value>The file on the server has changed. Retry starts over.</value></data>
   <data name="ErrGotHtml" xml:space="preserve"><value>The server sent a web page instead of the file (sign-in, captcha or an expired link). Download it in the browser.</value></data>
   <data name="ErrHashMismatch" xml:space="preserve"><value>Checksum does not match</value></data>
   <data name="ErrHttp" xml:space="preserve"><value>Server error (HTTP {0})</value></data>
@@ -141,9 +140,10 @@
   <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" is waiting for a new link. Use this download to resume it?</value></data>
   <data name="LinkMatchNew" xml:space="preserve"><value>Start a new download</value></data>
   <data name="LinkMatchTitle" xml:space="preserve"><value>Attach to existing download?</value></data>
+  <data name="LinkNoResume" xml:space="preserve"><value>The new link does not support resuming, so the download has to start again from the beginning.</value></data>
   <data name="LinkSizeMismatch" xml:space="preserve"><value>The new link points to a file of a different size, so it was rejected.</value></data>
   <data name="LinkUnreachable" xml:space="preserve"><value>The new link could not be reached.</value></data>
-  <data name="LinkValidatorChanged" xml:space="preserve"><value>The server reports a different version of the file (ETag/Last-Modified changed). Resuming may produce a corrupt file.</value></data>
+  <data name="LinkValidatorChanged" xml:space="preserve"><value>The server reports a different version of the file (ETag/Last-Modified changed). The part downloaded so far cannot be reused, so the download has to start again from the beginning.</value></data>
   <data name="MagnetNoFiles" xml:space="preserve"><value>The file list will be available once metadata is fetched from peers.</value></data>
   <data name="MediaDisclaimer" xml:space="preserve"><value>Fluxer uses yt-dlp to save videos from websites. You are responsible for respecting copyright and the site's terms of service. DRM-protected content is not supported.</value></data>
   <data name="MediaProbing" xml:space="preserve"><value>Reading video information…</value></data>
@@ -155,6 +155,7 @@
   <data name="BackdropGlass" xml:space="preserve"><value>Glass (blurred, translucent)</value></data>
   <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
   <data name="BackdropNone" xml:space="preserve"><value>Navy (default)</value></data>
+  <data name="RestartFromScratch" xml:space="preserve"><value>Restart from the beginning</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
   <data name="MinDimension" xml:space="preserve"><value>Min. size (px)</value></data>
