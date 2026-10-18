@@ -181,7 +181,7 @@
   <data name="Probing" xml:space="preserve"><value>Checking the address…</value></data>
   <data name="ProgressWindow" xml:space="preserve"><value>Progress window…</value></data>
   <data name="Proxy" xml:space="preserve"><value>Proxy</value></data>
-  <data name="ProxyDesc" xml:space="preserve"><value>Empty uses the Windows proxy settings.</value></data>
+  <data name="ProxyDesc" xml:space="preserve"><value>Applies to downloads and video. Empty uses the Windows proxy settings. Torrent peers never go through the proxy.</value></data>
   <data name="Quality" xml:space="preserve"><value>Quality</value></data>
   <data name="QualityBest" xml:space="preserve"><value>Best available</value></data>
   <data name="Queue" xml:space="preserve"><value>Queue</value></data>
@@ -279,8 +279,8 @@
   <data name="UiScale" xml:space="preserve"><value>Interface size</value></data>
   <data name="UiScaleDesc" xml:space="preserve"><value>Makes text and controls larger or smaller in every window.</value></data>
   <data name="UpdateFeed" xml:space="preserve"><value>Update source</value></data>
-  <data name="UpdateFeedDesc" xml:space="preserve"><value>Folder, share or URL where releases are published; empty turns updates off.</value></data>
-  <data name="UpdateFeedWatermark" xml:space="preserve"><value>https://… or \\server\share\fluxer</value></data>
+  <data name="UpdateFeedDesc" xml:space="preserve"><value>Empty uses Fluxer's GitHub releases. A folder, share or URL with a Velopack feed also works.</value></data>
+  <data name="UpdateFeedWatermark" xml:space="preserve"><value>GitHub releases (default)</value></data>
   <data name="UpdateNow" xml:space="preserve"><value>Update now</value></data>
   <data name="UpdateReadyBody" xml:space="preserve"><value>Version {0} will be installed when you exit Fluxer.</value></data>
   <data name="UpdateReadyTitle" xml:space="preserve"><value>Update downloaded</value></data>
@@ -405,4 +405,18 @@
   <data name="CategoryAuto" xml:space="preserve"><value>Category: {0} · from the extension</value></data>
   <data name="CategoryManual" xml:space="preserve"><value>Category: {0}</value></data>
   <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="AutoUpdate" xml:space="preserve"><value>Automatic updates</value></data>
+  <data name="AutoUpdateDesc" xml:space="preserve"><value>Checks every few hours and installs the new version when you exit Fluxer.</value></data>
+  <data name="BetaUpdates" xml:space="preserve"><value>Beta versions</value></data>
+  <data name="BetaUpdatesDesc" xml:space="preserve"><value>Also install pre-release versions from GitHub.</value></data>
+  <data name="ScanDownloads" xml:space="preserve"><value>Scan finished downloads</value></data>
+  <data name="ScanDownloadsDesc" xml:space="preserve"><value>Hands each finished file to your antivirus, the way browsers do.</value></data>
+  <data name="ScanBlockedTitle" xml:space="preserve"><value>Antivirus blocked a download</value></data>
+  <data name="ScanBlockedBody" xml:space="preserve"><value>{0} was blocked or removed by your antivirus.</value></data>
+  <data name="WatchClipboard" xml:space="preserve"><value>Watch the clipboard</value></data>
+  <data name="WatchClipboardDesc" xml:space="preserve"><value>When you copy a link to a file or a magnet, Fluxer offers to download it.</value></data>
+  <data name="WatchFolder" xml:space="preserve"><value>Torrent watch folder</value></data>
+  <data name="WatchFolderDesc" xml:space="preserve"><value>.torrent files saved here are added automatically and moved to "added".</value></data>
+  <data name="CrashTitle" xml:space="preserve"><value>Fluxer closed unexpectedly</value></data>
+  <data name="CrashBody" xml:space="preserve"><value>Your downloads were saved and will continue. You can save a diagnostics package (logs and settings, no download links) to report the problem.</value></data>
 </root>

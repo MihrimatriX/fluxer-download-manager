@@ -20,6 +20,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         Db = new Database(Path.Combine(dataDirectory, "fluxer.db"));
         Settings = Db.GetSetting<AppSettings>("app");
         Http = new HttpEngine(Settings.Proxy);
+        YtDlp.Proxy = Settings.Proxy;
         Http.GlobalBucket.BytesPerSecond = Settings.HttpLimit;
         // The torrent engine opens ports and joins DHT; only start it once a torrent exists.
         _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings));
@@ -42,6 +43,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         Db.SetSetting("app", s);
         Http.GlobalBucket.BytesPerSecond = s.HttpLimit;
         if (proxyChanged) Http.SetProxy(s.Proxy);
+        YtDlp.Proxy = s.Proxy;
         if (_torrent.IsValueCreated) await _torrent.Value.ApplyAsync(s);
         Queue.Schedule();
     }

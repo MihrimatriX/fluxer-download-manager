@@ -83,8 +83,11 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         _ = CheckToolUpdateAsync();
         _ = CheckAppUpdateAsync();
 
+        CrashGuard.InstallUiHandler();
+        ApplyWatchers();
         if (!args.Contains("--background")) ShowMainWindow();
         Mark("window");
+        if (CrashGuard.TakeMarker() is { } crash) Dispatcher.UIThread.Post(() => _ = OfferCrashReportAsync(crash), DispatcherPriority.Background);
         Log.Information("Startup (ms): {Marks}", string.Join(", ", marks));
         _ = HandleArgsAsync([.. args.Where(a => a != "--background")]);
     }
@@ -218,6 +221,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Main.UpdateTotals();
         RunScheduler();
         RunWeekSchedule();
+        PollClipboard();
+        if (DateTime.UtcNow - _lastUpdateCheck > UpdateInterval) _ = CheckAppUpdateAsync();
     }
 
     private void RunScheduler()
@@ -316,7 +321,11 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
     private void OnStateChanged(IDownload d)
     {
-        if (d.State == DownloadState.Completed) Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
+        if (d.State == DownloadState.Completed)
+        {
+            Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
+            ScanCompleted(d);
+        }
         Log.Information("Download {Id} ({Kind}) → {State} {Error}", d.Id, d.Kind, d.State, d.Record.Error);
         Dispatcher.UIThread.Post(() => Main.OnStateChanged(d));
         if (!Engine.Settings.Notifications) return;
@@ -346,6 +355,15 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         }
     }
 
+    /// The previous run died from an unhandled exception: say so once and offer the diagnostics zip.
+    private async Task OfferCrashReportAsync(string summary)
+    {
+        Log.Warning("Previous session crashed: {Summary}", summary.Trim());
+        if (!await Dialogs.ConfirmAsync(Owner, Strings.CrashTitle, Strings.CrashBody, Strings.ExportDiagnostics, Strings.Close)) return;
+        if (Owner is null) ShowMainWindow();
+        await Main.Settings.ExportDiagnosticsAsync();
+    }
+
     // ================= updates =================
 
     private async Task CheckToolUpdateAsync()
@@ -361,23 +379,37 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         catch (Exception e) { Log.Warning(e, "Weekly yt-dlp check failed"); }
     }
 
+    private static readonly TimeSpan UpdateInterval = TimeSpan.FromHours(6);
+    private DateTime _lastUpdateCheck = DateTime.MinValue;
+    private bool _checkingUpdate;
+
+    /// Settings changed (feed, channel, on/off): check again now instead of at the next interval.
+    public void CheckForAppUpdate() => _ = CheckAppUpdateAsync();
+
+    /// Fluxer lives in the tray for days, so updates are checked at start and then every few hours.
+    /// A downloaded update installs on exit (ExitAsync) or from Settings → "Restart to install".
     private async Task CheckAppUpdateAsync()
     {
-        if (string.IsNullOrWhiteSpace(Engine.Settings.UpdateFeed)) return;
+        var s = Engine.Settings;
+        if (!s.AutoUpdate || _checkingUpdate || Protocol.Instance.Length > 0) return;
+        _checkingUpdate = true;
+        _lastUpdateCheck = DateTime.UtcNow;
         try
         {
-            var feed = Engine.Settings.UpdateFeed!;
+            var feed = string.IsNullOrWhiteSpace(s.UpdateFeed) ? AppSettings.DefaultUpdateFeed : s.UpdateFeed.Trim();
             _updates = feed.Contains("github.com", StringComparison.OrdinalIgnoreCase)
-                ? new UpdateManager(new GithubSource(feed, null, false))
+                ? new UpdateManager(new GithubSource(feed, null, s.BetaUpdates))
                 : new UpdateManager(feed);
             if (!_updates.IsInstalled) return;
             var info = await _updates.CheckForUpdatesAsync();
-            if (info is null) return;
+            if (info is null || info.TargetFullRelease.Version.ToString() == _pendingUpdate?.TargetFullRelease.Version.ToString()) return;
             await _updates.DownloadUpdatesAsync(info);
             _pendingUpdate = info;
+            Main.Settings.HasPendingUpdate = true;
             Notifier.Show(Strings.UpdateReadyTitle, string.Format(CultureInfo.CurrentCulture, Strings.UpdateReadyBody, info.TargetFullRelease.Version));
         }
         catch (Exception e) { Log.Warning(e, "App update check failed"); }
+        finally { _checkingUpdate = false; }
     }
 
     public bool HasPendingUpdate => _pendingUpdate is not null;

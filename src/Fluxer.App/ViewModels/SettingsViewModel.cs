@@ -155,6 +155,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     // Advanced
     [ObservableProperty] private string _proxy = "";
     [ObservableProperty] private string _updateFeed = "";
+    [ObservableProperty] private bool _autoUpdate;
+    [ObservableProperty] private bool _betaUpdates;
+    [ObservableProperty] private bool _scanDownloads;
+    [ObservableProperty] private bool _watchClipboard;
+    [ObservableProperty] private bool _watchFolderOn;
+    [ObservableProperty] private string _watchFolder = "";
     // Read-only info
     [ObservableProperty] private string _toolsText = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(CanUpdateTools))] private bool _toolsBusy;
@@ -210,6 +216,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         FileAssociations = s.RegisterFileAssociations;
         Proxy = s.Proxy ?? "";
         UpdateFeed = s.UpdateFeed ?? "";
+        AutoUpdate = s.AutoUpdate;
+        BetaUpdates = s.BetaUpdates;
+        ScanDownloads = s.ScanDownloads;
+        WatchClipboard = s.WatchClipboard;
+        WatchFolderOn = s.WatchFolder is not null;
+        WatchFolder = s.WatchFolder ?? "";
         HasPendingUpdate = _host.HasPendingUpdate;
         SavedText = "";
         _loading = false;
@@ -309,11 +321,20 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.RegisterFileAssociations = FileAssociations;
         s.Proxy = string.IsNullOrWhiteSpace(Proxy) ? null : Proxy.Trim();
         s.UpdateFeed = string.IsNullOrWhiteSpace(UpdateFeed) ? null : UpdateFeed.Trim();
+        s.AutoUpdate = AutoUpdate;
+        s.BetaUpdates = BetaUpdates;
+        s.ScanDownloads = ScanDownloads;
+        s.WatchClipboard = WatchClipboard;
+        s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
+        var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
+        var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
 
         var uiChanged = s.Language != old.Language || s.Theme != old.Theme;
         var assocChanged = s.RegisterFileAssociations != old.RegisterFileAssociations;
         await engine.SaveSettingsAsync(s);
         if (assocChanged) _host.RegisterIntegration();
+        if (watchChanged) _host.ApplyWatchers();
+        if (updatesChanged) _host.CheckForAppUpdate();
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
         _host.Main.LoadUi();
         _host.Main.UpdateTotals();
@@ -339,6 +360,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     private async Task BrowseFolder()
     {
         if (_host.Owner is { } w && await Dialogs.PickFolderAsync(w, DownloadDirectory) is { } path) DownloadDirectory = path;
+    }
+
+    [RelayCommand]
+    private async Task BrowseWatchFolder()
+    {
+        if (_host.Owner is { } w && await Dialogs.PickFolderAsync(w, WatchFolder.Length > 0 ? WatchFolder : DownloadDirectory) is { } path)
+        {
+            WatchFolder = path;
+            WatchFolderOn = true;
+        }
     }
 
     [RelayCommand]
@@ -415,7 +446,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ExportDiagnostics()
+    private Task ExportDiagnostics() => ExportDiagnosticsAsync();
+
+    /// Also offered by the "Fluxer closed unexpectedly" prompt on the next start.
+    public async Task ExportDiagnosticsAsync()
     {
         if (_host.Owner is not { } w) return;
         var file = await w.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions

@@ -78,7 +78,13 @@ public sealed class AppSettings
     public List<string> RecentFolders { get; set; } = [];
     public bool Notifications { get; set; } = true;
     public bool RegisterFileAssociations { get; set; } = true;
-    public string? UpdateFeed { get; set; }        // Velopack feed URL or folder; null = no auto-update
+    public const string DefaultUpdateFeed = "https://github.com/MihrimatriX/fluxer-download-manager";
+    public string? UpdateFeed { get; set; }        // Velopack feed URL or folder; null = DefaultUpdateFeed
+    public bool AutoUpdate { get; set; } = true;
+    public bool BetaUpdates { get; set; }          // GitHub pre-releases too
+    public bool ScanDownloads { get; set; } = true; // hand finished files to the antivirus (IAttachmentExecute)
+    public bool WatchClipboard { get; set; }       // offer copied download links
+    public string? WatchFolder { get; set; }       // .torrent files dropped here are added and moved to "added"
     public bool MediaDisclaimerAccepted { get; set; }
     public bool ToolsConsentGiven { get; set; }
     public long LastYtDlpCheck { get; set; }

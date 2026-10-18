@@ -27,6 +27,7 @@ internal static class Program
             .WriteTo.File(Path.Combine(DataDirectory, "logs", "fluxer-.log"), rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 10, fileSizeLimitBytes: 20 * 1024 * 1024)
             .CreateLogger();
+        Services.CrashGuard.Install();
 
         // Single instance: the second process forwards its arguments and exits.
         using var mutex = new Mutex(true, @"Local\" + Protocol.PipeName, out var first);
@@ -44,6 +45,7 @@ internal static class Program
         catch (Exception e)
         {
             Log.Fatal(e, "Unhandled exception");
+            Services.CrashGuard.WriteMarker(e);
             return 1;
         }
         finally

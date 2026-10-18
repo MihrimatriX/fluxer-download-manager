@@ -209,6 +209,19 @@
               <c:SettingRow Title="{x:Static app:Strings.Connections}" Description="{x:Static app:Strings.ConnectionsDesc}">
                 <NumericUpDown Value="{Binding Connections}" Minimum="1" Maximum="32" Increment="1" FormatString="0" />
               </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ScanDownloads}" Description="{x:Static app:Strings.ScanDownloadsDesc}">
+                <ToggleSwitch IsChecked="{Binding ScanDownloads}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.WatchClipboard}" Description="{x:Static app:Strings.WatchClipboardDesc}">
+                <ToggleSwitch IsChecked="{Binding WatchClipboard}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.WatchFolder}" Description="{x:Static app:Strings.WatchFolderDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding WatchFolder}" VerticalAlignment="Center" MaxWidth="220" TextTrimming="CharacterEllipsis" IsVisible="{Binding WatchFolderOn}" />
+                  <Button Content="{x:Static app:Strings.Browse}" Command="{Binding BrowseWatchFolderCommand}" />
+                  <ToggleSwitch IsChecked="{Binding WatchFolderOn}" />
+                </StackPanel>
+              </c:SettingRow>
             </StackPanel>
           </Border>
           <Border Classes="panel sec">
@@ -399,11 +412,17 @@
               <c:SettingRow Title="{x:Static app:Strings.Proxy}" Description="{x:Static app:Strings.ProxyDesc}">
                 <TextBox Text="{Binding Proxy}" PlaceholderText="http://host:port" Width="260" />
               </c:SettingRow>
-              <c:SettingRow Title="{x:Static app:Strings.UpdateFeed}" Description="{x:Static app:Strings.UpdateFeedDesc}">
+              <c:SettingRow Title="{x:Static app:Strings.AutoUpdate}" Description="{x:Static app:Strings.AutoUpdateDesc}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Button Content="{x:Static app:Strings.RestartToUpdate}" Command="{Binding RestartToUpdateCommand}" IsVisible="{Binding HasPendingUpdate}" Classes="accent" />
-                  <TextBox Text="{Binding UpdateFeed}" PlaceholderText="{x:Static app:Strings.UpdateFeedWatermark}" Width="260" />
+                  <ToggleSwitch IsChecked="{Binding AutoUpdate}" />
                 </StackPanel>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.BetaUpdates}" Description="{x:Static app:Strings.BetaUpdatesDesc}" IsEnabled="{Binding AutoUpdate}">
+                <ToggleSwitch IsChecked="{Binding BetaUpdates}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.UpdateFeed}" Description="{x:Static app:Strings.UpdateFeedDesc}" IsEnabled="{Binding AutoUpdate}">
+                <TextBox Text="{Binding UpdateFeed}" PlaceholderText="{x:Static app:Strings.UpdateFeedWatermark}" Width="260" />
               </c:SettingRow>
               <c:SettingRow Title="{x:Static app:Strings.Diagnostics}" Description="{x:Static app:Strings.DiagnosticsDesc}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
