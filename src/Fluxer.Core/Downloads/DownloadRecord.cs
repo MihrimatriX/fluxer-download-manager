@@ -39,8 +39,17 @@ public sealed class HttpInfo
     public string? HashExpected { get; set; }
     /// A web page instead of a file means failure (browser captures, URLs that name a file).
     public bool RejectHtml { get; set; }
+    /// Other addresses of the same file; Url stays the link that link refresh replaces.
+    public List<string> Mirrors { get; set; } = [];
 
     public RequestContext Context => new(Referrer, UserAgent, Cookies);
+
+    public static bool IsMirrorUrl(string s) =>
+        Uri.TryCreate(s.Trim(), UriKind.Absolute, out var u) && (u.Scheme == Uri.UriSchemeHttp || u.Scheme == Uri.UriSchemeHttps);
+
+    /// Valid http(s) addresses, trimmed, without duplicates or the primary link itself.
+    public static List<string> CleanMirrors(IEnumerable<string>? urls, string primary) =>
+        urls is null ? [] : [.. urls.Select(u => u.Trim()).Where(IsMirrorUrl).Where(u => u != primary).Distinct()];
 }
 
 public sealed class TorrentInfo

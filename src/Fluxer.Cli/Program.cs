@@ -6,15 +6,16 @@ using Fluxer.Core.Platform.Windows;
 using Serilog;
 
 // Developer tool for the engine (not shipped).
-//   fluxer-cli get <url> [--out DIR] [--data DIR] [-c N] [--limit BYTES_PER_SEC]
+//   fluxer-cli get <url> [--out DIR] [--data DIR] [-c N] [--limit BYTES_PER_SEC] [--mirror URL]...
 //       Downloads (or resumes, if the same URL is unfinished in --data) and exits 0 on success.
+//       Each --mirror adds another address of the same file.
 //   fluxer-cli sparse <file> <GiB>
 //       Measures the first write at the end of a freshly preallocated sparse file.
 
 if (args.Length >= 3 && args[0] == "sparse") return Sparse(args[1], double.Parse(args[2], CultureInfo.InvariantCulture));
 if (args.Length < 2 || args[0] != "get")
 {
-    Console.Error.WriteLine("usage: fluxer-cli get <url> [--out DIR] [--data DIR] [-c N] [--limit B/s] | sparse <file> <GiB>");
+    Console.Error.WriteLine("usage: fluxer-cli get <url> [--out DIR] [--data DIR] [-c N] [--limit B/s] [--mirror URL]... | sparse <file> <GiB>");
     return 2;
 }
 
@@ -22,6 +23,12 @@ var url = args[1];
 string Opt(string name, string def) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : def; }
 var data = Path.GetFullPath(Opt("--data", "fluxer-cli-data"));
 var output = Path.GetFullPath(Opt("--out", "."));
+var mirrors = args.Select((a, i) => (a, i)).Where(x => x.a == "--mirror" && x.i + 1 < args.Length).Select(x => args[x.i + 1]).ToList();
+if (mirrors.FirstOrDefault(m => !HttpInfo.IsMirrorUrl(m)) is { } badMirror)
+{
+    Console.Error.WriteLine($"not an http(s) address: {badMirror}");
+    return 2;
+}
 
 Serilog.Log.Logger = new Serilog.LoggerConfiguration().MinimumLevel.Debug()
     .WriteTo.File(Path.Combine(data, "cli.log")).CreateLogger();
@@ -43,7 +50,7 @@ engine.Queue.StateChanged += d =>
 engine.Queue.Load(); // resumes interrupted downloads
 var download = engine.Queue.Items.FirstOrDefault(d => d.Record.Http?.Url == url && d.State != DownloadState.Completed);
 if (download is null)
-    download = engine.AddHttp(url);
+    download = engine.AddHttp(url, mirrors: mirrors);
 else
     Console.WriteLine($"resuming #{download.Id} from {download.Record.DoneBytes:N0} bytes");
 

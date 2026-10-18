@@ -3,6 +3,7 @@
 ## Yayınlanmadı
 
 ### Yeni
+- **Ayna adresleri (HTTP):** yeni indirme penceresinde aynı dosyanın başka adresleri girilebilir (her satıra bir tane; `fluxer-cli get … --mirror URL`). Her ayna yoklanır, yalnızca boyutu tutan ve range destekleyenler kullanılır; bağlantılar asıl adresle aynalar arasında paylaştırılır. Art arda 3 hata veren ya da 403/404/410 döndüren ayna bırakılır, parçaları diğer kaynaklara geçer. Asıl linkin süresi dolsa da sağlam aynalar indirmeyi sürdürür; hiç kaynak kalmazsa "Bağlantı yenilenmeli" olur. Ayrıntı panelinde ayna sayısı ve durumu görünür.
 - **Otomatik güncelleme varsayılan olarak açık:** kaynak boşsa Fluxer'ın GitHub sürümleri kullanılır; açılışta ve 6 saatte bir bakılır, indirilen sürüm çıkışta kurulur. Ayarlar → Gelişmiş: "Otomatik güncelleme" ve "Beta sürümler" (GitHub ön sürümleri). 0.8 ayarlarıyla gelen kopyalar da güncelleme almaya başlar.
 - **Pano izleme** (İndirmeler, varsayılan kapalı): dosya bağlantısı ya da magnet kopyalanınca yeni indirme penceresi açılır. Web sayfası bağlantıları ve listede zaten olanlar sorulmaz.
 - **Torrent izleme klasörü:** klasöre bırakılan `.torrent` dosyaları pencere açmadan eklenir ve `added` alt klasörüne taşınır.

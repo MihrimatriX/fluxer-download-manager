@@ -127,6 +127,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
             Add(Strings.InfoResumable, h.Resumable ? Strings.Yes : Strings.No);
             Add(Strings.InfoConnections, h.MaxConnections.ToString(CultureInfo.CurrentCulture));
             if (h.Referrer is { } refr) Add(Strings.InfoReferrer, refr);
+            if (h.Mirrors.Count > 0 && d is HttpDownload mirrored) Add(Strings.InfoMirrors, MirrorSummary(mirrored));
         }
         if (r.Torrent is { } t)
         {
@@ -152,6 +153,15 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         Tick();
 
         void Add(string k, string v) => Info.Add(new InfoRow(k, v));
+    }
+
+    /// "3 · 2 in use, 1 dropped" once a run has checked them, otherwise just the count.
+    private static string MirrorSummary(HttpDownload d)
+    {
+        var mirrors = d.GetSources().Where(s => !s.Primary).ToList();
+        if (mirrors.All(s => s.Health == SourceHealth.Unchecked)) return mirrors.Count.ToString(CultureInfo.CurrentCulture);
+        return string.Format(CultureInfo.CurrentCulture, Strings.MirrorsSummary, mirrors.Count,
+            mirrors.Count(s => s.Health == SourceHealth.Healthy), mirrors.Count(s => s.Health is SourceHealth.Rejected or SourceHealth.Retired));
     }
 
     private void LoadTorrent(TorrentDownload td)

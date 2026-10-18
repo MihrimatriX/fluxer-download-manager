@@ -42,7 +42,7 @@ public sealed partial class AddDownloadWindow : Window
     private void Submit(bool startNow)
     {
         _vm.Flush();
-        if (_vm.Count == 0) return;
+        if (!_vm.CanSubmit) return;
         _result = _vm.Result(startNow);
         Close();
     }

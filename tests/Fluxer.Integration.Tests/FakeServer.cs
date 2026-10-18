@@ -37,6 +37,9 @@ public sealed class FakeServer : IAsyncDisposable
     public long DropAfter { get; set; }
     public int DropResponses { set => _dropBudget = value; }
     public HashSet<string>? ValidTokens { get; set; }
+    /// Once more than FailAfterRequests file requests were served, every request gets this status (0 = never).
+    public int FailStatus { get; set; }
+    public int FailAfterRequests { get; set; }
     public string FileName { get; set; } = "file.bin";
 
     public int PeakConcurrent;
@@ -106,7 +109,12 @@ public sealed class FakeServer : IAsyncDisposable
             await ctx.Response.Body.WriteAsync(blob);
             return;
         }
-        Interlocked.Increment(ref Requests);
+        var nth = Interlocked.Increment(ref Requests);
+        if (FailStatus > 0 && nth > FailAfterRequests)
+        {
+            ctx.Response.StatusCode = FailStatus;
+            return;
+        }
         var c = Interlocked.Increment(ref _concurrent);
         int peak;
         while (c > (peak = Volatile.Read(ref PeakConcurrent)) && Interlocked.CompareExchange(ref PeakConcurrent, c, peak) != peak) { }

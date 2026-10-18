@@ -63,7 +63,7 @@ public static class Flows
                 : r.FolderIsPerFile ? s.DownloadDirectory : r.Folder;
             added.Add(engine.AddHttp(item.Url, item.UserNamed ? item.Name : null, item.Context, folder, r.Mode != ViewModels.StartMode.Paused,
                 r.HashAlgorithm, r.Hash, rejectHtml: item.Context is not null || item.Kind == ProbeKind.File, connections: r.Connections,
-                night: r.Mode == ViewModels.StartMode.Night));
+                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors));
         }
 
         // "Start now" jumps the queue; "Add to queue" waits its turn at the end.
