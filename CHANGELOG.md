@@ -24,6 +24,7 @@
 - yt-dlp'ye deno'nun yolu `--js-runtimes` ile açıkça veriliyor.
 
 ### Tarayıcı eklentisi
+- **Firefox desteği (128+):** aynı kod, ayrı manifest (`dist-firefox/`, arka plan service worker yerine event page). Fluxer her açılışta Firefox'un native messaging kaydını da yazar (`HKCU\Software\Mozilla\NativeMessagingHosts`, `allowed_extensions`); host Firefox'un eklenti kimliği argümanını da doğrular. Kurulum `extension-firefox` klasörünü içerir; `AMO_API_KEY`/`AMO_API_SECRET` sırları varsa CI etiketlerde imzalı `.xpi` üretir. Ayarlar → Tarayıcı entegrasyonu Firefox'u da gösterir.
 - `clipboardRead` artık isteğe bağlı izin; yalnızca "Bağlantı yapıştır"a basınca istenir.
 - Açılır pencere uygulama ile eklentinin major.minor sürümü farklıysa hangisinin güncellenmesi gerektiğini söyler.
 - `npm run store`: mağazalar için `key` alanı çıkarılmış zip (`extension/store/`). CI bunu release'e de ekler.

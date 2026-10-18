@@ -16,6 +16,24 @@ public static class Protocol
     /// Unpacked dev build (fixed "key" in manifest). Store IDs get added at publish time.
     public static readonly string[] AllowedExtensionIds = ["dckkomckipcaglacbgfmbgmapfckpkja"];
 
+    /// Firefox add-on ID (browser_specific_settings.gecko.id, set by extension/scripts/manifest.mjs).
+    /// The same ID is kept on AMO, so unpacked and signed builds share it.
+    public static readonly string[] AllowedFirefoxIds = ["fluxer@fluxer-download-manager"];
+
+    /// Who started the native host. Chrome passes the caller origin (chrome-extension://<id>/) as an argument;
+    /// Firefox passes the host manifest path and then the add-on ID. Null if neither names an allowed extension.
+    public static string? AllowedCaller(IReadOnlyList<string> args)
+    {
+        const string chromeScheme = "chrome-extension://";
+        var origin = args.FirstOrDefault(a => a.StartsWith(chromeScheme, StringComparison.Ordinal));
+        if (origin is not null)
+        {
+            var id = origin[chromeScheme.Length..].TrimEnd('/');
+            return AllowedExtensionIds.Contains(id) ? id : null;
+        }
+        return args.Count >= 2 && AllowedFirefoxIds.Contains(args[1]) ? args[1] : null;
+    }
+
     /// Optional side-by-side profile (FLUXER_INSTANCE=dev): own pipe, mutex and data folder, no registry changes.
     public static string Instance { get; } = Environment.GetEnvironmentVariable("FLUXER_INSTANCE") ?? "";
 

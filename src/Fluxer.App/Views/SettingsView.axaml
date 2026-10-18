@@ -397,6 +397,9 @@
               <c:SettingRow Title="{x:Static app:Strings.ExtensionFolder}" Description="{x:Static app:Strings.ExtensionHowTo}">
                 <Button Content="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenExtensionFolderCommand}" />
               </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.FirefoxExtensionFolder}" Description="{x:Static app:Strings.FirefoxExtensionHowTo}">
+                <Button Content="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFirefoxExtensionFolderCommand}" />
+              </c:SettingRow>
               <c:SettingRow Title="{x:Static app:Strings.ExtensionId}" Description="{Binding ExtensionId}">
                 <Button Content="{x:Static app:Strings.Copy}" Command="{Binding CopyExtensionIdCommand}" />
               </c:SettingRow>

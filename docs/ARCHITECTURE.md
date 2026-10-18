@@ -376,7 +376,7 @@ public sealed partial class IpcJson : JsonSerializerContext;   // NativeAOT içi
 
 ### 5.4 Host davranışı
 
-1. Chrome, host'u çağıran origin'i (`chrome-extension://<id>/`) ilk argüman olarak verir → izin listesinde değilse `error/invalid-message` ve çıkış (manifest'teki `allowed_origins`'e ek savunma).
+1. Chrome, host'u çağıran origin'i (`chrome-extension://<id>/`) argüman olarak verir; Firefox ise önce host manifest yolunu, sonra eklenti kimliğini (`fluxer@fluxer-download-manager`) verir (`Protocol.AllowedCaller`). İzin listesinde değilse `error/invalid-message` ve çıkış (manifest'teki `allowed_origins` / `allowed_extensions`'a ek savunma). Firefox'un kaydı ayrı: `HKCU\Software\Mozilla\NativeMessagingHosts\com.fluxer.host` → `com.fluxer.host.firefox.json`.
 2. Mesaj okunur, `protocolVersion` ve şema doğrulanır (URL şeması yalnızca `http/https`; `magnet:` sadece `download.add`'de; `download.batch` 1–1000 öğe; `command` bilinen eylem + gerekiyorsa `id`). Uygulamayı yalnızca iş isteyen mesajlar başlatır (`download.*`, `page.*`, `command/show`); durum ve diğer komutlar başlatmaz.
 3. Pipe'a bağlanılır; başarısızsa `Fluxer.exe --background` başlatılır, 5 sn boyunca 100 ms aralıkla yeniden denenir; olmazsa `error/app-unavailable`.
 4. Yanıt aynen eklentiye döner, host çıkar.

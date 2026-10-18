@@ -17,6 +17,7 @@ jobs:
     runs-on: windows-latest
     env:
       HAS_SIGNING: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT != '' }}
+      HAS_AMO: ${{ secrets.AMO_API_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -74,10 +75,28 @@ jobs:
         shell: pwsh
         run: cd extension; npm run store
 
+      # Firefox only installs signed add-ons for good. With AMO_API_KEY / AMO_API_SECRET (addons.mozilla.org →
+      # Manage API Keys) a tag also gets a Mozilla-signed, unlisted .xpi. AMO takes each version once, so tags only.
+      - name: Sign Firefox add-on
+        if: github.ref_type == 'tag' && env.HAS_AMO == 'true'
+        shell: pwsh
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: |
+          cd extension
+          npx --yes web-ext@8 sign --channel unlisted --source-dir dist-firefox --artifacts-dir web-ext-artifacts --api-key $env:AMO_API_KEY --api-secret $env:AMO_API_SECRET
+          if ($LASTEXITCODE) { exit 1 }
+          $xpi = Get-ChildItem web-ext-artifacts -Filter *.xpi | Select-Object -First 1
+          $v = (Get-Content dist-firefox/manifest.json | ConvertFrom-Json).version
+          Move-Item $xpi.FullName "store/fluxer-extension-firefox-$v.xpi"
+
       - uses: actions/upload-artifact@v4
         with:
           name: Fluxer-extension-${{ steps.ver.outputs.version }}
-          path: extension/store/*.zip
+          path: |
+            extension/store/*.zip
+            extension/store/*.xpi
 
       - uses: actions/upload-artifact@v4
         with:
@@ -91,6 +110,7 @@ jobs:
           files: |
             artifacts/releases/*
             extension/store/*.zip
+            extension/store/*.xpi
           generate_release_notes: true
           # v0.9.0-beta.1 → pre-release: only installs that turned on "Beta versions" pick it up.
           prerelease: ${{ contains(github.ref_name, '-') }}

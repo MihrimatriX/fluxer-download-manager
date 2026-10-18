@@ -1,4 +1,4 @@
-# Fluxer browser extension (Chromium, MV3)
+# Fluxer browser extension (Chromium and Firefox, MV3)
 
 Captures browser downloads and context-menu actions and hands them to the Fluxer app through the
 native messaging host. Message contracts: `src/protocol.ts` (mirrors `docs/ARCHITECTURE.md` §5.2).
@@ -7,7 +7,8 @@ native messaging host. Message contracts: `src/protocol.ts` (mirrors `docs/ARCHI
 
 ```sh
 npm install
-npm run build   # icons + type-check + Vite → dist/ (loadable unpacked extension)
+npm run build   # icons + type-check + Vite → dist/ (loadable unpacked extension) and dist-firefox/
+npm run store   # store/ zips: Chrome Web Store / Edge Add-ons (no "key") and addons.mozilla.org
 npm test        # Vitest unit tests
 node ../tools/e2e-extension.mjs          # end-to-end in a throw-away Chrome profile (DevTools pipe)
 node ../tools/e2e-extension.mjs --send   # also sends to the app: dev instance + a dev host registration only
@@ -18,11 +19,23 @@ node ../tools/e2e-extension.mjs --send   # also sends to the app: dev instance +
 1. Open `chrome://extensions` (or `edge://extensions`), enable **Developer mode**.
 2. **Load unpacked** → select `extension/dist`.
 
+Firefox (128+): `about:debugging` → **This Firefox** → **Load Temporary Add-on…** → `extension/dist-firefox/manifest.json`.
+
+## Firefox
+
+The code is shared; only the manifest differs (`scripts/manifest.mjs`, unit-tested in `src/manifest.test.ts`):
+no `key`/`minimum_chrome_version`, the background script runs as an event page (`background.scripts`) instead of a
+service worker, and `browser_specific_settings.gecko` carries the add-on ID. The extension uses the `chrome.*`
+namespace, which Firefox MV3 provides with promises. `DownloadItem.finalUrl` does not exist there; capture already
+falls back to `url`.
+
 ## IDs
 
 - Extension ID (fixed by the `key` in `public/manifest.json`): `dckkomckipcaglacbgfmbgmapfckpkja` (also in `extension-id.txt`).
   The host manifest's `allowed_origins` must contain `chrome-extension://dckkomckipcaglacbgfmbgmapfckpkja/`.
   Store builds get different IDs; add them at publish time.
+- Firefox add-on ID: `fluxer@fluxer-download-manager` (`Protocol.AllowedFirefoxIds`). Firefox reads its own host
+  manifest (`com.fluxer.host.firefox.json`, `allowed_extensions`) from `HKCU\Software\Mozilla\NativeMessagingHosts`.
 - Native messaging host name: `com.fluxer.host`.
 
 ## Layout

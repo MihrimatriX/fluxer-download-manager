@@ -21,7 +21,7 @@
   <data name="AvgSpeedIs" xml:space="preserve"><value>avg. {0}</value></data>
   <data name="Browse" xml:space="preserve"><value>Browse…</value></data>
   <data name="BrowserStatus" xml:space="preserve"><value>Browser integration</value></data>
-  <data name="BrowserStatusDesc" xml:space="preserve"><value>Native messaging registration per browser. Opera and Vivaldi use Chrome's.</value></data>
+  <data name="BrowserStatusDesc" xml:space="preserve"><value>Native messaging registration per browser (Chromium browsers and Firefox). Opera and Vivaldi use Chrome's.</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="CatAll" xml:space="preserve"><value>All downloads</value></data>
   <data name="CatArchives" xml:space="preserve"><value>Archives</value></data>
@@ -94,6 +94,8 @@
   <data name="ExtensionFolder" xml:space="preserve"><value>Extension folder (load unpacked)</value></data>
   <data name="ExtensionHowTo" xml:space="preserve"><value>chrome://extensions → Developer mode → Load unpacked → this folder.</value></data>
   <data name="ExtensionId" xml:space="preserve"><value>Extension ID</value></data>
+  <data name="FirefoxExtensionFolder" xml:space="preserve"><value>Firefox extension folder</value></data>
+  <data name="FirefoxExtensionHowTo" xml:space="preserve"><value>about:debugging → This Firefox → Load Temporary Add-on → manifest.json in this folder. Stays until Firefox restarts; the signed .xpi from the release page installs for good.</value></data>
   <data name="Extensions" xml:space="preserve"><value>Extensions</value></data>
   <data name="FileName" xml:space="preserve"><value>File name</value></data>
   <data name="FileNameAuto" xml:space="preserve"><value>Automatic</value></data>

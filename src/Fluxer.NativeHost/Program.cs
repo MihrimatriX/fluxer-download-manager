@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Fluxer.Ipc;
 
-// Chrome native messaging host: one message in on stdin, one reply out on stdout, then exit.
+// Native messaging host (Chromium browsers and Firefox): one message in on stdin, one reply out on stdout, then exit.
 // It only validates and relays to the app's named pipe; it starts the app (tray only) if needed.
 
 var stdin = Console.OpenStandardInput();
@@ -10,10 +10,7 @@ var id = "";
 
 try
 {
-    // Chrome passes the caller origin first: chrome-extension://<id>/
-    var origin = args.FirstOrDefault(a => a.StartsWith("chrome-extension://", StringComparison.Ordinal)) ?? "";
-    var extensionId = origin["chrome-extension://".Length..].TrimEnd('/');
-    if (!Protocol.AllowedExtensionIds.Contains(extensionId))
+    if (Protocol.AllowedCaller(args) is null)
         return await ReplyAsync(Envelope.Error(id, ErrorCodes.InvalidMessage, "unknown extension"));
 
     var body = await Framing.ReadAsync(stdin, Protocol.MaxRequestBytes, CancellationToken.None);
