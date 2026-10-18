@@ -218,6 +218,20 @@ Resume	Resume	Devam
 ResumeAll	Resume all	Tümünü sürdür
 ResumeAllTip	Resume all (Ctrl+Shift+R)	Tümünü sürdür (Ctrl+Shift+R)
 RowAction	Pause / resume / open folder	Duraklat / sürdür / klasörü aç
+RssAdd	Add feed	Besleme ekle
+RssCheckNow	Check now	Şimdi kontrol et
+RssExclude	Skip titles matching (regex)	Şuna uyan başlıkları atla (regex)
+RssFeeds	RSS feeds	RSS beslemeleri
+RssFeedsDesc	New torrents in these feeds are added automatically. Whatever a feed lists when you add it is skipped; only items published later are downloaded.	Bu beslemelere gelen yeni torrentler kendiliğinden eklenir. Besleme eklendiği anda listelenenler atlanır, yalnızca sonradan yayımlananlar indirilir.
+RssInclude	Only titles matching (regex)	Yalnızca şuna uyan başlıklar (regex)
+RssInterval	Check every (minutes)	Kontrol aralığı (dakika)
+RssIntervalDesc	How often each feed is fetched, 5–1440 minutes.	Her beslemenin ne sıklıkla okunacağı, 5–1440 dakika.
+RssInvalidFilter	Invalid filter pattern; nothing is added until it is fixed.	Filtre ifadesi geçersiz; düzeltilene kadar hiçbir şey eklenmez.
+RssLastCheck	Checked {0} · {1} added	Son kontrol {0} · {1} eklendi
+RssNotChecked	Not checked yet	Henüz kontrol edilmedi
+RssRemove	Remove feed	Beslemeyi kaldır
+RssSaveFolder	Save folder (default: torrent folder)	Kayıt klasörü (varsayılan: torrent klasörü)
+RssUrlHint	Feed address (https://…)	Besleme adresi (https://…)
 SaveTo	Save to	Kayıt yeri
 ScheduleStart	Start time	Başlama saati
 ScheduleStartDesc	Resume all paused downloads at this time every day.	Her gün bu saatte duraklatılmış tüm indirmeleri sürdür.

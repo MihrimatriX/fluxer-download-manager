@@ -1,3 +1,5 @@
+using Fluxer.Core.Torrent;
+
 namespace Fluxer.Core.Downloads;
 
 public enum ConflictPolicy { Rename, Overwrite, Ask }
@@ -85,6 +87,8 @@ public sealed class AppSettings
     public bool ScanDownloads { get; set; } = true; // hand finished files to the antivirus (IAttachmentExecute)
     public bool WatchClipboard { get; set; }       // offer copied download links
     public string? WatchFolder { get; set; }       // .torrent files dropped here are added and moved to "added"
+    public List<RssFeed> RssFeeds { get; set; } = [];  // new torrents from these feeds are added automatically
+    public int RssIntervalMinutes { get; set; } = 30;
     public bool MediaDisclaimerAccepted { get; set; }
     public bool ToolsConsentGiven { get; set; }
     public long LastYtDlpCheck { get; set; }

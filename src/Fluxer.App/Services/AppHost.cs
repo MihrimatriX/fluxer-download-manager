@@ -85,6 +85,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
         CrashGuard.InstallUiHandler();
         ApplyWatchers();
+        Engine.Rss.Start();           // stopped by Engine.DisposeAsync on exit
         if (!args.Contains("--background")) ShowMainWindow();
         Mark("window");
         if (CrashGuard.TakeMarker() is { } crash) Dispatcher.UIThread.Post(() => _ = OfferCrashReportAsync(crash), DispatcherPriority.Background);

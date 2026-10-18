@@ -206,6 +206,20 @@
   <data name="Resumable" xml:space="preserve"><value>resumable</value></data>
   <data name="Resume" xml:space="preserve"><value>Resume</value></data>
   <data name="ResumeAll" xml:space="preserve"><value>Resume all</value></data>
+  <data name="RssAdd" xml:space="preserve"><value>Add feed</value></data>
+  <data name="RssCheckNow" xml:space="preserve"><value>Check now</value></data>
+  <data name="RssExclude" xml:space="preserve"><value>Skip titles matching (regex)</value></data>
+  <data name="RssFeeds" xml:space="preserve"><value>RSS feeds</value></data>
+  <data name="RssFeedsDesc" xml:space="preserve"><value>New torrents in these feeds are added automatically. Whatever a feed lists when you add it is skipped; only items published later are downloaded.</value></data>
+  <data name="RssInclude" xml:space="preserve"><value>Only titles matching (regex)</value></data>
+  <data name="RssInterval" xml:space="preserve"><value>Check every (minutes)</value></data>
+  <data name="RssIntervalDesc" xml:space="preserve"><value>How often each feed is fetched, 5–1440 minutes.</value></data>
+  <data name="RssInvalidFilter" xml:space="preserve"><value>Invalid filter pattern; nothing is added until it is fixed.</value></data>
+  <data name="RssLastCheck" xml:space="preserve"><value>Checked {0} · {1} added</value></data>
+  <data name="RssNotChecked" xml:space="preserve"><value>Not checked yet</value></data>
+  <data name="RssRemove" xml:space="preserve"><value>Remove feed</value></data>
+  <data name="RssSaveFolder" xml:space="preserve"><value>Save folder (default: torrent folder)</value></data>
+  <data name="RssUrlHint" xml:space="preserve"><value>Feed address (https://…)</value></data>
   <data name="SaveTo" xml:space="preserve"><value>Save to</value></data>
   <data name="Search" xml:space="preserve"><value>Search downloads</value></data>
   <data name="SecAppearance" xml:space="preserve"><value>Appearance</value></data>

@@ -13,6 +13,7 @@ Fluxer is a download manager for Windows. It splits HTTP downloads across severa
 - A tray window with live speed, a mini graph, running downloads and a box for pasting links.
 - Deleting is undoable for 6 seconds, and files stay on disk unless you pick "Delete with files…" from the context menu.
 - Optional clipboard monitoring for copied file links and magnets, and a watch folder that adds any `.torrent` saved into it.
+- Torrent RSS feeds: new items in RSS or Atom feeds are added on a timer, with per-feed include/exclude filters (regex). Items already in a feed when you add it are skipped.
 - Finished downloads are handed to your antivirus through Windows Attachment Services, the way browsers do.
 - English and Turkish UI.
 

@@ -26,6 +26,8 @@ public sealed class FluxerEngine : IAsyncDisposable
         _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings));
         Tools = new ToolManager(Path.Combine(dataDirectory, "tools"), Http);
         Queue = new DownloadQueue(Db, () => Settings, Create);
+        // Not started here: the CLI has no use for it; the app calls Rss.Start().
+        Rss = new RssPoller(() => Http.Client, () => Settings, Db, (file, magnet, dir) => AddTorrent(file, magnet, saveDirectory: dir));
         _sleep = new SleepBlocker(() => Queue.AnyActive);
     }
 
@@ -34,6 +36,7 @@ public sealed class FluxerEngine : IAsyncDisposable
     public HttpEngine Http { get; }
     public ToolManager Tools { get; }
     public DownloadQueue Queue { get; }
+    public RssPoller Rss { get; }
     public AppSettings Settings { get; private set; }
 
     public async Task SaveSettingsAsync(AppSettings s)
@@ -113,6 +116,7 @@ public sealed class FluxerEngine : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        await Rss.DisposeAsync();     // before the queue stops, so nothing is added mid-shutdown
         await Queue.StopAllAsync();
         if (_torrent.IsValueCreated) await _torrent.Value.DisposeAsync();
         _sleep.Dispose();

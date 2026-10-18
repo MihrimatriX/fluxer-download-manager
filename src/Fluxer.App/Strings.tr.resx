@@ -206,6 +206,20 @@
   <data name="Resumable" xml:space="preserve"><value>devam ettirilebilir</value></data>
   <data name="Resume" xml:space="preserve"><value>Devam</value></data>
   <data name="ResumeAll" xml:space="preserve"><value>Tümünü sürdür</value></data>
+  <data name="RssAdd" xml:space="preserve"><value>Besleme ekle</value></data>
+  <data name="RssCheckNow" xml:space="preserve"><value>Şimdi kontrol et</value></data>
+  <data name="RssExclude" xml:space="preserve"><value>Şuna uyan başlıkları atla (regex)</value></data>
+  <data name="RssFeeds" xml:space="preserve"><value>RSS beslemeleri</value></data>
+  <data name="RssFeedsDesc" xml:space="preserve"><value>Bu beslemelere gelen yeni torrentler kendiliğinden eklenir. Besleme eklendiği anda listelenenler atlanır, yalnızca sonradan yayımlananlar indirilir.</value></data>
+  <data name="RssInclude" xml:space="preserve"><value>Yalnızca şuna uyan başlıklar (regex)</value></data>
+  <data name="RssInterval" xml:space="preserve"><value>Kontrol aralığı (dakika)</value></data>
+  <data name="RssIntervalDesc" xml:space="preserve"><value>Her beslemenin ne sıklıkla okunacağı, 5–1440 dakika.</value></data>
+  <data name="RssInvalidFilter" xml:space="preserve"><value>Filtre ifadesi geçersiz; düzeltilene kadar hiçbir şey eklenmez.</value></data>
+  <data name="RssLastCheck" xml:space="preserve"><value>Son kontrol {0} · {1} eklendi</value></data>
+  <data name="RssNotChecked" xml:space="preserve"><value>Henüz kontrol edilmedi</value></data>
+  <data name="RssRemove" xml:space="preserve"><value>Beslemeyi kaldır</value></data>
+  <data name="RssSaveFolder" xml:space="preserve"><value>Kayıt klasörü (varsayılan: torrent klasörü)</value></data>
+  <data name="RssUrlHint" xml:space="preserve"><value>Besleme adresi (https://…)</value></data>
   <data name="SaveTo" xml:space="preserve"><value>Kayıt yeri</value></data>
   <data name="Search" xml:space="preserve"><value>İndirmelerde ara</value></data>
   <data name="SecAppearance" xml:space="preserve"><value>Görünüm</value></data>
