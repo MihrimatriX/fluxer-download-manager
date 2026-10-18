@@ -325,5 +325,11 @@
   },
   "back": {
     "message": "Geri"
+  },
+  "skewExtensionOld": {
+    "message": "Fluxer bu eklentiden yeni. Yeni özellikler için eklentiyi güncelleyin."
+  },
+  "skewAppOld": {
+    "message": "Bu eklenti Fluxer'dan yeni. Fluxer'ı Ayarlar → Gelişmiş'ten güncelleyin."
   }
 }
