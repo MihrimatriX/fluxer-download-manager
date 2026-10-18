@@ -21,7 +21,7 @@
   <data name="AvgSpeedIs" xml:space="preserve"><value>ort. {0}</value></data>
   <data name="Browse" xml:space="preserve"><value>Gözat…</value></data>
   <data name="BrowserStatus" xml:space="preserve"><value>Tarayıcı entegrasyonu</value></data>
-  <data name="BrowserStatusDesc" xml:space="preserve"><value>Tarayıcı başına native messaging kaydı. Opera ve Vivaldi, Chrome'unkini kullanır.</value></data>
+  <data name="BrowserStatusDesc" xml:space="preserve"><value>Tarayıcı başına native messaging kaydı (Chromium tabanlılar ve Firefox). Opera ve Vivaldi, Chrome'unkini kullanır.</value></data>
   <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
   <data name="CatAll" xml:space="preserve"><value>Tüm indirmeler</value></data>
   <data name="CatArchives" xml:space="preserve"><value>Arşivler</value></data>
@@ -94,6 +94,8 @@
   <data name="ExtensionFolder" xml:space="preserve"><value>Eklenti klasörü (paketlenmemiş yükle)</value></data>
   <data name="ExtensionHowTo" xml:space="preserve"><value>chrome://extensions → Geliştirici modu → Paketlenmemiş öğe yükle → bu klasör.</value></data>
   <data name="ExtensionId" xml:space="preserve"><value>Eklenti kimliği</value></data>
+  <data name="FirefoxExtensionFolder" xml:space="preserve"><value>Firefox eklenti klasörü</value></data>
+  <data name="FirefoxExtensionHowTo" xml:space="preserve"><value>about:debugging → Bu Firefox → Geçici Eklenti Yükle → bu klasördeki manifest.json. Firefox yeniden başlayana kadar kalır; sürüm sayfasındaki imzalı .xpi kalıcı olarak kurulur.</value></data>
   <data name="Extensions" xml:space="preserve"><value>Uzantılar</value></data>
   <data name="FileName" xml:space="preserve"><value>Dosya adı</value></data>
   <data name="FileNameAuto" xml:space="preserve"><value>Otomatik</value></data>

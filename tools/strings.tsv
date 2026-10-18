@@ -19,7 +19,7 @@ AvgSpeedIs	avg. {0}	ort. {0}
 Back	Back	Geri
 Browse	Browse…	Gözat…
 BrowserStatus	Browser integration	Tarayıcı entegrasyonu
-BrowserStatusDesc	Native messaging registration per browser. Opera and Vivaldi use Chrome's.	Tarayıcı başına native messaging kaydı. Opera ve Vivaldi, Chrome'unkini kullanır.
+BrowserStatusDesc	Native messaging registration per browser (Chromium browsers and Firefox). Opera and Vivaldi use Chrome's.	Tarayıcı başına native messaging kaydı (Chromium tabanlılar ve Firefox). Opera ve Vivaldi, Chrome'unkini kullanır.
 Cancel	Cancel	İptal
 CatAll	All downloads	Tüm indirmeler
 CatArchives	Archives	Arşivler
@@ -96,6 +96,8 @@ ExportDiagnostics	Export diagnostics package…	Tanılama paketini dışa aktar�
 ExtensionFolder	Extension folder (load unpacked)	Eklenti klasörü (paketlenmemiş yükle)
 ExtensionHowTo	chrome://extensions → Developer mode → Load unpacked → this folder.	chrome://extensions → Geliştirici modu → Paketlenmemiş öğe yükle → bu klasör.
 ExtensionId	Extension ID	Eklenti kimliği
+FirefoxExtensionFolder	Firefox extension folder	Firefox eklenti klasörü
+FirefoxExtensionHowTo	about:debugging → This Firefox → Load Temporary Add-on → manifest.json in this folder. Stays until Firefox restarts; the signed .xpi from the release page installs for good.	about:debugging → Bu Firefox → Geçici Eklenti Yükle → bu klasördeki manifest.json. Firefox yeniden başlayana kadar kalır; sürüm sayfasındaki imzalı .xpi kalıcı olarak kurulur.
 Extensions	Extensions	Uzantılar
 FileName	File name	Dosya adı
 FileNameAuto	Automatic	Otomatik
