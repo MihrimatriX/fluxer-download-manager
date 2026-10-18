@@ -54,6 +54,7 @@ public static class Loc
         if (string.IsNullOrEmpty(code)) return "";
         if (code.StartsWith("http-", StringComparison.Ordinal)) return string.Format(CultureInfo.CurrentCulture, Strings.ErrHttp, code[5..]);
         if (code.StartsWith("tool-hash-mismatch", StringComparison.Ordinal)) return Strings.ErrToolHash;
+        if (code.StartsWith("tool-stalled", StringComparison.Ordinal)) return Strings.ErrToolStalled;
         return code switch
         {
             "disk-full" => Strings.ErrDiskFull,

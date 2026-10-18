@@ -127,11 +127,12 @@ public sealed class MediaTests
         const string h2 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
         var sums = $"{h1}  yt-dlp_x86.exe\n{h2}  yt-dlp.exe\n";
         Assert.Equal(h2, ToolManager.ParseHash(sums, "yt-dlp.exe"));
-        Assert.Equal(h1, ToolManager.ParseHash(h1 + "\n", "deno.zip"));
+        Assert.Equal(h1, ToolManager.ParseHash(h1 + "\n", "deno.zip", singleAsset: true));
+        Assert.Null(ToolManager.ParseHash(h1 + "\n", "yt-dlp.exe")); // a list must name the asset
         Assert.Null(ToolManager.ParseHash($"{h1}  other.exe\n{h2}  other2.exe", "yt-dlp.exe"));
         // deno publishes PowerShell Get-FileHash output
         var ps = $"\r\nAlgorithm : SHA256\r\nHash      : {h2.ToUpperInvariant()}\r\nPath      : D:\\a\\deno\\target\\release\\deno.zip\r\n";
-        Assert.Equal(h2.ToUpperInvariant(), ToolManager.ParseHash(ps, "deno-x86_64-pc-windows-msvc.zip"));
+        Assert.Equal(h2.ToUpperInvariant(), ToolManager.ParseHash(ps, "deno-x86_64-pc-windows-msvc.zip", singleAsset: true));
     }
 
     [Fact]

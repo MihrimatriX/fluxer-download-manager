@@ -90,6 +90,7 @@ ErrMediaToolsMissing	Video tools are not installed	Video araçları kurulu deği
 ErrMediaUnsupported	This site is not supported	Bu site desteklenmiyor
 ErrNetwork	Network error	Ağ hatası
 ErrToolHash	The downloaded tool failed verification and was deleted	İndirilen araç doğrulanamadı ve silindi
+ErrToolStalled	The download stopped responding. Check your connection and try again.	İndirme yanıt vermeyi bıraktı. Bağlantınızı kontrol edip yeniden deneyin.
 EtaLeft	{0} left	{0} kaldı
 ExportDiagnostics	Export diagnostics package…	Tanılama paketini dışa aktar…
 ExtensionFolder	Extension folder (load unpacked)	Eklenti klasörü (paketlenmemiş yükle)

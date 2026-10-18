@@ -77,6 +77,8 @@ public sealed class FakeServer : IAsyncDisposable
 
     /// Extra static text responses by path (e.g. checksum files); "<…" is served as text/html.
     public Dictionary<string, string> Texts { get; } = [];
+    /// Extra static binary responses by path (e.g. zip archives).
+    public Dictionary<string, byte[]> Blobs { get; } = [];
 
     private async Task HandleAsync(HttpContext ctx)
     {
@@ -89,6 +91,13 @@ public sealed class FakeServer : IAsyncDisposable
         {
             ctx.Response.ContentType = text.StartsWith('<') ? "text/html" : "text/plain";
             await ctx.Response.WriteAsync(text);
+            return;
+        }
+        if (Blobs.TryGetValue(ctx.Request.Path.Value ?? "", out var blob))
+        {
+            ctx.Response.ContentType = "application/octet-stream";
+            ctx.Response.ContentLength = blob.Length;
+            await ctx.Response.Body.WriteAsync(blob);
             return;
         }
         Interlocked.Increment(ref Requests);
