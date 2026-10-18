@@ -1,5 +1,4 @@
 using Avalonia.Threading;
-using Fluxer.App.Views;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Platform.Windows;
 using Serilog;
@@ -82,7 +81,7 @@ public sealed partial class AppHost
         _clipboardBusy = true;
         try
         {
-            var text = await Dialogs.GetClipboardTextAsync(Owner);
+            var text = await Task.Run(ClipboardSequence.ReadText);
             var known = Engine.Queue.Items.Select(d => d.Record.Http?.Url ?? d.Record.Torrent?.Magnet).OfType<string>().ToHashSet(StringComparer.Ordinal);
             var links = LinkSniffer.DownloadLinks(text, Engine.Settings).Where(l => !known.Contains(l) && _offeredLinks.Add(l)).ToList();
             if (links.Count == 0) return;

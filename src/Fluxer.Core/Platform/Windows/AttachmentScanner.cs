@@ -13,9 +13,21 @@ public static class AttachmentScanner
     private static readonly Guid ClientGuid = new("5b0a7f61-8c43-4d0e-9a52-6f1e2c7d9b30");
     private const int InetESecurityProblem = unchecked((int)0x800C000E);
 
+    /// Blocking (the antivirus scans synchronously); call it off the UI thread. Attachment Services is an
+    /// apartment-threaded COM object, so it runs on its own STA thread like browsers do.
     public static ScanResult Scan(string path, string? sourceUrl, string? referrerUrl)
     {
         if (!OperatingSystem.IsWindows() || !File.Exists(path)) return ScanResult.Unavailable;
+        var result = ScanResult.Unavailable;
+        var thread = new Thread(() => result = ScanOnSta(path, sourceUrl, referrerUrl)) { IsBackground = true, Name = "Fluxer AV scan" };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+        return result;
+    }
+
+    private static ScanResult ScanOnSta(string path, string? sourceUrl, string? referrerUrl)
+    {
         IAttachmentExecute? ae = null;
         try
         {
