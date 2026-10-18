@@ -122,6 +122,7 @@ InfoConnections	Connections	Bağlantılar
 InfoError	Error	Hata
 InfoFinalUrl	Resolved address	Çözümlenen adres
 InfoInfoHash	Info hash	Bilgi özeti
+InfoMirrors	Mirrors	Aynalar
 InfoReferrer	Referrer	Yönlendiren
 InfoResumable	Resumable	Devam ettirilebilir
 InfoSavedTo	Saved to	Kayıt yeri
@@ -170,6 +171,11 @@ SelectAll	Select all	Tümünü seç
 SelectRow	Select	Seç
 MinDimension	Min. size (px)	En küçük boyut (px)
 MinSizeKb	Min. file size (KB)	En küçük dosya (KB)
+MirrorInvalid	Not an http(s) address: {0}	http(s) adresi değil: {0}
+Mirrors	Mirrors (optional)	Aynalar (isteğe bağlı)
+MirrorsDesc	Connections are shared between the link and its mirrors. Only mirrors that serve the same file (same size, resumable) are used.	Bağlantılar asıl adres ile aynalar arasında paylaştırılır. Yalnızca aynı dosyayı sunan (aynı boyutta ve devam ettirilebilir) aynalar kullanılır.
+MirrorsSummary	{0} · {1} in use, {2} dropped	{0} · {1} kullanımda, {2} devre dışı
+MirrorsWatermark	Other addresses of the same file, one per line	Aynı dosyanın diğer adresleri, her satıra bir tane
 MoveBottom	Move to bottom	En sona taşı
 MoveDown	Move down	Aşağı taşı
 MoveDownTip	Start later (Ctrl+Down)	Daha sonra başlat (Ctrl+Aşağı)

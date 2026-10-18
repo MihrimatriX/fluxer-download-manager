@@ -240,6 +240,13 @@ public sealed class TokenBucket
 - Proxy değişince handler yeniden oluşturulur.
 - Okuma: bağlantı başına `ArrayPool` ile kiralanmış 1 MiB tampon dolunca `RandomAccess.WriteAsync`.
 
+### 4.6 Aynalar (mirror)
+
+- `HttpInfo.Mirrors` (`http_downloads.mirrors`, JSON dizi): aynı dosyanın başka adresleri. `Url` asıl link olarak kalır; link yenileme yalnızca onu değiştirir.
+- Her çalıştırmada `PrepareAsync`'ten sonra aynalar arka planda yoklanır (`Range: bytes=0-0`). Kabul: 206 + boyut asıl dosyayla aynı + HTML değil; iki tarafta da Last-Modified varsa eşit olmalı, yoksa ETag (aynalar arasında ETag sık farklı olur, boyut kesin kontroldür). Range yoksa aynalar kullanılmaz.
+- Kaynak segment başına seçilir: en az bağlantısı olan sağlam kaynak (eşitlikte sırayla), yani iş çalma aynalar arasında da dengeler. If-Range her kaynağın kendi doğrulayıcısıyla gönderilir; cookie yalnızca asıl adresle aynı host'a gider.
+- Ayna 3 ardışık hatada ya da 401/403/404/410/416, range'siz 200, farklı boyutta düşer; segmenti geri sarılıp başka kaynağa geçer. Asıl link süresi dolunca (yeniden çözme başarısızsa) diğer kaynaklar varken düşer; kaynak kalmazsa indirme durur (asıl link süresi dolmuşsa `NeedsLinkRefresh`).
+
 ---
 
 ## 5. Mesaj Kontratları

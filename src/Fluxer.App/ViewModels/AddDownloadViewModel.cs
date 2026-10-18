@@ -137,7 +137,8 @@ public sealed record CategoryChip(string Key, string Title, string Glyph)
 public enum StartMode { Now, Queue, Paused, Night }
 
 /// What the add window returns to Flows.
-public sealed record AddResult(IReadOnlyList<AddItem> Items, string Folder, bool FolderIsPerFile, StartMode Mode, int Connections, string? HashAlgorithm, string? Hash);
+public sealed record AddResult(IReadOnlyList<AddItem> Items, string Folder, bool FolderIsPerFile, StartMode Mode, int Connections, string? HashAlgorithm, string? Hash,
+    IReadOnlyList<string> Mirrors);
 
 public sealed partial class AddDownloadViewModel : ObservableObject
 {
@@ -189,6 +190,9 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [ObservableProperty] private double _connections;
     [ObservableProperty] private int _hashIndex;
     [ObservableProperty] private string _hash = "";
+    /// Single link only: other addresses of the same file, one per line.
+    [ObservableProperty] private string _mirrorsText = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(CanSubmit))] private string _mirrorError = "";
     [ObservableProperty] private bool _dontAskAgain;
     [ObservableProperty] private string _badge = "";
     [ObservableProperty] private IBrush _badgeBrush = Brushes.Gray;
@@ -201,7 +205,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     public bool IsMulti => Count > 1;
     public bool IsSingleHttp => Count == 1 && !Items[0].IsMagnet;
     public AddItem? Single => Items.Count == 1 ? Items[0] : null;
-    public bool CanSubmit => Count > 0;
+    public bool CanSubmit => Count > 0 && (!IsSingleHttp || MirrorError.Length == 0);
     public string[] Queues => [Strings.MainQueueNow, string.Format(CultureInfo.CurrentCulture, Strings.NightQueueOption,
         _settings.ScheduleStart ?? Strings.Manual), Strings.AddPaused];
     public string SubmitText => QueueIndex switch
@@ -214,6 +218,13 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     public bool ShowQueueButton => QueueIndex == 0;
 
     partial void OnUrlsTextChanged(string value) { _debounce.Stop(); _debounce.Start(); }
+    partial void OnMirrorsTextChanged(string value)
+    {
+        var bad = MirrorLines().FirstOrDefault(l => !HttpInfo.IsMirrorUrl(l));
+        MirrorError = bad is null ? "" : string.Format(CultureInfo.CurrentCulture, Strings.MirrorInvalid, bad);
+    }
+
+    private string[] MirrorLines() => (MirrorsText ?? "").Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     partial void OnQueueIndexChanged(int value)
     {
         OnPropertyChanged(nameof(ShowQueueButton));
@@ -305,6 +316,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     private void UpdateSummary()
     {
         OnPropertyChanged(nameof(IsSingleHttp));
+        OnPropertyChanged(nameof(CanSubmit));
         OnPropertyChanged(nameof(SubmitText));
         var torrent = Items.Count == 1 && (Items[0].IsMagnet || Items[0].Kind == ProbeKind.Torrent);
         (Badge, BadgeBrush, BadgeBackground) = Items.Count switch
@@ -368,7 +380,8 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         QueueIndex switch { 1 => StartMode.Night, 2 => StartMode.Paused, _ => startNow ? StartMode.Now : StartMode.Queue },
         (int)Connections,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? HashAlgorithms[HashIndex] : null,
-        HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? Hash.Trim() : null);
+        HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? Hash.Trim() : null,
+        IsSingleHttp ? MirrorLines() : []);
 }
 
 /// Two-way "ModeIndex == n" for radio buttons.

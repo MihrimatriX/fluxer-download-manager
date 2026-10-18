@@ -109,6 +109,15 @@
           <TextBox Grid.Column="1" Text="{Binding Hash}" PlaceholderText="{x:Static app:Strings.ChecksumWatermark}" Margin="8,0,0,0" />
         </Grid>
       </Expander>
+      <Expander Header="{x:Static app:Strings.Mirrors}" HorizontalAlignment="Stretch" Padding="0,8,0,0">
+        <StackPanel Spacing="6">
+          <TextBox Text="{Binding MirrorsText}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="64" MaxHeight="120"
+                   PlaceholderText="{x:Static app:Strings.MirrorsWatermark}" AutomationProperties.Name="{x:Static app:Strings.Mirrors}" />
+          <TextBlock Text="{Binding MirrorError}" Foreground="{DynamicResource ErrBrush}" FontSize="12" TextWrapping="Wrap"
+                     IsVisible="{Binding MirrorError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Text="{x:Static app:Strings.MirrorsDesc}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+      </Expander>
     </StackPanel>
 
     <!-- several links -->

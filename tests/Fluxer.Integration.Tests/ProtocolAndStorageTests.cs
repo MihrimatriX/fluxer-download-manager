@@ -45,6 +45,33 @@ public sealed class ProtocolAndStorageTests : IDisposable
     }
 
     [Fact]
+    public void Http_mirrors_survive_a_restart_and_an_update()
+    {
+        var path = Path.Combine(_dir, "fluxer.db");
+        long withId, withoutId;
+        using (var db = new Database(path))
+        {
+            var with = new DownloadRecord
+            {
+                Kind = DownloadKind.Http, FileName = "f.iso", SaveDirectory = _dir,
+                Http = new HttpInfo { Url = "https://a.example.com/f.iso", Mirrors = ["https://b.example.com/f.iso", "http://c.example.com/f.iso"] },
+            };
+            var without = new DownloadRecord { Kind = DownloadKind.Http, FileName = "g.iso", SaveDirectory = _dir, Http = new HttpInfo { Url = "https://a.example.com/g.iso" } };
+            db.Insert(with);
+            db.Insert(without);
+            (withId, withoutId) = (with.Id, without.Id);
+            with.Http.Mirrors.RemoveAt(1);
+            db.Update(with);
+        }
+        using (var db = new Database(path))
+        {
+            var all = db.LoadAll();
+            Assert.Equal(["https://b.example.com/f.iso"], all.Single(x => x.Id == withId).Http!.Mirrors);
+            Assert.Empty(all.Single(x => x.Id == withoutId).Http!.Mirrors);
+        }
+    }
+
+    [Fact]
     public void Ytdlp_gets_the_referrer_only_when_there_is_one()
     {
         using var http = new HttpEngine();

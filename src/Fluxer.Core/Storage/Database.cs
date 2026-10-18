@@ -51,6 +51,8 @@ public sealed class Database : IDisposable
         """,
         // 3: page a captured stream was playing on (sent to yt-dlp as Referer)
         "ALTER TABLE media_downloads ADD COLUMN referrer TEXT;",
+        // 4: mirror addresses of an HTTP download (JSON array)
+        "ALTER TABLE http_downloads ADD COLUMN mirrors TEXT;",
     ];
 
     public Database(string path)
@@ -151,6 +153,7 @@ public sealed class Database : IDisposable
                             HashAlgorithm = Str(rd, "hash_algo"),
                             HashExpected = Str(rd, "hash_expected"),
                             RejectHtml = rd.GetInt64(rd.GetOrdinal("reject_html")) != 0,
+                            Mirrors = Str(rd, "mirrors") is { } mi ? JsonSerializer.Deserialize<List<string>>(mi) ?? [] : [],
                         };
 
             using (var rd = Reader("SELECT * FROM torrent_downloads"))
@@ -251,17 +254,18 @@ public sealed class Database : IDisposable
         if (r.Http is { } h)
             Exec("""
                 INSERT INTO http_downloads (download_id, url, final_url, max_connections, resumable, etag, last_modified,
-                  referrer, user_agent, cookies, hash_algo, hash_expected, reject_html)
-                VALUES ($id, $url, $final, $conns, $res, $etag, $lm, $ref, $ua, $cookies, $ha, $he, $rh)
+                  referrer, user_agent, cookies, hash_algo, hash_expected, reject_html, mirrors)
+                VALUES ($id, $url, $final, $conns, $res, $etag, $lm, $ref, $ua, $cookies, $ha, $he, $rh, $mir)
                 ON CONFLICT(download_id) DO UPDATE SET url=excluded.url, final_url=excluded.final_url,
                   max_connections=excluded.max_connections, resumable=excluded.resumable, etag=excluded.etag,
                   last_modified=excluded.last_modified, referrer=excluded.referrer, user_agent=excluded.user_agent,
                   cookies=excluded.cookies, hash_algo=excluded.hash_algo, hash_expected=excluded.hash_expected,
-                  reject_html=excluded.reject_html
+                  reject_html=excluded.reject_html, mirrors=excluded.mirrors
                 """, tx, ("$id", r.Id), ("$url", h.Url), ("$final", h.FinalUrl), ("$conns", h.MaxConnections),
                 ("$res", h.Resumable ? 1 : 0), ("$etag", h.ETag), ("$lm", h.LastModified?.ToString("O", CultureInfo.InvariantCulture)),
                 ("$ref", h.Referrer), ("$ua", h.UserAgent), ("$cookies", Dpapi.Protect(h.Cookies)),
-                ("$ha", h.HashAlgorithm), ("$he", h.HashExpected), ("$rh", h.RejectHtml ? 1 : 0));
+                ("$ha", h.HashAlgorithm), ("$he", h.HashExpected), ("$rh", h.RejectHtml ? 1 : 0),
+                ("$mir", h.Mirrors.Count == 0 ? null : JsonSerializer.Serialize(h.Mirrors)));
 
         if (r.Torrent is { } t)
             Exec("""

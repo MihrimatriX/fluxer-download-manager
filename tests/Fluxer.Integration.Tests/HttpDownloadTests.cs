@@ -21,12 +21,12 @@ public sealed class Harness : IDisposable
         Settings.DownloadDirectory = Dir;
     }
 
-    public HttpDownload Create(string url, int connections = 4, DownloadRecord? existing = null)
+    public HttpDownload Create(string url, int connections = 4, DownloadRecord? existing = null, IEnumerable<string>? mirrors = null)
     {
         var rec = existing;
         if (rec is null)
         {
-            rec = new DownloadRecord { Kind = DownloadKind.Http, SaveDirectory = Dir, Http = new HttpInfo { Url = url, MaxConnections = connections } };
+            rec = new DownloadRecord { Kind = DownloadKind.Http, SaveDirectory = Dir, Http = new HttpInfo { Url = url, MaxConnections = connections, Mirrors = [.. mirrors ?? []] } };
             Db.Insert(rec);
         }
         return new HttpDownload(rec, Engine, Db, () => Settings)

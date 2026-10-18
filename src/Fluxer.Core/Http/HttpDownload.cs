@@ -14,11 +14,13 @@ namespace Fluxer.Core.Http;
 /// Multi-connection ranged HTTP download written straight into a sparse ".part" file.
 /// Workers pull work from SegmentPlanner: when one finishes, it splits the largest remaining
 /// segment, so fast connections keep stealing from slow ones until the file is done.
+/// Mirrors join the same pool: each new segment goes to the least busy healthy source.
 public sealed class HttpDownload : IDownload
 {
     private const int BufferSize = 1 << 20;   // per connection, rented
     private const int ReadChunk = 64 * 1024;  // granularity of rate limiting
     private const int MaxRetries = 8;
+    private const int MirrorMaxErrors = 3;    // consecutive failures before a mirror is retired
 
     private readonly HttpEngine _engine;
     private readonly Database _db;
@@ -39,9 +41,11 @@ public sealed class HttpDownload : IDownload
     private string? _stopError;
     private string? _lastError;
     private long _lastReresolve;
-    private long _lastBytesAt;      // Stopwatch timestamp of the last received chunk, any connection
     private int _rangeIgnored;      // 200s to ranged requests in this run (one may be a stray proxy/edge)
     private volatile bool _throttled;
+    private List<Source> _sources;  // [0] = primary (Http.Url); replaced, never mutated, per run
+    private Task _mirrorProbes = Task.CompletedTask;
+    private int _nextSource;
 
     public HttpDownload(DownloadRecord record, HttpEngine engine, Database db, Func<AppSettings> settings)
     {
@@ -51,6 +55,7 @@ public sealed class HttpDownload : IDownload
         _settings = settings;
         _bucket.BytesPerSecond = record.SpeedLimit;
         _received = record.DoneBytes;
+        _sources = BuildSources();
     }
 
     public DownloadRecord Record { get; }
@@ -96,6 +101,12 @@ public sealed class HttpDownload : IDownload
         lock (_lock) return [.. _segments.Where(s => s.Active && !s.IsDone).Select(s => s.Index)];
     }
 
+    /// Primary link and mirrors with their state in the current (or last) run.
+    public IReadOnlyList<SourceRow> GetSources()
+    {
+        lock (_lock) return [.. _sources.Select(s => new SourceRow(s.Url, s.Primary, s.Health))];
+    }
+
     // ================= run =================
 
     public async Task RunAsync(CancellationToken ct)
@@ -106,6 +117,8 @@ public sealed class HttpDownload : IDownload
         _stopError = _lastError = null;
         _rangeIgnored = 0;
         _speed.Reset();
+        lock (_lock) { _sources = BuildSources(); _nextSource = 0; }
+        _mirrorProbes = Task.CompletedTask;
         SetState(DownloadState.Starting, null);
 
         Task? checkpoints = null;
@@ -113,6 +126,7 @@ public sealed class HttpDownload : IDownload
         {
             var first = await PrepareAsync(stop.Token);
             _connectionLimit = Http.Resumable ? Math.Clamp(Http.MaxConnections, 1, 32) : 1;
+            _mirrorProbes = ProbeMirrorsAsync(stop.Token);
             SetState(DownloadState.Downloading, null);
 
             // Slow start: open connections one by one and stop at the first push-back, instead of a
@@ -139,6 +153,7 @@ public sealed class HttpDownload : IDownload
         {
             await stop.CancelAsync();
             if (checkpoints is not null) await checkpoints;
+            await _mirrorProbes;
         }
 
         await FinishAsync(ct.IsCancellationRequested);
@@ -290,12 +305,15 @@ public sealed class HttpDownload : IDownload
 
     /// Worker accounting (_activeWorkers) changes only under _lock, together with the segment
     /// hand-off it belongs to, so a released segment always has a live worker to pick it up.
+    /// The source is picked per segment, so finished pieces rebalance work across mirrors.
     private async Task WorkerAsync(HttpResponseMessage? response, Segment? seg, CancellationToken ct)
     {
         lock (_lock) _activeWorkers++;
         var retired = false;
         var failures = 0;
         var linkFailures = 0;
+        Source? src = null;
+        if (response is not null) lock (_lock) { src = _sources[0]; src.Active++; } // the probe's response
         try
         {
             await Task.Yield();
@@ -303,12 +321,14 @@ public sealed class HttpDownload : IDownload
             retired = seg is null;
             while (seg is not null)
             {
+                if (src?.Health == SourceHealth.Retired) Detach(ref src);
+                src ??= await AttachSourceAsync(ct);
                 long writtenBefore;
                 lock (_lock) writtenBefore = seg.Written;
                 try
                 {
-                    response ??= await RequestAsync(seg, ct);
-                    await PumpAsync(response, seg, ct);
+                    response ??= await RequestAsync(seg, src, ct);
+                    await PumpAsync(response, seg, src, ct);
                     failures = linkFailures = 0;
                 }
                 catch (ThrottledException e)
@@ -318,12 +338,29 @@ public sealed class HttpDownload : IDownload
                     if (TryRetireForThrottle(seg)) { retired = true; return; }
                     await BackoffAsync(++failures, e.RetryAfter, ct);
                 }
+                catch (SourceFailedException e)
+                {
+                    Rewind(seg);
+                    failures = 0;
+                    RetireSource(ref src, e.Message);
+                }
                 catch (LinkExpiredException)
                 {
                     Rewind(seg);
-                    if (++linkFailures > 3 || !await ReresolveAsync(ct))
-                        throw new StopException(DownloadState.NeedsLinkRefresh, "link-expired");
-                    await BackoffAsync(linkFailures, null, ct);
+                    if (src.Health == SourceHealth.Retired) Detach(ref src); // another connection already dropped it
+                    else if (++linkFailures > 3 || !await ReresolveAsync(ct))
+                    {
+                        // Primary link expired: mirrors carry on; with none left, ask for a new link.
+                        if (!HasOtherSources(src)) throw new StopException(DownloadState.NeedsLinkRefresh, "link-expired");
+                        linkFailures = 0;
+                        RetireSource(ref src, "link-expired");
+                    }
+                    else await BackoffAsync(linkFailures, null, ct);
+                }
+                catch (StopException e) when (src.Primary && e.State == DownloadState.Failed && e.Message.StartsWith("http-", StringComparison.Ordinal) && HasOtherSources(src))
+                {
+                    Rewind(seg);
+                    RetireSource(ref src, e.Message);
                 }
                 catch (Exception e) when (e is HttpRequestException or IOException && !DiskErrors.IsDiskFull(e))
                 {
@@ -335,8 +372,18 @@ public sealed class HttpDownload : IDownload
                     lock (_lock) progressed = seg.Written > writtenBefore;
                     if (progressed) { failures = linkFailures = 0; continue; }
                     Log.Information(e, "Download {Id} segment {Seg} retry {N}", Record.Id, seg.Index, failures + 1);
-                    if (++failures > MaxRetries) return; // finally retires and releases seg
-                    await BackoffAsync(failures, null, ct);
+                    if (!src.Primary && Interlocked.Increment(ref src.Errors) >= MirrorMaxErrors)
+                    {
+                        failures = 0;
+                        RetireSource(ref src, "network");
+                    }
+                    else if (++failures > MaxRetries)
+                    {
+                        if (!HasOtherSources(src)) return; // finally retires and releases seg
+                        failures = 0;
+                        RetireSource(ref src, "network");
+                    }
+                    else await BackoffAsync(failures, null, ct);
                 }
                 finally
                 {
@@ -346,6 +393,7 @@ public sealed class HttpDownload : IDownload
 
                 if (seg.IsDone)
                 {
+                    Detach(ref src);
                     seg = TakeWorkOrRetire(seg);
                     retired = seg is null;
                 }
@@ -362,6 +410,7 @@ public sealed class HttpDownload : IDownload
         finally
         {
             response?.Dispose();
+            Detach(ref src);
             if (!retired)
                 lock (_lock)
                 {
@@ -409,14 +458,18 @@ public sealed class HttpDownload : IDownload
         }
     }
 
-    private async Task<HttpResponseMessage> RequestAsync(Segment seg, CancellationToken ct)
+    private async Task<HttpResponseMessage> RequestAsync(Segment seg, Source src, CancellationToken ct)
     {
-        var req = HttpEngine.NewRequest(HttpMethod.Get, Http.FinalUrl ?? Http.Url, Http.Context);
+        var req = src.Primary
+            ? HttpEngine.NewRequest(HttpMethod.Get, Http.FinalUrl ?? Http.Url, Http.Context)
+            : HttpEngine.NewRequest(HttpMethod.Get, src.FinalUrl ?? src.Url, MirrorContext(src));
         if (Http.Resumable)
         {
             req.Headers.Range = new RangeHeaderValue(seg.Position, seg.End == long.MaxValue ? null : seg.End - 1);
-            if (Http.ETag is { } etag) req.Headers.IfRange = new RangeConditionHeaderValue(etag);
-            else if (Http.LastModified is { } lm) req.Headers.IfRange = new RangeConditionHeaderValue(lm);
+            // Validators are per server: a mirror is asked with its own.
+            var (etag, lm) = src.Primary ? (Http.ETag, Http.LastModified) : (src.ETag, src.LastModified);
+            if (etag is not null) req.Headers.IfRange = new RangeConditionHeaderValue(etag);
+            else if (lm is { } date) req.Headers.IfRange = new RangeConditionHeaderValue(date);
         }
 
         HttpResponseMessage resp;
@@ -424,7 +477,7 @@ public sealed class HttpDownload : IDownload
         {
             resp = await SendWithTimeoutAsync(req, ct);
         }
-        catch (HttpRequestException e) when (e.HttpRequestError == HttpRequestError.ConnectionError && Volatile.Read(ref _activeWorkers) > 1)
+        catch (HttpRequestException e) when (e.HttpRequestError == HttpRequestError.ConnectionError && Volatile.Read(ref src.Active) > 1)
         {
             throw new ThrottledException(null);   // refused: treat like 503
         }
@@ -435,13 +488,23 @@ public sealed class HttpDownload : IDownload
             var range = resp.Content.Headers.ContentRange;
             if (range?.From == seg.Position && (range.Length is null || range.Length == Record.TotalBytes)) return resp;
             resp.Dispose();
-            if (range?.Length is { } len && len != Record.TotalBytes) throw new StopException(DownloadState.Failed, "file-changed");
+            if (range?.Length is { } len && len != Record.TotalBytes)
+                throw src.Primary ? new StopException(DownloadState.Failed, "file-changed") : new SourceFailedException("size-changed");
             throw new IOException("unexpected Content-Range");
         }
         if (code == 200 && !Http.Resumable) return resp;
 
         var retryAfter = resp.Headers.RetryAfter?.Delta;
         resp.Dispose();
+        // A mirror that refuses, lost the file or ignores ranges is dropped; the other sources go on.
+        if (!src.Primary)
+            throw code switch
+            {
+                403 when OthersStreaming(src) => new ThrottledException(null),
+                429 or 503 => new ThrottledException(retryAfter),
+                >= 500 => new HttpRequestException($"http-{code}"),
+                _ => new SourceFailedException($"http-{code}"),
+            };
         throw code switch
         {
             // If-Range failed → full body. A single stray 200 can also be an edge/proxy that drops Range, so retry once.
@@ -449,7 +512,7 @@ public sealed class HttpDownload : IDownload
             200 or 416 => new StopException(DownloadState.Failed, "file-changed"),
             // Some servers answer "too many connections" with 403: if another connection is streaming
             // from the same URL right now, the link is fine.
-            403 when OthersStreaming() => new ThrottledException(null),
+            403 when OthersStreaming(src) => new ThrottledException(null),
             401 or 403 or 410 => new LinkExpiredException(),
             400 or 404 when LooksSigned(req.RequestUri) && Record.DoneBytes > 0 => new LinkExpiredException(),
             429 or 503 => new ThrottledException(retryAfter),
@@ -458,9 +521,10 @@ public sealed class HttpDownload : IDownload
         };
     }
 
-    private bool OthersStreaming() =>
-        Volatile.Read(ref _activeWorkers) > 1
-        && Interlocked.Read(ref _lastBytesAt) is var t and not 0
+    /// Another connection to the same source is receiving data right now.
+    private static bool OthersStreaming(Source src) =>
+        Volatile.Read(ref src.Active) > 1
+        && Interlocked.Read(ref src.LastBytesAt) is var t and not 0
         && Stopwatch.GetElapsedTime(t) < TimeSpan.FromSeconds(2);
 
     /// Pre-signed CDN/S3 links answer 400/404 instead of 403 once their signature expires.
@@ -487,7 +551,7 @@ public sealed class HttpDownload : IDownload
         }
     }
 
-    private async Task PumpAsync(HttpResponseMessage resp, Segment seg, CancellationToken ct)
+    private async Task PumpAsync(HttpResponseMessage resp, Segment seg, Source src, CancellationToken ct)
     {
         using var stall = CancellationTokenSource.CreateLinkedTokenSource(ct);
         await using var stream = await resp.Content.ReadAsStreamAsync(ct);
@@ -527,7 +591,11 @@ public sealed class HttpDownload : IDownload
                 }
                 fill += n;
                 Interlocked.Add(ref _received, n);
-                if (n > 0) Interlocked.Exchange(ref _lastBytesAt, Stopwatch.GetTimestamp());
+                if (n > 0)
+                {
+                    Interlocked.Exchange(ref src.LastBytesAt, Stopwatch.GetTimestamp());
+                    Volatile.Write(ref src.Errors, 0);
+                }
 
                 if (fill == buffer.Length || end)
                 {
@@ -583,6 +651,169 @@ public sealed class HttpDownload : IDownload
         {
             _reresolveGate.Release();
         }
+    }
+
+    // ================= sources: primary link + mirrors =================
+
+    private List<Source> BuildSources()
+    {
+        var host = Uri.TryCreate(Http.Url, UriKind.Absolute, out var u) ? u.Host : null;
+        return
+        [
+            new(Http.Url, primary: true) { Health = SourceHealth.Healthy },
+            .. Http.Mirrors.Select(m => new Source(m, primary: false)
+            {
+                SameHost = Uri.TryCreate(m, UriKind.Absolute, out var mu) && string.Equals(mu.Host, host, StringComparison.OrdinalIgnoreCase),
+            }),
+        ];
+    }
+
+    /// Cookies belong to the primary's site; other hosts get none.
+    private RequestContext MirrorContext(Source src) => src.SameHost ? Http.Context : Http.Context with { Cookies = null };
+
+    /// Without ranges there is a single connection and nothing to share, so mirrors sit out.
+    private Task ProbeMirrorsAsync(CancellationToken ct)
+    {
+        List<Source> mirrors;
+        lock (_lock) mirrors = [.. _sources.Where(s => !s.Primary)];
+        if (mirrors.Count == 0) return Task.CompletedTask;
+        if (!Http.Resumable || Record.TotalBytes is null)
+        {
+            lock (_lock) foreach (var m in mirrors) m.Health = SourceHealth.Rejected;
+            Log.Information("Download {Id}: no range support, {N} mirror(s) ignored", Record.Id, mirrors.Count);
+            return Task.CompletedTask;
+        }
+        return Task.WhenAll(mirrors.Select(m => ProbeMirrorAsync(m, ct)));
+    }
+
+    /// A mirror joins only if it serves the same file: same size, ranges, not a web page, and no
+    /// validator that contradicts the primary's. Never throws.
+    private async Task ProbeMirrorAsync(Source m, CancellationToken ct)
+    {
+        string? reason;
+        try
+        {
+            var req = HttpEngine.NewRequest(HttpMethod.Get, m.Url, MirrorContext(m));
+            req.Headers.Range = new RangeHeaderValue(0, 0);
+            using var resp = await SendWithTimeoutAsync(req, ct);
+            var range = resp.Content.Headers.ContentRange;
+            var etag = resp.Headers.ETag is { IsWeak: false } e ? e.Tag : null;
+            var lm = resp.Content.Headers.LastModified;
+            reason = resp.StatusCode switch
+            {
+                HttpStatusCode.OK => "no range support",
+                not HttpStatusCode.PartialContent => $"http-{(int)resp.StatusCode}",
+                _ when range is not { From: 0, HasLength: true } => "no range support",
+                _ when range.Length != Record.TotalBytes => $"size {range.Length} instead of {Record.TotalBytes}",
+                _ when FileNameResolver.IsHtml(resp.Content.Headers.ContentType?.MediaType) && !IsHtmlName(Record.FileName) => "web page",
+                _ when !ValidatorsAgree(etag, lm) => "different ETag/Last-Modified",
+                _ => null,
+            };
+            if (reason is null)
+            {
+                m.FinalUrl = resp.RequestMessage?.RequestUri?.ToString();
+                m.ETag = etag;
+                m.LastModified = lm;
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+        catch (Exception e) { reason = "unreachable: " + e.Message; }
+
+        lock (_lock) m.Health = reason is null ? SourceHealth.Healthy : SourceHealth.Rejected;
+        if (reason is null) Log.Information("Download {Id}: mirror {Url} accepted", Record.Id, m.Url);
+        else Log.Warning("Download {Id}: mirror {Url} rejected: {Reason}", Record.Id, m.Url, reason);
+    }
+
+    /// Mirrors are separate servers: the same bytes often carry a different ETag on each, while an
+    /// equal Last-Modified (mirrors sync with mtimes) vouches for them. Size is checked anyway.
+    private bool ValidatorsAgree(string? etag, DateTimeOffset? lm) =>
+        Http.LastModified is { } mine && lm is { } theirs ? mine == theirs : Http.ETag is null || etag is null || etag == Http.ETag;
+
+    /// Least busy healthy source, round-robin among equals. If only unchecked mirrors are left
+    /// (the primary was dropped before they answered), waits for their probes.
+    private async Task<Source> AttachSourceAsync(CancellationToken ct)
+    {
+        while (true)
+        {
+            bool wait;
+            lock (_lock)
+            {
+                Source? best = null;
+                var n = _sources.Count;
+                for (var i = 0; i < n; i++)
+                {
+                    var s = _sources[(_nextSource + i) % n];
+                    if (s.Health == SourceHealth.Healthy && (best is null || s.Active < best.Active)) best = s;
+                }
+                if (best is not null)
+                {
+                    best.Active++;
+                    _nextSource = (_sources.IndexOf(best) + 1) % n;
+                    return best;
+                }
+                wait = !_mirrorProbes.IsCompleted && _sources.Any(s => s.Health == SourceHealth.Unchecked);
+            }
+            if (!wait) throw NoSourcesLeft();
+            await _mirrorProbes.WaitAsync(ct);
+        }
+    }
+
+    private void Detach(ref Source? src)
+    {
+        if (src is null) return;
+        lock (_lock) src.Active--;
+        src = null;
+    }
+
+    private bool HasOtherSources(Source src)
+    {
+        lock (_lock) return _sources.Any(s => s != src && s.Health is SourceHealth.Healthy or SourceHealth.Unchecked);
+    }
+
+    /// Drops a source for the rest of this run; the worker's (rewound) segment moves to another
+    /// one. Throws the download's stop when no source is left.
+    private void RetireSource(ref Source? src, string reason)
+    {
+        var s = src!;
+        Detach(ref src);
+        bool left, first;
+        lock (_lock)
+        {
+            first = s.Health != SourceHealth.Retired;
+            if (first) { s.Health = SourceHealth.Retired; s.RetiredFor = reason; }
+            left = _sources.Any(x => x.Health is SourceHealth.Healthy or SourceHealth.Unchecked);
+        }
+        if (first) Log.Warning("Download {Id}: {Kind} {Url} retired ({Reason})", Record.Id, s.Primary ? "link" : "mirror", s.Url, reason);
+        if (!left) throw NoSourcesLeft();
+    }
+
+    /// All sources gone: an expired primary link still means "refresh the link".
+    private StopException NoSourcesLeft()
+    {
+        string? why;
+        lock (_lock) why = _sources[0].RetiredFor;
+        return why == "link-expired"
+            ? new StopException(DownloadState.NeedsLinkRefresh, "link-expired")
+            : new StopException(DownloadState.Failed, why ?? _lastError ?? "network");
+    }
+
+    private static bool IsHtmlName(string name) =>
+        Path.GetExtension(name).ToLowerInvariant() is ".htm" or ".html" or ".xhtml" or ".mhtml";
+
+    /// Mutable fields are guarded by _lock, except the Interlocked/Volatile counters.
+    private sealed class Source(string url, bool primary)
+    {
+        public string Url { get; } = url;
+        public bool Primary { get; } = primary;
+        public bool SameHost { get; init; }
+        public SourceHealth Health { get; set; }
+        public string? RetiredFor { get; set; }
+        public string? FinalUrl { get; set; }
+        public string? ETag { get; set; }
+        public DateTimeOffset? LastModified { get; set; }
+        public int Active;          // workers attached
+        public int Errors;          // consecutive failed requests
+        public long LastBytesAt;    // Stopwatch timestamp of its last received chunk
     }
 
     private Task BackoffAsync(int attempt, TimeSpan? hint, CancellationToken ct)
@@ -742,9 +973,6 @@ public sealed class HttpDownload : IDownload
         var changed = (Http.ETag is not null && etag != Http.ETag)
                       || (Http.LastModified is not null && lm != Http.LastModified);
         return new LinkCheck(true, sizeMatches, changed, resp.RequestMessage?.RequestUri?.ToString() ?? url, etag, lm) { SupportsRanges = ranges };
-
-        static bool IsHtmlName(string name) =>
-            Path.GetExtension(name).ToLowerInvariant() is ".htm" or ".html" or ".xhtml" or ".mhtml";
     }
 
     /// Caller must have checked SizeMatches. The download must not be running.
@@ -796,11 +1024,18 @@ public sealed class HttpDownload : IDownload
 
     private sealed class LinkExpiredException : Exception;
 
+    /// This mirror is unusable for the rest of the run.
+    private sealed class SourceFailedException(string code) : Exception(code);
+
     private sealed class ThrottledException(TimeSpan? retryAfter) : Exception
     {
         public TimeSpan? RetryAfter { get; } = retryAfter;
     }
 }
+
+public enum SourceHealth { Unchecked, Healthy, Rejected, Retired }
+
+public readonly record struct SourceRow(string Url, bool Primary, SourceHealth Health);
 
 public sealed record LinkCheck(bool Reachable, bool SizeMatches, bool ValidatorChanged, string FinalUrl, string? ETag, DateTimeOffset? LastModified)
 {

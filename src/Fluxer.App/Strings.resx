@@ -119,6 +119,7 @@
   <data name="InfoError" xml:space="preserve"><value>Error</value></data>
   <data name="InfoFinalUrl" xml:space="preserve"><value>Resolved address</value></data>
   <data name="InfoInfoHash" xml:space="preserve"><value>Info hash</value></data>
+  <data name="InfoMirrors" xml:space="preserve"><value>Mirrors</value></data>
   <data name="InfoReferrer" xml:space="preserve"><value>Referrer</value></data>
   <data name="InfoResumable" xml:space="preserve"><value>Resumable</value></data>
   <data name="InfoSavedTo" xml:space="preserve"><value>Saved to</value></data>
@@ -162,6 +163,11 @@
   <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
   <data name="MinDimension" xml:space="preserve"><value>Min. size (px)</value></data>
   <data name="MinSizeKb" xml:space="preserve"><value>Min. file size (KB)</value></data>
+  <data name="MirrorInvalid" xml:space="preserve"><value>Not an http(s) address: {0}</value></data>
+  <data name="Mirrors" xml:space="preserve"><value>Mirrors (optional)</value></data>
+  <data name="MirrorsDesc" xml:space="preserve"><value>Connections are shared between the link and its mirrors. Only mirrors that serve the same file (same size, resumable) are used.</value></data>
+  <data name="MirrorsSummary" xml:space="preserve"><value>{0} · {1} in use, {2} dropped</value></data>
+  <data name="MirrorsWatermark" xml:space="preserve"><value>Other addresses of the same file, one per line</value></data>
   <data name="MoveBottom" xml:space="preserve"><value>Move to bottom</value></data>
   <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
   <data name="MoveDownTip" xml:space="preserve"><value>Start later (Ctrl+Down)</value></data>

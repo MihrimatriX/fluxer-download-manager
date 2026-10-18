@@ -63,7 +63,8 @@ public sealed class FluxerEngine : IAsyncDisposable
     };
 
     public IDownload AddHttp(string url, string? fileName = null, RequestContext? ctx = null, string? saveDirectory = null,
-        bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null, bool night = false)
+        bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null, bool night = false,
+        IEnumerable<string>? mirrors = null)
     {
         var r = new DownloadRecord
         {
@@ -80,6 +81,7 @@ public sealed class FluxerEngine : IAsyncDisposable
                 Cookies = ctx?.Cookies,
                 HashAlgorithm = hashAlgorithm,
                 HashExpected = hashExpected,
+                Mirrors = HttpInfo.CleanMirrors(mirrors, url),
             },
         };
         return Queue.Add(r, start, night);

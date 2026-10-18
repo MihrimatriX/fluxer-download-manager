@@ -119,6 +119,7 @@
   <data name="InfoError" xml:space="preserve"><value>Hata</value></data>
   <data name="InfoFinalUrl" xml:space="preserve"><value>Çözümlenen adres</value></data>
   <data name="InfoInfoHash" xml:space="preserve"><value>Bilgi özeti</value></data>
+  <data name="InfoMirrors" xml:space="preserve"><value>Aynalar</value></data>
   <data name="InfoReferrer" xml:space="preserve"><value>Yönlendiren</value></data>
   <data name="InfoResumable" xml:space="preserve"><value>Devam ettirilebilir</value></data>
   <data name="InfoSavedTo" xml:space="preserve"><value>Kayıt yeri</value></data>
@@ -162,6 +163,11 @@
   <data name="SelectRow" xml:space="preserve"><value>Seç</value></data>
   <data name="MinDimension" xml:space="preserve"><value>En küçük boyut (px)</value></data>
   <data name="MinSizeKb" xml:space="preserve"><value>En küçük dosya (KB)</value></data>
+  <data name="MirrorInvalid" xml:space="preserve"><value>http(s) adresi değil: {0}</value></data>
+  <data name="Mirrors" xml:space="preserve"><value>Aynalar (isteğe bağlı)</value></data>
+  <data name="MirrorsDesc" xml:space="preserve"><value>Bağlantılar asıl adres ile aynalar arasında paylaştırılır. Yalnızca aynı dosyayı sunan (aynı boyutta ve devam ettirilebilir) aynalar kullanılır.</value></data>
+  <data name="MirrorsSummary" xml:space="preserve"><value>{0} · {1} kullanımda, {2} devre dışı</value></data>
+  <data name="MirrorsWatermark" xml:space="preserve"><value>Aynı dosyanın diğer adresleri, her satıra bir tane</value></data>
   <data name="MoveBottom" xml:space="preserve"><value>En sona taşı</value></data>
   <data name="MoveDown" xml:space="preserve"><value>Aşağı taşı</value></data>
   <data name="MoveDownTip" xml:space="preserve"><value>Daha sonra başlat (Ctrl+Aşağı)</value></data>
