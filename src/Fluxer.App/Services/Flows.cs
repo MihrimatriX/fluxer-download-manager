@@ -209,11 +209,11 @@ public static class Flows
 
         try
         {
-            await Dialogs.BusyAsync(host.Owner, Strings.ToolsTitle, Strings.ToolsDownloading, async progress =>
+            await Dialogs.BusyAsync(host.Owner, Strings.ToolsTitle, Strings.ToolsDownloading, async (progress, ct) =>
             {
                 void OnProgress(string tool, double f) => progress.Report($"{tool}: {f * 100:F0}%");
                 engine.Tools.Progress += OnProgress;
-                try { await engine.Tools.InstallAsync(CancellationToken.None); }
+                try { await engine.Tools.InstallAsync(ct); }
                 finally { engine.Tools.Progress -= OnProgress; }
                 return true;
             });
@@ -221,10 +221,19 @@ public static class Flows
             await engine.SaveSettingsAsync(s);
             return true;
         }
+        catch (OperationCanceledException)
+        {
+            // The user cancelled; tools finished before that stay installed, the rest was cleaned up.
+        }
         catch (ToolVerificationException e)
         {
             Log.Error("Tool hash mismatch: {Tool}", e.Tool);
             await Dialogs.MessageAsync(host.Owner, Strings.ToolsTitle, Strings.ErrToolHash);
+        }
+        catch (ToolStalledException e)
+        {
+            Log.Warning("Tool download stalled: {Tool}", e.Tool);
+            await Dialogs.MessageAsync(host.Owner, Strings.ToolsTitle, Strings.ErrToolStalled);
         }
         catch (Exception e)
         {

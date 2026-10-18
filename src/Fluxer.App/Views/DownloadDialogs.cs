@@ -110,16 +110,32 @@ public static partial class Dialogs
     }
 
     /// Indeterminate "working…" window that closes when the task ends.
-    public static async Task<T> BusyAsync<T>(Window? owner, string title, string text, Func<IProgress<string>, Task<T>> work)
+    public static Task<T> BusyAsync<T>(Window? owner, string title, string text, Func<IProgress<string>, Task<T>> work) =>
+        BusyAsync(owner, title, text, (progress, _) => work(progress), cancellable: false);
+
+    /// Same window with a Cancel button; closing it also cancels. It stays open until the work has
+    /// actually stopped, so the caller sees the OperationCanceledException before anything else runs.
+    public static Task<T> BusyAsync<T>(Window? owner, string title, string text, Func<IProgress<string>, CancellationToken, Task<T>> work) =>
+        BusyAsync(owner, title, text, work, cancellable: true);
+
+    private static async Task<T> BusyAsync<T>(Window? owner, string title, string text, Func<IProgress<string>, CancellationToken, Task<T>> work, bool cancellable)
     {
+        using var cts = new CancellationTokenSource();
         var label = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap };
         var body = new StackPanel { Spacing = 12, Children = { label, new ProgressBar { IsIndeterminate = true } } };
-        var w = Shell(title, body, 440);
+        var w = cancellable
+            ? Shell(title, body, 440, new Button(Strings.Cancel, false, () => { cts.Cancel(); return false; }))
+            : Shell(title, body, 440);
         var finished = false;
-        w.Closing += (_, e) => e.Cancel = !finished;
+        w.Closing += (_, e) =>
+        {
+            if (finished) return;
+            e.Cancel = true;
+            if (cancellable) cts.Cancel();
+        };
         var shown = ShowAsync(w, owner);
         var progress = new Progress<string>(t => label.Text = t);
-        try { return await work(progress); }
+        try { return await work(progress, cts.Token); }
         finally { finished = true; w.Close(); await shown; }
     }
 }

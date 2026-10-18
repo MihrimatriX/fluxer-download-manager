@@ -372,11 +372,11 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (!Engine.Tools.IsInstalled || DateTimeOffset.UtcNow.ToUnixTimeSeconds() - s.LastYtDlpCheck < 7 * 86400) return;
         try
         {
-            await Engine.Tools.UpdateYtDlpAsync(CancellationToken.None);
+            await Engine.Tools.UpdateAllAsync(CancellationToken.None);
             s.LastYtDlpCheck = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             await Engine.SaveSettingsAsync(s);
         }
-        catch (Exception e) { Log.Warning(e, "Weekly yt-dlp check failed"); }
+        catch (Exception e) { Log.Warning(e, "Weekly tool update check failed"); }
     }
 
     private static readonly TimeSpan UpdateInterval = TimeSpan.FromHours(6);

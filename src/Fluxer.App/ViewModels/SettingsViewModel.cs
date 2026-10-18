@@ -437,11 +437,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         ToolsBusy = true;
         try
         {
-            var updated = await _host.Engine.Tools.UpdateYtDlpAsync(CancellationToken.None);
+            var updated = await _host.Engine.Tools.UpdateAllAsync(CancellationToken.None);
             await RefreshToolsAsync();
-            if (!updated) ToolsText += " · " + Strings.UpToDate;
+            if (updated.Count == 0) ToolsText += " · " + Strings.UpToDate;
         }
-        catch (Exception e) { ToolsText = e.Message; }
+        catch (Exception e) { ToolsText = Loc.Error(e.Message); }
         finally { ToolsBusy = false; }
     }
 

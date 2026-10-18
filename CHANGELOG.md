@@ -11,6 +11,12 @@
 
 ### Düzeltildi
 - Proxy ayarı yt-dlp'ye de uygulanıyor; önceden video trafiği proxy'yi atlıyordu. Ayar açıklaması torrent eşlerinin proxy'den geçmediğini söylüyor.
+- **Video araçları kurulumu:** pencerede İptal düğmesi var; 30 saniye veri gelmeyen indirme "yanıt vermiyor" uyarısıyla durur (önceden pencere sonsuza kadar açık kalabiliyordu).
+- Zip'ten çıkarılan araçlar önce geçici dosyaya yazılıp sonra yerine taşınıyor; yarım kalan `ffmpeg.exe` artık "kurulu" sayılmıyor ve `ffprobe.exe` de kontrol ediliyor.
+- yt-dlp'nin `SHA2-256SUMS` dosyası, yt-dlp'nin GPG imzasıyla koda gömülü anahtara karşı doğrulanıyor (BouncyCastle).
+- Araç güncellemeleri GitHub API yerine yayınlanan hash'i `tools.json` kaydıyla karşılaştırıyor; deno ve ffmpeg de güncelleniyor (ffmpeg en fazla 30 günde bir). Aynı anda gelen kontroller tek kontrolde birleşiyor, başarısız video indirmeleri en fazla saatte bir kontrol başlatıyor.
+- Hash dosyası ile araç farklı sürümlerden gelirse indirme bir kez yeniden deneniyor; çalışan yt-dlp/ffmpeg güncellenirken eski exe kenara alınıyor.
+- yt-dlp'ye deno'nun yolu `--js-runtimes` ile açıkça veriliyor.
 
 ### Tarayıcı eklentisi
 - `clipboardRead` artık isteğe bağlı izin; yalnızca "Bağlantı yapıştır"a basınca istenir.

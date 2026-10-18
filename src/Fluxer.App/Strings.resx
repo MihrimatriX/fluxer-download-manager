@@ -89,6 +89,7 @@
   <data name="ErrMediaUnsupported" xml:space="preserve"><value>This site is not supported</value></data>
   <data name="ErrNetwork" xml:space="preserve"><value>Network error</value></data>
   <data name="ErrToolHash" xml:space="preserve"><value>The downloaded tool failed verification and was deleted</value></data>
+  <data name="ErrToolStalled" xml:space="preserve"><value>The download stopped responding. Check your connection and try again.</value></data>
   <data name="EtaLeft" xml:space="preserve"><value>{0} left</value></data>
   <data name="ExportDiagnostics" xml:space="preserve"><value>Export diagnostics package…</value></data>
   <data name="ExtensionFolder" xml:space="preserve"><value>Extension folder (load unpacked)</value></data>

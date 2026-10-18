@@ -132,7 +132,7 @@ public sealed class MediaDownload : IDownload
             // An outdated yt-dlp is the most common cause; check for an update in the background.
             _ = Task.Run(async () =>
             {
-                try { await _tools.UpdateYtDlpAsync(CancellationToken.None); }
+                try { await _tools.UpdateYtDlpAsync(CancellationToken.None, notWithin: TimeSpan.FromHours(1)); }
                 catch (Exception ue) { Log.Warning(ue, "yt-dlp update check failed"); }
             });
         }

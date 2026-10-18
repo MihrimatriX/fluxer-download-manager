@@ -71,7 +71,8 @@ public static class YtDlp
             WorkingDirectory = tools.Directory,
         };
         psi.Environment["PYTHONIOENCODING"] = "utf-8";
-        foreach (var a in new[] { "--ignore-config", "--no-colors", "--encoding", "utf-8", "--ffmpeg-location", tools.Directory })
+        // deno's path is given explicitly rather than relying on yt-dlp's PATH/working-directory lookup.
+        foreach (var a in new[] { "--ignore-config", "--no-colors", "--encoding", "utf-8", "--ffmpeg-location", tools.Directory, "--js-runtimes", "deno:" + tools.DenoPath })
             psi.ArgumentList.Add(a);
         if (cookieFile is not null) { psi.ArgumentList.Add("--cookies"); psi.ArgumentList.Add(cookieFile); }
         // Stream URLs captured in the browser usually only answer with the page they play on as Referer.

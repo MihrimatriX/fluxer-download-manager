@@ -89,6 +89,7 @@
   <data name="ErrMediaUnsupported" xml:space="preserve"><value>Bu site desteklenmiyor</value></data>
   <data name="ErrNetwork" xml:space="preserve"><value>Ağ hatası</value></data>
   <data name="ErrToolHash" xml:space="preserve"><value>İndirilen araç doğrulanamadı ve silindi</value></data>
+  <data name="ErrToolStalled" xml:space="preserve"><value>İndirme yanıt vermeyi bıraktı. Bağlantınızı kontrol edip yeniden deneyin.</value></data>
   <data name="EtaLeft" xml:space="preserve"><value>{0} kaldı</value></data>
   <data name="ExportDiagnostics" xml:space="preserve"><value>Tanılama paketini dışa aktar…</value></data>
   <data name="ExtensionFolder" xml:space="preserve"><value>Eklenti klasörü (paketlenmemiş yükle)</value></data>
