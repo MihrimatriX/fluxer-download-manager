@@ -53,7 +53,7 @@ export type DownloadBatch = Envelope<'download.batch', BrowserContext & {
 }>;
 
 export type CommandAction = 'pause' | 'resume' | 'remove' | 'open' | 'folder' | 'details' | 'pauseAll' | 'resumeAll' | 'show';
-/** Popup buttons. uid=197608(AFU) gid=197608 groups=197608 is required for the per-download actions. */
+/** Popup buttons. `id` is required for the per-download actions. */
 export type Command = Envelope<'command', { action: CommandAction; id?: number }>;
 
 export type Request = Ping | DownloadAdd | StatusGet | PageSend | PageResources | DownloadBatch | Command;

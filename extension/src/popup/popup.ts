@@ -1,6 +1,6 @@
 import { CATEGORIES, countByCategory, filterLinks, toBatchLinks, type BatchLink, type LinkCategory } from '../batch';
 import {
-  DEFAULT_SETTINGS, countToday, formatBytes, hostOf, isAddable, isHttp, localDay, outcomeOf, toggleSite, versionSkew,
+  DEFAULT_SETTINGS, countToday, formatBytes, hostOf, isAddable, isHttp, localDay, outcomeOf, parseTypes, toggleSite, versionSkew,
   type DailyCount, type Outcome, type Settings,
 } from '../capture';
 import type { MediaHit } from '../media';
@@ -283,7 +283,8 @@ async function loadMedia(): Promise<void> {
     const info = el('div', 'info');
     const name = el('div', undefined, h.name);
     name.title = h.url;
-    const sub = el('small', undefined, [h.kind === 'file' ? t('mediaFile') : t('mediaStream'), bytes(h.size)].filter(Boolean).join(' · '));
+    const quality = h.height ? `${h.height}p` : '';
+    const sub = el('small', undefined, [h.kind === 'file' ? t('mediaFile') : t('mediaStream'), quality, bytes(h.size)].filter(Boolean).join(' · '));
     info.append(name, sub);
     const go = el('button', 'ghost', t('mediaDownload'));
     go.type = 'button';
@@ -404,6 +405,8 @@ function renderSettings(): void {
   if (document.activeElement !== size) size.value = String(settings.minSizeMiB);
   $<HTMLInputElement>('showVideoButton').checked = settings.showVideoButton;
   $<HTMLInputElement>('showBadge').checked = settings.showBadge;
+  const types = $<HTMLInputElement>('skipTypes');
+  if (document.activeElement !== types) types.value = settings.skipTypes.join(', ');
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -431,6 +434,12 @@ $('minSizeMiB').addEventListener('change', () => {
   const v = Math.max(0, Number(input.value) || 0);
   input.value = String(v);
   void chrome.storage.local.set({ minSizeMiB: v });
+});
+$('skipTypes').addEventListener('change', () => {
+  const input = $<HTMLInputElement>('skipTypes');
+  const types = parseTypes(input.value);
+  input.value = types.join(', ');
+  void chrome.storage.local.set({ skipTypes: types });
 });
 $('siteToggle').addEventListener('click', () => {
   const host = hostOf(currentTab?.url);

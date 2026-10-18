@@ -215,6 +215,15 @@
   "sentBatch": {
     "message": "$1 files sent to Fluxer"
   },
+  "settingSkipTypes": {
+    "message": "Leave these file types in the browser"
+  },
+  "settingSkipTypesHint": {
+    "message": "Extensions, separated by commas."
+  },
+  "settingSkipTypesPlaceholder": {
+    "message": "pdf, jpg"
+  },
   "settingVideoButton": {
     "message": "Download button on videos"
   },

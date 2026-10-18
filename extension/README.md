@@ -12,6 +12,7 @@ npm run store   # store/ zips: Chrome Web Store / Edge Add-ons (no "key") and ad
 npm test        # Vitest unit tests
 node ../tools/e2e-extension.mjs          # end-to-end in a throw-away Chrome profile (DevTools pipe)
 node ../tools/e2e-extension.mjs --send   # also sends to the app: dev instance + a dev host registration only
+node ../tools/e2e-extension.mjs --chrome /path/to/chromium --headless   # Linux/CI (adds --no-sandbox as root)
 ```
 
 ## Load unpacked
@@ -41,12 +42,20 @@ falls back to `url`.
 ## Layout
 
 - `src/background.ts` – service worker: download capture (asks on the page first, see the toast below), context menus
-  (download, night queue, all links on the page), notifications, the "sent today" counter.
+  (download, night queue, all links on the page), notifications, the "sent today" counter. A download's tab is the one
+  its link navigated (recent frame navigations by URL; the opener for target=_blank), else the active tab. The video
+  button and the context menu send from the video's own frame: an embedded player's streams, or its embed URL for
+  yt-dlp, with the top page as referrer.
 - `src/capture.ts` – pure capture decision (incl. per-site exclusion), toast/ask decision, daily counter and message
   building (unit-tested).
 - `src/collector.ts` – generic page resource collector (unit-tested, no site-specific code).
 - `src/media.ts` – media sniffing from response headers: progressive files and HLS/DASH manifests; segments,
-  tiny files and YouTube range requests are ignored (unit-tested).
+  tiny files and YouTube range requests are ignored, script-fetched numbered pieces (CMAF `seg-1.mp4` …) are
+  recognised as a series and dropped, and an HLS master (read once by the service worker) hides its variant and
+  audio playlists and carries its best resolution. `addHit` returns null when nothing changed, so live playlists
+  and range reads cost no storage write (unit-tested).
+- `src/videofind.ts` – the `<video>` under the pointer, through overlays and open or closed shadow roots
+  (`chrome.dom.openOrClosedShadowRoot` / Firefox's `openOrClosedShadowRoot`) (unit-tested).
 - `src/batch.ts` – batch download: page links → typed file list and filters (unit-tested).
 - `src/content.ts` – content script (classic IIFE build): Alt-key bypass tracking, resource collection, and the
   "Download with Fluxer" button over videos and the capture toast ("Fluxer caught a download", 3 s countdown, "Leave in

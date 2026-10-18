@@ -189,10 +189,11 @@ input[type="checkbox"]:not(.switch) { accent-color: var(--accent); width: 15px; 
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
 .setting > span { display: flex; flex-direction: column; gap: 2px; }
 .setting small { color: var(--muted); font-size: 12px; }
-.setting input[type="number"] {
+.setting input[type="number"], .setting input[type="text"] {
   width: 70px; height: 28px; padding: 0 8px; border: 1px solid rgba(255, 255, 255, .1); border-radius: 5px;
   background: rgba(0, 0, 0, .18); color: inherit; font: inherit; text-align: right;
 }
+.setting input[type="text"] { width: 120px; text-align: left; }
 
 /* ---------- footer & toast ---------- */
 .foot { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line-soft); flex: none; }

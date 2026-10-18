@@ -215,6 +215,15 @@
   "sentBatch": {
     "message": "$1 dosya Fluxer'a gönderildi"
   },
+  "settingSkipTypes": {
+    "message": "Bu dosya türlerini tarayıcıya bırak"
+  },
+  "settingSkipTypesHint": {
+    "message": "Uzantılar, virgülle ayrılmış."
+  },
+  "settingSkipTypesPlaceholder": {
+    "message": "pdf, jpg"
+  },
   "settingVideoButton": {
     "message": "Videolarda indirme düğmesi"
   },

@@ -11,8 +11,12 @@ export interface Settings {
   showBadge: boolean;
   /** Hosts whose downloads stay in the browser ("Turn off on this site" in the popup). */
   disabledSites: string[];
+  /** File extensions (lower case, no dot) whose downloads stay in the browser. */
+  skipTypes: string[];
 }
-export const DEFAULT_SETTINGS: Settings = { captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true, disabledSites: [] };
+export const DEFAULT_SETTINGS: Settings = {
+  captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true, disabledSites: [], skipTypes: [],
+};
 
 export type DownloadItemLike = Pick<
   chrome.downloads.DownloadItem,
@@ -29,7 +33,8 @@ export interface CaptureContext {
   ownExtensionId?: string;
 }
 
-export type Decision = 'capture' | 'torrent' | 'disabled' | 'site' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small';
+export type Decision =
+  | 'capture' | 'torrent' | 'disabled' | 'site' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small' | 'page' | 'type';
 
 const TORRENT_RE = /\.torrent(?:[?#]|$)/i;
 
@@ -57,6 +62,40 @@ export const siteOf = (item: Pick<DownloadItemLike, 'referrer' | 'url'>): string
 export const toggleSite = (sites: readonly string[], host: string): string[] =>
   sites.includes(host) ? sites.filter((h) => h !== host) : [...sites, host];
 
+/** Extension of a file name or URL path ("zip"), lower case; '' when there is none. */
+export function extOfPath(s: string | undefined): string {
+  if (!s) return '';
+  let path = s;
+  if (isHttp(s)) { try { path = new URL(s).pathname; } catch { /* use as is */ } }
+  const last = path.split(/[\\/]/).pop() ?? '';
+  const dot = last.lastIndexOf('.');
+  return dot > 0 ? last.slice(dot + 1).toLowerCase() : '';
+}
+
+/** Mime types whose extension the name and URL often leave out (/download?id=…). */
+const MIME_EXT: Record<string, string> = {
+  'application/pdf': 'pdf', 'application/zip': 'zip', 'application/x-zip-compressed': 'zip', 'image/jpeg': 'jpg',
+  'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp', 'image/svg+xml': 'svg', 'text/plain': 'txt',
+  'text/csv': 'csv', 'application/json': 'json', 'video/mp4': 'mp4', 'audio/mpeg': 'mp3', 'application/x-msdownload': 'exe',
+};
+const ALIASES: Record<string, string> = { jpeg: 'jpg', htm: 'html', tiff: 'tif' };
+const canon = (ext: string) => ALIASES[ext] ?? ext;
+
+/** Every extension a download could be known by: the name the browser picked, its URLs, its mime. */
+export function typesOf(item: Pick<DownloadItemLike, 'filename' | 'url' | 'finalUrl' | 'mime'>): string[] {
+  const mime = item.mime?.split(';')[0].trim().toLowerCase();
+  const all = [extOfPath(item.filename), extOfPath(item.url), extOfPath(item.finalUrl), (mime && MIME_EXT[mime]) || ''];
+  return [...new Set(all.filter(Boolean).map(canon))];
+}
+
+/** The popup's "Leave these types in the browser" text ("pdf, .JPG *.png") as a clean list. */
+export function parseTypes(text: string): string[] {
+  const out = text.toLowerCase().split(/[\s,;]+/).map((t) => canon(t.replace(/^\*?\.+/, ''))).filter((t) => /^[a-z0-9]{1,10}$/.test(t));
+  return [...new Set(out)].slice(0, 100);
+}
+
+const PAGE_MIMES = /^(text\/html|application\/xhtml\+xml)\s*(;|$)/i;
+
 export function decide(item: DownloadItemLike, ctx: CaptureContext): Decision {
   if (!ctx.settings.captureEnabled) return 'disabled';
   const site = siteOf(item);
@@ -68,6 +107,10 @@ export function decide(item: DownloadItemLike, ctx: CaptureContext): Decision {
   if (isTorrentLike(item)) return 'torrent';
   if (item.state === 'complete') return 'complete';
   if (ctx.postInitiated) return 'post';
+  // A web page (sign-in wall, error page, "Save link as" on a page): Fluxer would probe it and hand it back.
+  if (item.mime && PAGE_MIMES.test(item.mime)) return 'page';
+  const skip = ctx.settings.skipTypes;
+  if (skip?.length && typesOf(item).some((t) => skip.includes(t))) return 'type';
   if (item.totalBytes > 0 && item.totalBytes < ctx.settings.minSizeMiB * 1024 * 1024) return 'small';
   return 'capture';
 }
@@ -85,24 +128,31 @@ export function canAsk(item: Pick<DownloadItemLike, 'referrer'>, tab: { id?: num
 /** The toast's answer: anything but an explicit "leave it in the browser" (countdown, closed page, no reply) sends. */
 export const askAnswer = (reply: unknown): 'send' | 'browser' => (reply === 'browser' ? 'browser' : 'send');
 
-/** URL set whose entries expire after `ttlMs`. Used for POST URLs and our own re-started downloads. */
-export class RecentUrls {
-  private readonly expiry = new Map<string, number>();
+/**
+ * URLs whose entries expire after `ttlMs`, each with a value. Used for POST URLs, our own re-started
+ * downloads and the tab each frame navigation happened in.
+ */
+export class RecentUrls<V = true> {
+  private readonly entries = new Map<string, { exp: number; value: V }>();
   constructor(private readonly ttlMs: number, private readonly now: () => number = Date.now) {}
 
-  add(url: string): void {
+  add(url: string, ...value: V extends true ? [] : [V]): void;
+  add(url: string, value: V = true as V): void {
     const t = this.now();
-    for (const [k, exp] of this.expiry) if (exp <= t) this.expiry.delete(k);
-    this.expiry.set(url, t + this.ttlMs);
+    for (const [k, e] of this.entries) if (e.exp <= t) this.entries.delete(k);
+    this.entries.set(url, { exp: t + this.ttlMs, value });
+  }
+  get(url: string | undefined): V | undefined {
+    const e = url === undefined ? undefined : this.entries.get(url);
+    return e && e.exp > this.now() ? e.value : undefined;
   }
   has(url: string | undefined): boolean {
-    const exp = url === undefined ? undefined : this.expiry.get(url);
-    return exp !== undefined && exp > this.now();
+    return this.get(url) !== undefined;
   }
   /** has() + delete: each entry is consumed by one download. */
   take(url: string | undefined): boolean {
     const hit = this.has(url);
-    if (hit) this.expiry.delete(url!);
+    if (hit) this.entries.delete(url!);
     return hit;
   }
 }

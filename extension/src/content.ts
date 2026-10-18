@@ -2,6 +2,7 @@
 // (the service worker can't see keyboard state), collects page resources on request, shows a
 // "Download with Fluxer" button over videos and the capture toast (top frame only, on request).
 import { collectResources } from './collector';
+import { videoFromPoint, type PointRoot } from './videofind';
 
 let alt = false;
 function setAlt(down: boolean): void {
@@ -117,15 +118,28 @@ function attach(): void {
 }
 document.addEventListener('fullscreenchange', () => { attach(); place(); });
 
+const bigEnough = (v: HTMLVideoElement) => {
+  const r = v.getBoundingClientRect();
+  return r.width >= MIN_W && r.height >= MIN_H && getComputedStyle(v).visibility !== 'hidden';
+};
+
+/** Closed shadow roots too: chrome.dom in Chromium, element.openOrClosedShadowRoot in Firefox content scripts. */
+const shadowOf = (e: Element): PointRoot | null | undefined =>
+  e.shadowRoot
+  ?? (typeof chrome.dom?.openOrClosedShadowRoot === 'function' && e instanceof HTMLElement
+    ? chrome.dom.openOrClosedShadowRoot(e) : undefined)
+  ?? (e as Element & { openOrClosedShadowRoot?: ShadowRoot | null }).openOrClosedShadowRoot;
+
 function videoAt(x: number, y: number): HTMLVideoElement | undefined {
+  const hit = videoFromPoint(document, x, y, shadowOf, bigEnough);
+  if (hit) return hit;
+  // elementsFromPoint skips pointer-events: none, which some players set on the <video> itself.
   const videos = document.getElementsByTagName('video');
   for (let i = 0; i < videos.length && i < 60; i++) {
     const v = videos[i];
     const r = v.getBoundingClientRect();
-    if (r.width < MIN_W || r.height < MIN_H) continue;
     if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
-    if (getComputedStyle(v).visibility === 'hidden') continue;
-    return v;
+    if (bigEnough(v)) return v;
   }
   return undefined;
 }

@@ -6,7 +6,7 @@ import {
   type DailyCount, type Outcome, type Settings,
 } from './capture';
 import { truncateToFit } from './collector';
-import { classifyMedia, mergeHit, pickForVideo, type MediaHit } from './media';
+import { addHit, applyMaster, classifyMedia, mediaKey, parseHlsMaster, pickForVideo, type HlsMaster, type MediaHit, type TabMedia } from './media';
 import {
   MAX_REQUEST_BYTES, envelope, sendNative,
   type CookieDto, type DownloadAdd, type DownloadBatch, type PageResources, type PageSend, type Reply, type Request, type Resource,
@@ -40,11 +40,18 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   }
 });
 
-// Non-blocking observer: remember navigations made with POST so their downloads stay in the browser.
-// Only frame navigations: a POST that turns into a download is one of those, and this keeps the
-// worker from waking for every subresource request.
+// The tab each recent frame navigation happened in: a link that turns into a download is one, and
+// DownloadItem has no tabId.
+const navTabs = new RecentUrls<number>(60_000);
+
+// Non-blocking observer: remember navigations made with POST so their downloads stay in the browser, and
+// where each navigation happened. Only frame navigations: a download that starts from a link is one of
+// those, and this keeps the worker from waking for every subresource request.
 chrome.webRequest.onBeforeRequest.addListener(
-  (d) => { if (d.method === 'POST') postUrls.add(d.url); },
+  (d) => {
+    if (d.method === 'POST') postUrls.add(d.url);
+    if (d.tabId >= 0) navTabs.add(d.url, d.tabId);
+  },
   { urls: ['<all_urls>'], types: ['main_frame', 'sub_frame'] },
 );
 
@@ -101,11 +108,23 @@ async function cookiesFor(urls: (string | undefined)[], tabId?: number): Promise
   return [...out.values()];
 }
 
-// ponytail: DownloadItem has no tabId, so "the tab" is the active tab of the last focused window
-// (matched on incognito). Wrong for downloads started from background tabs; good enough for tabUrl.
+// The active tab of the last focused window (matched on incognito): the fallback for "the tab" of a download.
 async function activeTab(incognito: boolean): Promise<chrome.tabs.Tab | undefined> {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   return tab?.incognito === incognito ? tab : undefined;
+}
+
+const getTab = (id: number | undefined) => (id === undefined ? Promise.resolve(undefined) : chrome.tabs.get(id).catch(() => undefined));
+
+/**
+ * The tab a download came from: the one its link navigated (a background tab or another window included);
+ * for a link that opened a new tab (target=_blank, which the browser closes), the tab that opened it.
+ * Downloads that were no navigation (<a download>, script) fall back to the active tab.
+ */
+async function downloadTab(item: chrome.downloads.DownloadItem): Promise<chrome.tabs.Tab | undefined> {
+  let tab = await getTab(navTabs.get(item.url) ?? navTabs.get(item.finalUrl));
+  if (tab && !isHttp(tab.url)) tab = await getTab(tab.openerTabId);
+  return tab && tab.incognito === item.incognito && isHttp(tab.url) ? tab : activeTab(item.incognito);
 }
 
 // ---- download capture ----
@@ -151,7 +170,7 @@ async function onDownloadCreated(item: chrome.downloads.DownloadItem): Promise<v
   const [paused] = await chrome.downloads.search({ id: item.id });
   if (!paused || paused.state !== 'in_progress') return;
 
-  const tab = await activeTab(item.incognito);
+  const tab = await downloadTab(paused);
   // The toast on the page: "Download with Fluxer" (or the countdown) carries on below, "Leave in browser" hands back.
   if (canAsk(paused, tab) && (await askOnPage(tab!.id!, paused)) === 'browser') return handBack(item, 'ok');
 
@@ -233,7 +252,7 @@ async function onDownloadComplete(id: number): Promise<void> {
   if (!(await pendingTorrents.take(id))) return;
   const [item] = await chrome.downloads.search({ id });
   if (!item?.filename) return;
-  const tab = await activeTab(item.incognito);
+  const tab = await downloadTab(item);
   const msg = buildTorrentFileMessage(item, { userAgent: navigator.userAgent, tabUrl: tab?.url });
   // On failure the .torrent simply stays in the browser's downloads, which is what the user would get anyway.
   const outcome = outcomeOf(await trySend(msg), 'download.add.result');
@@ -260,7 +279,7 @@ async function onMenu(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.T
     const url = info.linkUrl || info.srcUrl;
     // blob:/MediaSource players: the same logic as the in-page video button.
     if (tab && !info.linkUrl && (info.mediaType === 'video' || info.mediaType === 'audio') && !isHttp(url))
-      return notifyOutcome(await sendVideo(tab, url), 'send');
+      return notifyOutcome(await sendVideo(tab, url, { frameId: info.frameId, url: info.frameUrl }), 'send');
     if (!isAddable(url)) return notify('unsupportedUrl');
     const queue = info.menuItemId === 'download-night' ? 'night' : undefined;
     return notifyOutcome(await addUrl(url, tab, info.frameUrl || info.pageUrl, queue), 'send');
@@ -309,25 +328,40 @@ async function onMenu(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.T
 }
 
 // ---- media sniffing: videos/audio and stream manifests seen on each tab ----
-// Kept in storage.session (survives worker restarts, cleared with the browser session).
-interface TabMedia { pageUrl?: string; hits: MediaHit[] }
-const mediaKey = (tabId: number) => `media:${tabId}`;
+// Kept in memory for speed and mirrored to storage.session (survives worker restarts, cleared with the
+// browser session). Players fetch in bursts (ranges, segments, live playlists every few seconds); most
+// responses change nothing, and those cost no storage write and no badge update.
+const media = new Map<number, Promise<TabMedia>>();
+const storageKey = (tabId: number) => `media:${tabId}`;
 
-async function tabMedia(tabId: number): Promise<TabMedia> {
-  const key = mediaKey(tabId);
-  return ((await chrome.storage.session.get(key))[key] as TabMedia | undefined) ?? { hits: [] };
+function tabMedia(tabId: number): Promise<TabMedia> {
+  let m = media.get(tabId);
+  if (!m) {
+    const key = storageKey(tabId);
+    m = chrome.storage.session.get(key).then((r) => (r[key] as TabMedia | undefined) ?? { hits: [] }, () => ({ hits: [] }));
+    media.set(tabId, m);
+  }
+  return m;
 }
 
-// One write at a time per tab: responses arrive in bursts and each update reads the previous list.
-const mediaWrites = new Map<number, Promise<void>>();
-function updateTabMedia(tabId: number, change: (m: TabMedia) => TabMedia): Promise<void> {
-  const next = (mediaWrites.get(tabId) ?? Promise.resolve()).then(async () => {
-    const m = change(await tabMedia(tabId));
-    await chrome.storage.session.set({ [mediaKey(tabId)]: m });
-    await updateBadge(tabId, m.hits.length);
-  }).catch((e) => console.warn('Fluxer: media list', e));
-  mediaWrites.set(tabId, next);
-  return next;
+// One change at a time per tab (each reads the previous list); the storage write trails by a moment
+// so a burst of new hits is written once.
+const flushTimers = new Map<number, ReturnType<typeof setTimeout>>();
+function updateTabMedia(tabId: number, change: (m: TabMedia) => TabMedia | null): Promise<void> {
+  const prev = tabMedia(tabId);
+  const next = prev.then((m) => change(m) ?? m);
+  media.set(tabId, next.catch(() => prev));
+  return Promise.all([prev, next]).then(([before, after]) => {
+    if (after === before) return;
+    if (after.hits.length !== before.hits.length) void updateBadge(tabId, after.hits.length);
+    clearTimeout(flushTimers.get(tabId));
+    flushTimers.set(tabId, setTimeout(() => {
+      flushTimers.delete(tabId);
+      if (media.get(tabId) === undefined) return; // tab closed meanwhile
+      void tabMedia(tabId).then((m) => chrome.storage.session.set({ [storageKey(tabId)]: m }))
+        .catch((e) => console.warn('Fluxer: media list', e));
+    }, 400));
+  }, (e) => console.warn('Fluxer: media list', e));
 }
 
 async function updateBadge(tabId: number, count: number): Promise<void> {
@@ -349,30 +383,80 @@ const header = (h: chrome.webRequest.HttpHeader[] | undefined, name: string) =>
 
 chrome.webRequest.onHeadersReceived.addListener(
   (d) => {
-    if (d.tabId < 0) return;
+    if (d.tabId < 0) return; // includes our own playlist reads below
     const hit = classifyMedia({
       url: d.url,
       status: d.statusCode,
       contentType: header(d.responseHeaders, 'content-type'),
       contentLength: header(d.responseHeaders, 'content-length'),
       contentRange: header(d.responseHeaders, 'content-range'),
+      type: d.type,
+      frameId: d.frameId,
     });
-    if (hit) void updateTabMedia(d.tabId, (m) => ({ ...m, hits: mergeHit(m.hits, hit) }));
+    if (!hit) return;
+    void updateTabMedia(d.tabId, (m) => addHit(m, hit));
+    if (hit.kind === 'hls') void inspectHls(d.tabId, hit.url);
   },
   { urls: ['<all_urls>'], types: ['media', 'xmlhttprequest', 'other', 'object'] },
   ['responseHeaders'],
 );
+
+// HLS players load a master playlist, then one playlist per quality and audio track. Reading the master
+// (a few KB of text) tells which is which: the list keeps the master, labelled with its best quality,
+// and the per-quality playlists (an audio-only one among them) never show up or get sent to yt-dlp.
+// One read per playlist URL; the answer (null: not a master, or unreadable) is reused when the page is reloaded.
+const masters = new Map<string, Promise<HlsMaster | null>>();
+const MAX_PLAYLIST_BYTES = 512 * 1024;
+
+async function inspectHls(tabId: number, url: string): Promise<void> {
+  const key = mediaKey(url);
+  let read = masters.get(key);
+  if (!read) {
+    if ((await tabMedia(tabId)).hidden?.includes(key)) return; // a variant of a master already read
+    if (masters.size > 500) masters.clear();
+    read = fetchText(url, MAX_PLAYLIST_BYTES).then((text) => (text === undefined ? null : parseHlsMaster(text, url)));
+    masters.set(key, read);
+  }
+  const master = await read;
+  if (master) await updateTabMedia(tabId, (m) => (m.hits.some((h) => mediaKey(h.url) === key) ? applyMaster(m, url, master) : null));
+}
+
+/** The body as text, or undefined on any failure (signed URL expired, referer check, too big, slow). */
+async function fetchText(url: string, maxBytes: number): Promise<string | undefined> {
+  try {
+    const res = await fetch(url, { credentials: 'include', signal: AbortSignal.timeout(5000) });
+    if (!res.ok || !res.body) return undefined;
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxBytes) { void reader.cancel(); return undefined; }
+      chunks.push(value);
+    }
+    const all = new Uint8Array(size);
+    let at = 0;
+    for (const c of chunks) { all.set(c, at); at += c.byteLength; }
+    return new TextDecoder().decode(all);
+  } catch {
+    return undefined;
+  }
+}
 
 // A new page (not just a #hash change) starts with an empty list.
 const pageOf = (url: string) => url.split('#')[0];
 chrome.tabs.onUpdated.addListener((tabId, info) => {
   if (!info.url) return;
   const url = info.url;
-  void updateTabMedia(tabId, (m) => (m.pageUrl && pageOf(m.pageUrl) === pageOf(url) ? m : { pageUrl: url, hits: [] }));
+  void updateTabMedia(tabId, (m) => (m.pageUrl && pageOf(m.pageUrl) === pageOf(url) ? null : { pageUrl: url, hits: [] }));
 });
 chrome.tabs.onRemoved.addListener((tabId) => {
-  mediaWrites.delete(tabId);
-  void chrome.storage.session.remove(mediaKey(tabId));
+  media.delete(tabId);
+  clearTimeout(flushTimers.get(tabId));
+  flushTimers.delete(tabId);
+  void chrome.storage.session.remove(storageKey(tabId));
 });
 
 // ---- sending media / pages / batches (popup, video button, context menu) ----
@@ -393,25 +477,32 @@ async function addUrl(url: string, tab: chrome.tabs.Tab | undefined, referrer?: 
   return outcomeOf(await trySend(msg), 'download.add.result');
 }
 
-const sendFile = (tab: chrome.tabs.Tab, url: string) => addUrl(url, tab, tab.url);
+const sendFile = (tab: chrome.tabs.Tab, url: string, referrer = tab.url) => addUrl(url, tab, referrer);
 
 /** A page for yt-dlp, or a stream manifest with the page it plays on as referrer. */
-async function sendMediaPage(tab: chrome.tabs.Tab, url: string): Promise<Outcome> {
+async function sendMediaPage(tab: chrome.tabs.Tab, url: string, referrer = tab.url): Promise<Outcome> {
   const msg = envelope<PageSend>('page.send', {
     ...browserCtx(tab),
     pageUrl: url,
     title: tab.title,
-    referrer: tab.url,
-    cookies: await cookiesFor([url, tab.url], tab.id),
+    referrer,
+    cookies: await cookiesFor([url, referrer, tab.url], tab.id),
   });
   return outcomeOf(await trySend(msg));
 }
 
-async function sendVideo(tab: chrome.tabs.Tab, src: string | undefined): Promise<Outcome> {
+/** The frame a <video> is in: its id and URL (from the message sender or the context menu). */
+interface VideoFrame { frameId?: number; url?: string }
+
+async function sendVideo(tab: chrome.tabs.Tab, src: string | undefined, frame: VideoFrame = {}): Promise<Outcome> {
   if (!isHttp(tab.url)) return 'failed';
-  const pick = pickForVideo(src, tab.id === undefined ? [] : (await tabMedia(tab.id)).hits);
-  return pick.type === 'file' ? sendFile(tab, pick.url)
-    : pick.type === 'stream' ? sendMediaPage(tab, pick.url)
+  // An embedded player (an iframe from another site) is what its streams were requested by, and its URL is the
+  // one yt-dlp knows (player.vimeo.com/video/…, youtube.com/embed/…); the top page is only the referrer then.
+  const embed = frame.frameId !== undefined && frame.frameId !== 0 && isHttp(frame.url) ? frame.url : undefined;
+  const pick = pickForVideo(src, tab.id === undefined ? [] : (await tabMedia(tab.id)).hits, frame.frameId);
+  return pick.type === 'file' ? sendFile(tab, pick.url, embed ?? tab.url)
+    : pick.type === 'stream' ? sendMediaPage(tab, pick.url, embed ?? tab.url)
+    : embed ? sendMediaPage(tab, embed, tab.url)
     : sendMediaPage(tab, tab.url!);
 }
 
@@ -472,7 +563,9 @@ function handlePanel(msg: PanelMessage, sender: chrome.runtime.MessageSender): P
     case 'add-url':
       return (isAddable(msg.url) ? addUrl(msg.url, undefined) : Promise.resolve<Outcome>('failed')).then((outcome) => ({ outcome }));
     case 'video-button':
-      return sender.tab ? sendVideo(sender.tab, msg.src).then((outcome) => ({ outcome })) : undefined;
+      return sender.tab
+        ? sendVideo(sender.tab, msg.src, { frameId: sender.frameId, url: sender.url }).then((outcome) => ({ outcome }))
+        : undefined;
     default: return undefined;
   }
 }

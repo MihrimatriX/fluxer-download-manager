@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS, RecentUrls, askAnswer, basename, bumpDaily, buildInterceptMessage, buildTorrentFileMessage, canAsk, countToday,
-  decide, formatBytes, hostOf, isTorrentLike, localDay, outcomeOf, rejectReason, sentCount, toCookieDto, toggleSite, versionSkew,
+  decide, extOfPath, formatBytes, hostOf, isTorrentLike, localDay, outcomeOf, parseTypes, rejectReason, sentCount, toCookieDto, toggleSite,
+  typesOf, versionSkew,
   type CaptureContext, type DownloadItemLike,
 } from './capture';
 import { PROTOCOL_VERSION, type Reply, type Request } from './protocol';
@@ -64,7 +65,36 @@ describe('decide', () => {
   });
 });
 
+describe('decide: pages and file types', () => {
+  const skip = (...types: string[]) => ctx({ settings: { ...DEFAULT_SETTINGS, skipTypes: types } });
+  it('leaves web pages in the browser (Fluxer would hand them back after a probe)', () => {
+    expect(decide(item({ mime: 'text/html; charset=utf-8' }), ctx())).toBe('page');
+    expect(decide(item({ mime: 'application/xhtml+xml' }), ctx())).toBe('page');
+    expect(decide(item({ mime: 'text/html-sandboxed' }), ctx())).toBe('capture');
+  });
+  it('leaves the types the user listed, known by name, URL or mime', () => {
+    expect(decide(item(), skip('zip'))).toBe('type');
+    expect(decide(item({ filename: '', url: 'https://x.com/get?id=1', finalUrl: '', mime: 'application/pdf' }), skip('pdf'))).toBe('type');
+    expect(decide(item({ filename: 'C:\\d\\photo.JPEG', mime: '' }), skip('jpg'))).toBe('type');
+    expect(decide(item(), skip('pdf', 'exe'))).toBe('capture');
+  });
+  it('typesOf / extOfPath / parseTypes', () => {
+    expect(typesOf(item())).toEqual(['zip']);
+    expect(extOfPath('https://x.com/a.tar.gz?x=1.exe')).toBe('gz');
+    expect(extOfPath('https://x.com/v1.2/file')).toBe('');
+    expect(parseTypes(' PDF, .jpg;*.png  jpeg  bad!  ')).toEqual(['pdf', 'jpg', 'png']);
+  });
+});
+
 describe('RecentUrls', () => {
+  it('keeps a value per URL', () => {
+    let now = 0;
+    const tabs = new RecentUrls<number>(1000, () => now);
+    tabs.add('https://a/', 7);
+    expect(tabs.get('https://a/')).toBe(7);
+    now = 1000;
+    expect(tabs.get('https://a/')).toBeUndefined();
+  });
   it('expires entries and take() consumes them', () => {
     let now = 0;
     const s = new RecentUrls(30_000, () => now);

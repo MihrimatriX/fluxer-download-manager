@@ -26,6 +26,14 @@
 - yt-dlp'ye deno'nun yolu `--js-runtimes` ile açıkça veriliyor.
 
 ### Tarayıcı eklentisi
+- **HLS varyantları ana listede birleşiyor:** eklenti ana (master) playlist'i bir kez okuyup kalite ve ses playlist'lerini listeden düşürüyor; satırda en iyi çözünürlük görünüyor ("Akış · 1080p"). Önceden bir video 3–6 satır olarak görünüyordu ve video düğmesi en son gelen playlist'i, çoğu zaman yalnızca ses olanı, yt-dlp'ye gönderiyordu.
+- **Segment kirliliği yok:** script'le çekilen numaralı parçalar (CMAF/fMP4 `seg-1.mp4`, `?segment=2` …) seri olarak tanınıp listeden çıkıyor; önceden liste parçalarla dolup asıl akışları 40 satır sınırının dışına itebiliyordu.
+- **Gömülü oynatıcılar:** video düğmesi ve sağ tık, videonun kendi çerçevesinin yüklediği akışı seçiyor; bulamazsa yt-dlp'ye üst sayfa yerine gömme adresini (`player.vimeo.com/video/…` gibi) üst sayfa referrer'ıyla gönderiyor. Blob oynatıcıda reklam yerine en büyük video dosyası seçiliyor.
+- **Shadow DOM oynatıcılar:** video düğmesi açık ve kapalı shadow root içindeki videolarda da (Reddit gibi web bileşeni oynatıcılar) ve üstüne şeffaf katman konmuş videolarda çıkıyor.
+- **İndirmenin geldiği sekme:** yakalama kartı, sekme kimliği ve cookie deposu artık bağlantının tıklandığı sekmeden alınıyor (arka plandaki sekme ya da başka pencere dahil; `target=_blank` için açan sekme). Önceden o an aktif olan sekme kullanılıyordu ve kart yanlış sayfada çıkabiliyordu.
+- **"Bu dosya türlerini tarayıcıya bırak"** ayarı (Ayarlar): virgülle ayrılmış uzantılar; ad, adres ve mime türüne bakılır. Web sayfası dönen indirmeler (`text/html`) Fluxer'a sorulmadan tarayıcıda kalıyor (Fluxer zaten geri veriyordu, artık bekleme yok).
+- **Daha az iş:** medya listesi bellekte tutuluyor; canlı playlist yenilemesi ya da aynı dosyanın sonraki range isteği depolamaya yazmıyor, rozet yalnızca sayı değişince güncelleniyor, art arda gelen yeni kayıtlar tek yazmada birleşiyor.
+- Uçtan uca test (`tools/e2e-extension.mjs`) bunları da kontrol ediyor ve `--headless` ile Linux'ta çalışıyor.
 - **Firefox desteği (128+):** aynı kod, ayrı manifest (`dist-firefox/`, arka plan service worker yerine event page). Fluxer her açılışta Firefox'un native messaging kaydını da yazar (`HKCU\Software\Mozilla\NativeMessagingHosts`, `allowed_extensions`); host Firefox'un eklenti kimliği argümanını da doğrular. Kurulum `extension-firefox` klasörünü içerir; `AMO_API_KEY`/`AMO_API_SECRET` sırları varsa CI etiketlerde imzalı `.xpi` üretir. Ayarlar → Tarayıcı entegrasyonu Firefox'u da gösterir.
 - `clipboardRead` artık isteğe bağlı izin; yalnızca "Bağlantı yapıştır"a basınca istenir.
 - Açılır pencere uygulama ile eklentinin major.minor sürümü farklıysa hangisinin güncellenmesi gerektiğini söyler.
