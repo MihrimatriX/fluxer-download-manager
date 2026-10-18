@@ -125,30 +125,60 @@ public static class Flows
         else host.OpenProgressIfEnabled(added, activate: true);
     }
 
-    /// Manual paste or a matched browser download. Rejects size mismatches, warns on changed validators.
+    /// Manual paste or a matched browser download. Rejects size mismatches. When the partial file
+    /// cannot be continued from the new link (changed validators, no range support), offers a restart.
     public static async Task<bool> RefreshLinkAsync(AppHost host, HttpDownload d, string url, RequestContext? ctx)
     {
-        if (host.Engine.Queue.IsRunning(d.Id)) await host.Engine.Queue.PauseAsync(d.Id);
-        LinkCheck check;
-        try
+        var queue = host.Engine.Queue;
+        var wasRunning = queue.IsRunning(d.Id);
+        if (wasRunning) await queue.PauseAsync(d.Id);
+
+        var check = await CheckAsync();
+        if (check is null)
         {
-            check = await Dialogs.BusyAsync(host.Owner, Strings.RefreshLinkTitle, Strings.CheckingLink,
-                _ => d.CheckNewLinkAsync(url, ctx, CancellationToken.None));
-        }
-        catch (Exception e)
-        {
-            await Dialogs.MessageAsync(host.Owner, Strings.RefreshLinkTitle, $"{Strings.LinkUnreachable}\n{e.Message}");
+            if (wasRunning) queue.Resume(d.Id);   // the old link was still working
             return false;
         }
 
-        if (!check.Reachable) { await Dialogs.MessageAsync(host.Owner, Strings.RefreshLinkTitle, Strings.LinkUnreachable); return false; }
-        if (!check.SizeMatches) { await Dialogs.MessageAsync(host.Owner, Strings.RefreshLinkTitle, Strings.LinkSizeMismatch); return false; }
-        if (check.ValidatorChanged && !await Dialogs.ConfirmAsync(host.Owner, Strings.RefreshLinkTitle, Strings.LinkValidatorChanged, Strings.ContinueAnyway))
-            return false;
-
-        d.ApplyNewLink(url, ctx, check);
-        host.Engine.Queue.Resume(d.Id);
+        // Resuming would splice two versions of the file together, or the new server cannot continue
+        // from the middle: the only safe way forward is from byte 0.
+        if (check.ValidatorChanged || (d.Record.DoneBytes > 0 && !check.SupportsRanges))
+        {
+            var message = check.ValidatorChanged ? Strings.LinkValidatorChanged : Strings.LinkNoResume;
+            if (!await Dialogs.ConfirmAsync(host.Owner, Strings.RefreshLinkTitle, message, Strings.RestartFromScratch))
+            {
+                if (wasRunning) queue.Resume(d.Id);
+                return false;
+            }
+            if (queue.IsRunning(d.Id)) await queue.PauseAsync(d.Id);   // resumed while the dialog was open
+            d.ApplyNewLink(url, ctx, check);
+            d.ResetForRestart();
+        }
+        else
+        {
+            if (queue.IsRunning(d.Id)) await queue.PauseAsync(d.Id);
+            d.ApplyNewLink(url, ctx, check);
+        }
+        queue.Resume(d.Id);
         return true;
+
+        async Task<LinkCheck?> CheckAsync()
+        {
+            LinkCheck c;
+            try
+            {
+                c = await Dialogs.BusyAsync(host.Owner, Strings.RefreshLinkTitle, Strings.CheckingLink,
+                    _ => d.CheckNewLinkAsync(url, ctx, CancellationToken.None));
+            }
+            catch (Exception e)
+            {
+                await Dialogs.MessageAsync(host.Owner, Strings.RefreshLinkTitle, $"{Strings.LinkUnreachable}\n{e.Message}");
+                return null;
+            }
+            if (!c.Reachable) { await Dialogs.MessageAsync(host.Owner, Strings.RefreshLinkTitle, Strings.LinkUnreachable); return null; }
+            if (!c.SizeMatches) { await Dialogs.MessageAsync(host.Owner, Strings.RefreshLinkTitle, Strings.LinkSizeMismatch); return null; }
+            return c;
+        }
     }
 
     // ================= media (yt-dlp) =================

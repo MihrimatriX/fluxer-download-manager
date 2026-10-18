@@ -75,7 +75,7 @@ DownloadFolder	Download folder	İndirme klasörü
 EmptyBody	Paste a link (Ctrl+V), drop a .torrent file here, or download something in your browser.	Bir bağlantı yapıştırın (Ctrl+V), buraya bir .torrent dosyası bırakın ya da tarayıcınızdan bir şey indirin.
 EmptyTitle	Nothing here yet	Henüz bir şey yok
 ErrDiskFull	Not enough disk space	Yetersiz disk alanı
-ErrFileChanged	The file on the server has changed	Sunucudaki dosya değişmiş
+ErrFileChanged	The file on the server has changed. Retry starts over.	Sunucudaki dosya değişmiş. Yeniden denemek baştan başlatır.
 ErrGotHtml	The server sent a web page instead of the file (sign-in, captcha or an expired link). Download it in the browser.	Sunucu dosya yerine bir web sayfası gönderdi (oturum, doğrulama ya da süresi dolmuş bağlantı). Tarayıcıdan indirin.
 ErrHashMismatch	Checksum does not match	Sağlama toplamı uyuşmuyor
 ErrHttp	Server error (HTTP {0})	Sunucu hatası (HTTP {0})
@@ -148,9 +148,10 @@ LinkMatchAttach	Attach and resume	Bağla ve devam et
 LinkMatchBody	"{0}" is waiting for a new link. Use this download to resume it?	"{0}" yeni bir bağlantı bekliyor. Kaldığı yerden devam etmek için bu indirme kullanılsın mı?
 LinkMatchNew	Start a new download	Yeni indirme başlat
 LinkMatchTitle	Attach to existing download?	Mevcut indirmeye bağlansın mı?
+LinkNoResume	The new link does not support resuming, so the download has to start again from the beginning.	Yeni bağlantı kaldığı yerden devam etmeyi desteklemiyor, indirmenin baştan başlaması gerekiyor.
 LinkSizeMismatch	The new link points to a file of a different size, so it was rejected.	Yeni bağlantı farklı boyutta bir dosyayı gösteriyor, bu yüzden reddedildi.
 LinkUnreachable	The new link could not be reached.	Yeni bağlantıya ulaşılamadı.
-LinkValidatorChanged	The server reports a different version of the file (ETag/Last-Modified changed). Resuming may produce a corrupt file.	Sunucu dosyanın farklı bir sürümünü bildiriyor (ETag/Last-Modified değişmiş). Devam etmek bozuk dosyaya yol açabilir.
+LinkValidatorChanged	The server reports a different version of the file (ETag/Last-Modified changed). The part downloaded so far cannot be reused, so the download has to start again from the beginning.	Sunucu dosyanın farklı bir sürümünü bildiriyor (ETag/Last-Modified değişmiş). Şimdiye kadar indirilen kısım kullanılamaz, indirmenin baştan başlaması gerekiyor.
 MagnetNoFiles	The file list will be available once metadata is fetched from peers.	Dosya listesi, meta veriler eşlerden alındıktan sonra görünecek.
 MediaDisclaimer	Fluxer uses yt-dlp to save videos from websites. You are responsible for respecting copyright and the site's terms of service. DRM-protected content is not supported.	Fluxer, web sitelerindeki videoları kaydetmek için yt-dlp kullanır. Telif haklarına ve sitenin kullanım koşullarına uymak sizin sorumluluğunuzdadır. DRM korumalı içerik desteklenmez.
 MediaProbing	Reading video information…	Video bilgileri okunuyor…
@@ -162,6 +163,7 @@ BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
 BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
 BackdropMica	Mica (Windows 11)	Mica (Windows 11)
 BackdropNone	Navy (default)	Lacivert (varsayılan)
+RestartFromScratch	Restart from the beginning	Baştan başlat
 SelectAll	Select all	Tümünü seç
 SelectRow	Select	Seç
 MinDimension	Min. size (px)	En küçük boyut (px)

@@ -60,7 +60,6 @@
   <data name="ConnectionsDesc" xml:space="preserve"><value>Tek bir HTTP indirmesi için paralel bağlantı (1–32). Sunucu itiraz ederse Fluxer otomatik düşürür.</value></data>
   <data name="ConnRange" xml:space="preserve"><value>Bayt aralığı</value></data>
   <data name="ConnWaiting" xml:space="preserve"><value>bekliyor</value></data>
-  <data name="ContinueAnyway" xml:space="preserve"><value>Yine de devam et</value></data>
   <data name="Copy" xml:space="preserve"><value>Kopyala</value></data>
   <data name="CopyUrl" xml:space="preserve"><value>Adresi kopyala</value></data>
   <data name="Delete" xml:space="preserve"><value>Sil</value></data>
@@ -74,7 +73,7 @@
   <data name="EmptyBody" xml:space="preserve"><value>Bir bağlantı yapıştırın (Ctrl+V), buraya bir .torrent dosyası bırakın ya da tarayıcınızdan bir şey indirin.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Henüz bir şey yok</value></data>
   <data name="ErrDiskFull" xml:space="preserve"><value>Yetersiz disk alanı</value></data>
-  <data name="ErrFileChanged" xml:space="preserve"><value>Sunucudaki dosya değişmiş</value></data>
+  <data name="ErrFileChanged" xml:space="preserve"><value>Sunucudaki dosya değişmiş. Yeniden denemek baştan başlatır.</value></data>
   <data name="ErrGotHtml" xml:space="preserve"><value>Sunucu dosya yerine bir web sayfası gönderdi (oturum, doğrulama ya da süresi dolmuş bağlantı). Tarayıcıdan indirin.</value></data>
   <data name="ErrHashMismatch" xml:space="preserve"><value>Sağlama toplamı uyuşmuyor</value></data>
   <data name="ErrHttp" xml:space="preserve"><value>Sunucu hatası (HTTP {0})</value></data>
@@ -141,9 +140,10 @@
   <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" yeni bir bağlantı bekliyor. Kaldığı yerden devam etmek için bu indirme kullanılsın mı?</value></data>
   <data name="LinkMatchNew" xml:space="preserve"><value>Yeni indirme başlat</value></data>
   <data name="LinkMatchTitle" xml:space="preserve"><value>Mevcut indirmeye bağlansın mı?</value></data>
+  <data name="LinkNoResume" xml:space="preserve"><value>Yeni bağlantı kaldığı yerden devam etmeyi desteklemiyor, indirmenin baştan başlaması gerekiyor.</value></data>
   <data name="LinkSizeMismatch" xml:space="preserve"><value>Yeni bağlantı farklı boyutta bir dosyayı gösteriyor, bu yüzden reddedildi.</value></data>
   <data name="LinkUnreachable" xml:space="preserve"><value>Yeni bağlantıya ulaşılamadı.</value></data>
-  <data name="LinkValidatorChanged" xml:space="preserve"><value>Sunucu dosyanın farklı bir sürümünü bildiriyor (ETag/Last-Modified değişmiş). Devam etmek bozuk dosyaya yol açabilir.</value></data>
+  <data name="LinkValidatorChanged" xml:space="preserve"><value>Sunucu dosyanın farklı bir sürümünü bildiriyor (ETag/Last-Modified değişmiş). Şimdiye kadar indirilen kısım kullanılamaz, indirmenin baştan başlaması gerekiyor.</value></data>
   <data name="MagnetNoFiles" xml:space="preserve"><value>Dosya listesi, meta veriler eşlerden alındıktan sonra görünecek.</value></data>
   <data name="MediaDisclaimer" xml:space="preserve"><value>Fluxer, web sitelerindeki videoları kaydetmek için yt-dlp kullanır. Telif haklarına ve sitenin kullanım koşullarına uymak sizin sorumluluğunuzdadır. DRM korumalı içerik desteklenmez.</value></data>
   <data name="MediaProbing" xml:space="preserve"><value>Video bilgileri okunuyor…</value></data>
@@ -155,6 +155,7 @@
   <data name="BackdropGlass" xml:space="preserve"><value>Cam (bulanık, saydam)</value></data>
   <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
   <data name="BackdropNone" xml:space="preserve"><value>Lacivert (varsayılan)</value></data>
+  <data name="RestartFromScratch" xml:space="preserve"><value>Baştan başlat</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Seç</value></data>
   <data name="MinDimension" xml:space="preserve"><value>En küçük boyut (px)</value></data>
