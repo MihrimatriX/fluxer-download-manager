@@ -371,6 +371,53 @@
               </c:SettingRow>
             </StackPanel>
           </Border>
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.RssFeeds}" />
+              <TextBlock Classes="subtle" FontSize="13" Text="{x:Static app:Strings.RssFeedsDesc}" TextWrapping="Wrap" Margin="0,0,0,8" />
+              <c:SettingRow Title="{x:Static app:Strings.RssInterval}" Description="{x:Static app:Strings.RssIntervalDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Content="{x:Static app:Strings.RssCheckNow}" Command="{Binding CheckRssNowCommand}" IsEnabled="{Binding HasRssFeeds}" />
+                  <NumericUpDown Value="{Binding RssInterval}" Minimum="5" Maximum="1440" Increment="5" FormatString="0" />
+                </StackPanel>
+              </c:SettingRow>
+              <ItemsControl ItemsSource="{Binding RssFeeds}" Margin="0,8,0,0">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:RssFeedRow">
+                    <Border Padding="12" Margin="0,0,0,10" CornerRadius="12" Background="{DynamicResource ChipBrush}"
+                            BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1">
+                      <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                          <ToggleSwitch IsChecked="{Binding Enabled}" AutomationProperties.Name="{Binding Url}" />
+                          <TextBlock Grid.Column="1" Text="{Binding Url}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Url}" />
+                          <Button Grid.Column="2" Classes="soft" Width="36" Height="36"
+                                  Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).BrowseRssFolderCommand}" CommandParameter="{Binding}"
+                                  AutomationProperties.Name="{x:Static app:Strings.RssSaveFolder}" ToolTip.Tip="{Binding FolderTip}">
+                            <c:Icon Data="{StaticResource IcFolder}" />
+                          </Button>
+                          <Button Grid.Column="3" Classes="soft" Width="36" Height="36"
+                                  Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RemoveRssFeedCommand}" CommandParameter="{Binding}"
+                                  AutomationProperties.Name="{x:Static app:Strings.RssRemove}" ToolTip.Tip="{x:Static app:Strings.RssRemove}">
+                            <c:Icon Data="{StaticResource IcTrash}" />
+                          </Button>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                          <TextBox Text="{Binding Include}" PlaceholderText="{x:Static app:Strings.RssInclude}" AutomationProperties.Name="{x:Static app:Strings.RssInclude}" />
+                          <TextBox Grid.Column="1" Text="{Binding Exclude}" PlaceholderText="{x:Static app:Strings.RssExclude}" AutomationProperties.Name="{x:Static app:Strings.RssExclude}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" TextWrapping="Wrap" IsVisible="{Binding !HasProblem}" />
+                        <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{DynamicResource ErrTextBrush}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox Text="{Binding NewRssUrl}" PlaceholderText="{x:Static app:Strings.RssUrlHint}" AutomationProperties.Name="{x:Static app:Strings.RssUrlHint}" />
+                <Button Grid.Column="1" Content="{x:Static app:Strings.RssAdd}" Command="{Binding AddRssFeedCommand}" />
+              </Grid>
+            </StackPanel>
+          </Border>
         </StackPanel>
 
         <!-- ===== Browser ===== -->

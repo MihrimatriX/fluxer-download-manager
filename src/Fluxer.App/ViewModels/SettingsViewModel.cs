@@ -12,6 +12,7 @@ using Fluxer.App.Services;
 using Fluxer.App.Views;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Platform.Windows;
+using Fluxer.Core.Torrent;
 using Fluxer.Ipc;
 
 namespace Fluxer.App.ViewModels;
@@ -55,6 +56,52 @@ public sealed partial class ProfileCard(int index, Action changed) : ObservableO
     partial void OnSlotsChanged(decimal? value) { if (!Loading) changed(); }
 }
 
+/// One RSS feed in Settings → Torrent. The URL is fixed once added; remove and add again to change it.
+public sealed partial class RssFeedRow(string url, Action changed) : ObservableObject
+{
+    public string Url { get; } = url;
+    [ObservableProperty] private bool _enabled = true;
+    [ObservableProperty] private string _include = "";
+    [ObservableProperty] private string _exclude = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(FolderTip))] private string _saveDirectory = "";
+    [ObservableProperty] private string _status = "";
+    [ObservableProperty] private bool _hasProblem;
+    public string FolderTip => SaveDirectory.Length > 0 ? SaveDirectory : Strings.RssSaveFolder;
+    public bool Loading { get; set; }
+    private RssFeedState? _state;
+
+    partial void OnEnabledChanged(bool value) => Changed();
+    partial void OnIncludeChanged(string value) => Changed();
+    partial void OnExcludeChanged(string value) => Changed();
+    partial void OnSaveDirectoryChanged(string value) => Changed();
+
+    private void Changed()
+    {
+        if (Loading) return;
+        UpdateStatus(_state);
+        changed();
+    }
+
+    public void UpdateStatus(RssFeedState? state)
+    {
+        _state = state;
+        HasProblem = !RssFilter.IsValid(Include) || !RssFilter.IsValid(Exclude) || state?.LastError is not null;
+        Status = !RssFilter.IsValid(Include) || !RssFilter.IsValid(Exclude) ? Strings.RssInvalidFilter
+            : state?.LastCheck is not { } t ? Strings.RssNotChecked
+            : state.LastError is { } err ? $"{Loc.When(t.ToLocalTime())} · {Loc.Error(err)}"
+            : string.Format(CultureInfo.CurrentCulture, Strings.RssLastCheck, Loc.When(t.ToLocalTime()), state.LastAdded);
+    }
+
+    public RssFeed ToFeed() => new()
+    {
+        Url = Url,
+        Enabled = Enabled,
+        Include = string.IsNullOrWhiteSpace(Include) ? null : Include.Trim(),
+        Exclude = string.IsNullOrWhiteSpace(Exclude) ? null : Exclude.Trim(),
+        SaveDirectory = string.IsNullOrWhiteSpace(SaveDirectory) ? null : SaveDirectory.Trim(),
+    };
+}
+
 /// Settings page. Every change is saved automatically (debounced); there is no Save button.
 public sealed partial class SettingsViewModel : ObservableObject
 {
@@ -79,6 +126,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("advanced", Strings.TabAdvanced),
         ];
         _selectedSection = Sections[0];
+        host.Engine.Rss.Checked += () => Dispatcher.UIThread.Post(RefreshRssStatus);
     }
 
     public string[] Languages => [Strings.LangSystem, "Türkçe", "English"];
@@ -152,6 +200,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private decimal? _torrentSlots;
     [ObservableProperty] private decimal? _maxPeers;
     [ObservableProperty] private bool _fileAssociations;
+    public ObservableCollection<RssFeedRow> RssFeeds { get; } = [];
+    [ObservableProperty] private decimal? _rssInterval;
+    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(AddRssFeedCommand))] private string _newRssUrl = "";
+    public bool HasRssFeeds => RssFeeds.Count > 0;
     // Advanced
     [ObservableProperty] private string _proxy = "";
     [ObservableProperty] private string _updateFeed = "";
@@ -172,6 +224,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [
         nameof(ScaleText), nameof(SelectedSection), nameof(Section), nameof(BrushIndex), nameof(BrushName),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
+        nameof(NewRssUrl), nameof(HasRssFeeds),
     ];
 
     public void Load()
@@ -214,6 +267,20 @@ public sealed partial class SettingsViewModel : ObservableObject
         TorrentSlots = s.TorrentSlots;
         MaxPeers = s.MaxPeersPerTorrent;
         FileAssociations = s.RegisterFileAssociations;
+        RssInterval = s.RssIntervalMinutes;
+        RssFeeds.Clear();
+        foreach (var f in s.RssFeeds)
+        {
+            var row = new RssFeedRow(f.Url, QueueSave) { Loading = true };
+            row.Enabled = f.Enabled;
+            row.Include = f.Include ?? "";
+            row.Exclude = f.Exclude ?? "";
+            row.SaveDirectory = f.SaveDirectory ?? "";
+            row.Loading = false;
+            RssFeeds.Add(row);
+        }
+        OnPropertyChanged(nameof(HasRssFeeds));
+        RefreshRssStatus();
         Proxy = s.Proxy ?? "";
         UpdateFeed = s.UpdateFeed ?? "";
         AutoUpdate = s.AutoUpdate;
@@ -319,6 +386,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.TorrentSlots = (int)Math.Clamp(TorrentSlots ?? 2, 1, 20);
         s.MaxPeersPerTorrent = (int)Math.Clamp(MaxPeers ?? 100, 5, 1000);
         s.RegisterFileAssociations = FileAssociations;
+        s.RssIntervalMinutes = (int)Math.Clamp(RssInterval ?? 30, 5, 24 * 60);
+        s.RssFeeds = [.. RssFeeds.Select(r => r.ToFeed())];
         s.Proxy = string.IsNullOrWhiteSpace(Proxy) ? null : Proxy.Trim();
         s.UpdateFeed = string.IsNullOrWhiteSpace(UpdateFeed) ? null : UpdateFeed.Trim();
         s.AutoUpdate = AutoUpdate;
@@ -328,12 +397,14 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
+        var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);
 
         var uiChanged = s.Language != old.Language || s.Theme != old.Theme;
         var assocChanged = s.RegisterFileAssociations != old.RegisterFileAssociations;
         await engine.SaveSettingsAsync(s);
         if (assocChanged) _host.RegisterIntegration();
         if (watchChanged) _host.ApplyWatchers();
+        if (rssChanged) engine.Rss.Reschedule();
         if (updatesChanged) _host.CheckForAppUpdate();
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
         _host.Main.LoadUi();
@@ -370,6 +441,49 @@ public sealed partial class SettingsViewModel : ObservableObject
             WatchFolder = path;
             WatchFolderOn = true;
         }
+    }
+
+    private bool CanAddRssFeed() => Uri.TryCreate(NewRssUrl.Trim(), UriKind.Absolute, out var u)
+        && (u.Scheme == Uri.UriSchemeHttp || u.Scheme == Uri.UriSchemeHttps) && RssFeeds.All(r => r.Url != NewRssUrl.Trim());
+
+    [RelayCommand(CanExecute = nameof(CanAddRssFeed))]
+    private void AddRssFeed()
+    {
+        var row = new RssFeedRow(NewRssUrl.Trim(), QueueSave);
+        row.UpdateStatus(null);
+        RssFeeds.Add(row);
+        NewRssUrl = "";
+        OnPropertyChanged(nameof(HasRssFeeds));
+        QueueSave();
+    }
+
+    [RelayCommand]
+    private void RemoveRssFeed(RssFeedRow row)
+    {
+        RssFeeds.Remove(row);
+        OnPropertyChanged(nameof(HasRssFeeds));
+        AddRssFeedCommand.NotifyCanExecuteChanged();
+        QueueSave();
+    }
+
+    [RelayCommand]
+    private async Task BrowseRssFolder(RssFeedRow row)
+    {
+        if (_host.Owner is { } w && await Dialogs.PickFolderAsync(w, row.SaveDirectory.Length > 0 ? row.SaveDirectory : DownloadDirectory) is { } path)
+            row.SaveDirectory = path;
+    }
+
+    /// Saves first so a feed added a moment ago is part of the check.
+    [RelayCommand]
+    private async Task CheckRssNow()
+    {
+        if (_saveTimer.IsEnabled) { _saveTimer.Stop(); await SaveAsync(); }
+        _host.Engine.Rss.CheckNow();
+    }
+
+    private void RefreshRssStatus()
+    {
+        foreach (var row in RssFeeds) row.UpdateStatus(_host.Engine.Rss.StateOf(row.Url));
     }
 
     [RelayCommand]
@@ -477,6 +591,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (copy.Proxy is { } p && Uri.TryCreate(p, UriKind.Absolute, out var u) && u.UserInfo.Length > 0)
             copy.Proxy = p.Replace(u.UserInfo + "@", "***@", StringComparison.Ordinal);
         copy.RecentFolders = [];
+        // Feed URLs often carry a tracker passkey; keep only the host.
+        foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
         using (var w = new StreamWriter(zip.CreateEntry("settings.json").Open()))
             w.Write(JsonSerializer.Serialize(copy, new JsonSerializerOptions { WriteIndented = true }));
         using (var w = new StreamWriter(zip.CreateEntry("system.txt").Open()))
