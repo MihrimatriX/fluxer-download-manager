@@ -114,6 +114,7 @@ section { animation: in .16s ease; }
 .btn.small { flex: none; height: 30px; }
 
 /* ---------- downloads ---------- */
+.skew { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; font-size: 12px; background: rgba(255, 170, 60, .12); color: #ffc27a; }
 .summary { display: flex; align-items: center; gap: 2px; padding: 0 2px 2px; font-size: 12px; color: var(--muted); }
 .summary span { flex: 1; }
 .dl-list, .media-list, .link-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }

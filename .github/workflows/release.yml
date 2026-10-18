@@ -15,6 +15,8 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      HAS_SIGNING: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -45,9 +47,37 @@ jobs:
           if ($LASTEXITCODE) { exit 1 }
           cd extension; npm ci --no-audit --no-fund; npm test
 
+      # Signing turns on once the repository has these secrets (Settings → Secrets and variables → Actions):
+      # AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, ARTIFACT_SIGNING_ENDPOINT,
+      # ARTIFACT_SIGNING_ACCOUNT, ARTIFACT_SIGNING_PROFILE. Without them the build is unsigned.
+      - name: Signing metadata
+        if: env.HAS_SIGNING == 'true'
+        shell: pwsh
+        env:
+          SIGN_ENDPOINT: ${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}
+          SIGN_ACCOUNT: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}
+          SIGN_PROFILE: ${{ secrets.ARTIFACT_SIGNING_PROFILE }}
+        run: |
+          @{ Endpoint = $env:SIGN_ENDPOINT; CodeSigningAccountName = $env:SIGN_ACCOUNT; CertificateProfileName = $env:SIGN_PROFILE } |
+            ConvertTo-Json | Set-Content "$env:RUNNER_TEMP/signing.json"
+          "FLUXER_AZURE_SIGN_FILE=$env:RUNNER_TEMP/signing.json" >> $env:GITHUB_ENV
+
       - name: Pack
         shell: pwsh
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         run: ./build/pack.ps1 -Version ${{ steps.ver.outputs.version }}
+
+      - name: Extension store package
+        shell: pwsh
+        run: cd extension; npm run store
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fluxer-extension-${{ steps.ver.outputs.version }}
+          path: extension/store/*.zip
 
       - uses: actions/upload-artifact@v4
         with:
@@ -58,5 +88,9 @@ jobs:
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/releases/*
+          files: |
+            artifacts/releases/*
+            extension/store/*.zip
           generate_release_notes: true
+          # v0.9.0-beta.1 → pre-release: only installs that turned on "Beta versions" pick it up.
+          prerelease: ${{ contains(github.ref_name, '-') }}

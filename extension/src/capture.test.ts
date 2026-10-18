@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS, RecentUrls, askAnswer, basename, bumpDaily, buildInterceptMessage, buildTorrentFileMessage, canAsk, countToday,
-  decide, formatBytes, hostOf, isTorrentLike, localDay, outcomeOf, rejectReason, sentCount, toCookieDto, toggleSite,
+  decide, formatBytes, hostOf, isTorrentLike, localDay, outcomeOf, rejectReason, sentCount, toCookieDto, toggleSite, versionSkew,
   type CaptureContext, type DownloadItemLike,
 } from './capture';
 import { PROTOCOL_VERSION, type Reply, type Request } from './protocol';
@@ -233,5 +233,18 @@ describe('sent today', () => {
     expect(formatBytes(91 * MiB, num)).toBe('91 MB');
     expect(formatBytes(1536, num)).toBe('1.5 KB');
     expect(formatBytes(undefined, num)).toBe('');
+  });
+});
+
+describe('versionSkew', () => {
+  it('ignores patch differences and unknown versions', () => {
+    expect(versionSkew('0.8.1', '0.8.4')).toBe('ok');
+    expect(versionSkew('0.8.1', undefined)).toBe('ok');
+    expect(versionSkew('0.8.1', 'dev')).toBe('ok');
+  });
+  it('names the side that is behind', () => {
+    expect(versionSkew('0.8.1', '0.9.0')).toBe('extension-old');
+    expect(versionSkew('0.10.0', '0.9.3')).toBe('app-old');
+    expect(versionSkew('1.0.0', '0.12.0')).toBe('app-old');
   });
 });

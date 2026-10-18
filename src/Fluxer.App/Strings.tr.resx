@@ -181,7 +181,7 @@
   <data name="Probing" xml:space="preserve"><value>Adres kontrol ediliyor…</value></data>
   <data name="ProgressWindow" xml:space="preserve"><value>İlerleme penceresi…</value></data>
   <data name="Proxy" xml:space="preserve"><value>Proxy</value></data>
-  <data name="ProxyDesc" xml:space="preserve"><value>Boş bırakılırsa Windows proxy ayarları kullanılır.</value></data>
+  <data name="ProxyDesc" xml:space="preserve"><value>İndirmelere ve videoya uygulanır. Boş bırakılırsa Windows proxy ayarları kullanılır. Torrent eşleri proxy üzerinden geçmez.</value></data>
   <data name="Quality" xml:space="preserve"><value>Kalite</value></data>
   <data name="QualityBest" xml:space="preserve"><value>En iyi</value></data>
   <data name="Queue" xml:space="preserve"><value>Kuyruk</value></data>
@@ -279,8 +279,8 @@
   <data name="UiScale" xml:space="preserve"><value>Arayüz boyutu</value></data>
   <data name="UiScaleDesc" xml:space="preserve"><value>Tüm pencerelerde yazıları ve kontrolleri büyütür veya küçültür.</value></data>
   <data name="UpdateFeed" xml:space="preserve"><value>Güncelleme kaynağı</value></data>
-  <data name="UpdateFeedDesc" xml:space="preserve"><value>Sürümlerin yayınlandığı klasör, paylaşım ya da URL; boş = güncelleme kapalı.</value></data>
-  <data name="UpdateFeedWatermark" xml:space="preserve"><value>https://… veya \\sunucu\paylaşım\fluxer</value></data>
+  <data name="UpdateFeedDesc" xml:space="preserve"><value>Boş bırakılırsa Fluxer'ın GitHub sürümleri kullanılır. Velopack beslemesi olan bir klasör, paylaşım ya da URL de olur.</value></data>
+  <data name="UpdateFeedWatermark" xml:space="preserve"><value>GitHub sürümleri (varsayılan)</value></data>
   <data name="UpdateNow" xml:space="preserve"><value>Şimdi güncelle</value></data>
   <data name="UpdateReadyBody" xml:space="preserve"><value>{0} sürümü Fluxer'dan çıkınca kurulacak.</value></data>
   <data name="UpdateReadyTitle" xml:space="preserve"><value>Güncelleme indirildi</value></data>
@@ -405,4 +405,18 @@
   <data name="CategoryAuto" xml:space="preserve"><value>Kategori: {0} · uzantıdan</value></data>
   <data name="CategoryManual" xml:space="preserve"><value>Kategori: {0}</value></data>
   <data name="Add" xml:space="preserve"><value>Ekle</value></data>
+  <data name="AutoUpdate" xml:space="preserve"><value>Otomatik güncelleme</value></data>
+  <data name="AutoUpdateDesc" xml:space="preserve"><value>Birkaç saatte bir bakar, yeni sürümü Fluxer'dan çıkınca kurar.</value></data>
+  <data name="BetaUpdates" xml:space="preserve"><value>Beta sürümler</value></data>
+  <data name="BetaUpdatesDesc" xml:space="preserve"><value>GitHub'daki ön sürümleri de kur.</value></data>
+  <data name="ScanDownloads" xml:space="preserve"><value>Biten indirmeleri tara</value></data>
+  <data name="ScanDownloadsDesc" xml:space="preserve"><value>Her biten dosyayı, tarayıcıların yaptığı gibi virüs korumasına gönderir.</value></data>
+  <data name="ScanBlockedTitle" xml:space="preserve"><value>Virüs koruması bir indirmeyi engelledi</value></data>
+  <data name="ScanBlockedBody" xml:space="preserve"><value>{0} virüs koruması tarafından engellendi ya da silindi.</value></data>
+  <data name="WatchClipboard" xml:space="preserve"><value>Panoyu izle</value></data>
+  <data name="WatchClipboardDesc" xml:space="preserve"><value>Bir dosya bağlantısı ya da magnet kopyaladığınızda Fluxer indirmeyi önerir.</value></data>
+  <data name="WatchFolder" xml:space="preserve"><value>Torrent izleme klasörü</value></data>
+  <data name="WatchFolderDesc" xml:space="preserve"><value>Buraya kaydedilen .torrent dosyaları kendiliğinden eklenir ve "added" klasörüne taşınır.</value></data>
+  <data name="CrashTitle" xml:space="preserve"><value>Fluxer beklenmedik şekilde kapandı</value></data>
+  <data name="CrashBody" xml:space="preserve"><value>İndirmeleriniz kaydedildi ve devam edecek. Sorunu bildirmek için bir tanılama paketi (günlükler ve ayarlar, indirme bağlantıları yok) kaydedebilirsiniz.</value></data>
 </root>

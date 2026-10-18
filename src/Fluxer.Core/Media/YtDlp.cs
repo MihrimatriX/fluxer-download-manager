@@ -10,6 +10,9 @@ public sealed record MediaProbe(string Title, bool IsPlaylist, IReadOnlyList<Med
 /// Metadata extraction (`yt-dlp -J`). Downloading itself is MediaDownload.
 public static class YtDlp
 {
+    /// Settings → Proxy, kept in sync by FluxerEngine. null = yt-dlp's default (environment proxy variables).
+    public static string? Proxy { get; set; }
+
     public static async Task<MediaProbe> ProbeAsync(ToolManager tools, string url, string? cookieFile, CancellationToken ct, string? referrer = null)
     {
         var psi = BaseStartInfo(tools, cookieFile, referrer);
@@ -73,6 +76,8 @@ public static class YtDlp
         if (cookieFile is not null) { psi.ArgumentList.Add("--cookies"); psi.ArgumentList.Add(cookieFile); }
         // Stream URLs captured in the browser usually only answer with the page they play on as Referer.
         if (referrer is not null) { psi.ArgumentList.Add("--referer"); psi.ArgumentList.Add(referrer); }
+        // Same proxy as the HTTP engine; without it video traffic would bypass a proxy the user set.
+        if (Proxy is { Length: > 0 } proxy) { psi.ArgumentList.Add("--proxy"); psi.ArgumentList.Add(proxy); }
         return psi;
     }
 

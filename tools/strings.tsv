@@ -189,7 +189,7 @@ PlaylistItems	Playlist — {0} items	Oynatma listesi — {0} öğe
 Probing	Checking the address…	Adres kontrol ediliyor…
 ProgressWindow	Progress window…	İlerleme penceresi…
 Proxy	Proxy	Proxy
-ProxyDesc	Empty uses the Windows proxy settings.	Boş bırakılırsa Windows proxy ayarları kullanılır.
+ProxyDesc	Applies to downloads and video. Empty uses the Windows proxy settings. Torrent peers never go through the proxy.	İndirmelere ve videoya uygulanır. Boş bırakılırsa Windows proxy ayarları kullanılır. Torrent eşleri proxy üzerinden geçmez.
 Quality	Quality	Kalite
 QualityBest	Best available	En iyi
 Queue	Queue	Kuyruk
@@ -303,8 +303,8 @@ UiScale	Interface size	Arayüz boyutu
 UiScaleDesc	Makes text and controls larger or smaller in every window.	Tüm pencerelerde yazıları ve kontrolleri büyütür veya küçültür.
 Unlimited	Unlimited	Sınırsız
 UpdateFeed	Update source	Güncelleme kaynağı
-UpdateFeedDesc	Folder, share or URL where releases are published; empty turns updates off.	Sürümlerin yayınlandığı klasör, paylaşım ya da URL; boş = güncelleme kapalı.
-UpdateFeedWatermark	https://… or \\server\share\fluxer	https://… veya \\sunucu\paylaşım\fluxer
+UpdateFeedDesc	Empty uses Fluxer's GitHub releases. A folder, share or URL with a Velopack feed also works.	Boş bırakılırsa Fluxer'ın GitHub sürümleri kullanılır. Velopack beslemesi olan bir klasör, paylaşım ya da URL de olur.
+UpdateFeedWatermark	GitHub releases (default)	GitHub sürümleri (varsayılan)
 UpdateNow	Update now	Şimdi güncelle
 UpdateReadyBody	Version {0} will be installed when you exit Fluxer.	{0} sürümü Fluxer'dan çıkınca kurulacak.
 UpdateReadyTitle	Update downloaded	Güncelleme indirildi
@@ -430,3 +430,17 @@ Mixed	Mixed	Karışık
 CategoryAuto	Category: {0} · from the extension	Kategori: {0} · uzantıdan
 CategoryManual	Category: {0}	Kategori: {0}
 Add	Add	Ekle
+AutoUpdate	Automatic updates	Otomatik güncelleme
+AutoUpdateDesc	Checks every few hours and installs the new version when you exit Fluxer.	Birkaç saatte bir bakar, yeni sürümü Fluxer'dan çıkınca kurar.
+BetaUpdates	Beta versions	Beta sürümler
+BetaUpdatesDesc	Also install pre-release versions from GitHub.	GitHub'daki ön sürümleri de kur.
+ScanDownloads	Scan finished downloads	Biten indirmeleri tara
+ScanDownloadsDesc	Hands each finished file to your antivirus, the way browsers do.	Her biten dosyayı, tarayıcıların yaptığı gibi virüs korumasına gönderir.
+ScanBlockedTitle	Antivirus blocked a download	Virüs koruması bir indirmeyi engelledi
+ScanBlockedBody	{0} was blocked or removed by your antivirus.	{0} virüs koruması tarafından engellendi ya da silindi.
+WatchClipboard	Watch the clipboard	Panoyu izle
+WatchClipboardDesc	When you copy a link to a file or a magnet, Fluxer offers to download it.	Bir dosya bağlantısı ya da magnet kopyaladığınızda Fluxer indirmeyi önerir.
+WatchFolder	Torrent watch folder	Torrent izleme klasörü
+WatchFolderDesc	.torrent files saved here are added automatically and moved to "added".	Buraya kaydedilen .torrent dosyaları kendiliğinden eklenir ve "added" klasörüne taşınır.
+CrashTitle	Fluxer closed unexpectedly	Fluxer beklenmedik şekilde kapandı
+CrashBody	Your downloads were saved and will continue. You can save a diagnostics package (logs and settings, no download links) to report the problem.	İndirmeleriniz kaydedildi ve devam edecek. Sorunu bildirmek için bir tanılama paketi (günlükler ve ayarlar, indirme bağlantıları yok) kaydedebilirsiniz.

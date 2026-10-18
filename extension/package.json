@@ -7,7 +7,8 @@
     "icons": "node scripts/icons.mjs",
     "typecheck": "tsc --noEmit",
     "build": "node scripts/icons.mjs && tsc --noEmit && vite build && vite build --mode content",
-    "test": "vitest run"
+    "test": "vitest run",
+    "store": "node scripts/store-zip.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.5",

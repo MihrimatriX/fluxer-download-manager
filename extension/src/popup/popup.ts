@@ -1,12 +1,12 @@
 import { CATEGORIES, countByCategory, filterLinks, toBatchLinks, type BatchLink, type LinkCategory } from '../batch';
 import {
-  DEFAULT_SETTINGS, countToday, formatBytes, hostOf, isAddable, isHttp, localDay, outcomeOf, toggleSite,
+  DEFAULT_SETTINGS, countToday, formatBytes, hostOf, isAddable, isHttp, localDay, outcomeOf, toggleSite, versionSkew,
   type DailyCount, type Outcome, type Settings,
 } from '../capture';
 import type { MediaHit } from '../media';
 import {
   envelope, sendNative,
-  type Command, type CommandAction, type Reply, type Resource, type StatusEntry, type StatusGet,
+  type Command, type CommandAction, type Ping, type Reply, type Resource, type StatusEntry, type StatusGet,
 } from '../protocol';
 
 const t = (key: string, ...subs: string[]) => chrome.i18n.getMessage(key, subs);
@@ -112,10 +112,21 @@ $('openApp').addEventListener('click', () => void command('show'));
 $('pauseAll').addEventListener('click', () => void command('pauseAll'));
 $('resumeAll').addEventListener('click', () => void command('resumeAll'));
 
-// "Paste link": the clipboard's URL as a download.
+// App and extension update separately; say which one is behind (checked once per popup open).
+void native(envelope<Ping>('ping', {})).then((r) => {
+  if (r?.type !== 'pong') return;
+  const skew = versionSkew(chrome.runtime.getManifest().version, r.payload.appVersion);
+  if (skew === 'ok') return;
+  $('skew').textContent = t(skew === 'extension-old' ? 'skewExtensionOld' : 'skewAppOld');
+  $('skew').hidden = false;
+});
+
+// "Paste link": the clipboard's URL as a download. Clipboard access is optional and asked for here,
+// on the click, so installing the extension does not request it up front.
 $('paste').addEventListener('click', async () => {
   let text = '';
   try {
+    if (!(await chrome.permissions.request({ permissions: ['clipboardRead'] }))) return toast(t('clipboardFailed'), 'bad');
     text = (await navigator.clipboard.readText()).trim();
   } catch {
     return toast(t('clipboardFailed'), 'bad');

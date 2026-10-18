@@ -179,6 +179,22 @@ export function outcomeOf(reply: Reply | undefined, expect?: Reply['type']): Out
   return 'ok';
 }
 
+export type VersionSkew = 'ok' | 'extension-old' | 'app-old';
+
+/**
+ * The app and the extension ship together but update separately (installer feed vs. the browser's
+ * store), so a major.minor gap means new features on one side are missing on the other.
+ */
+export function versionSkew(extension: string, app: string | undefined): VersionSkew {
+  const mm = (v: string | undefined) => {
+    const m = /^(\d+)\.(\d+)/.exec(v ?? '');
+    return m ? Number(m[1]) * 1000 + Number(m[2]) : undefined;
+  };
+  const e = mm(extension), a = mm(app);
+  if (e === undefined || a === undefined || e === a) return 'ok';
+  return e < a ? 'extension-old' : 'app-old';
+}
+
 /** Files a request handed to Fluxer, for the popup's "sent today" line (0 when the app did not take them). */
 export function sentCount(msg: Request, reply: Reply | undefined): number {
   switch (msg.type) {

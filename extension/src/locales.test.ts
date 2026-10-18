@@ -21,7 +21,7 @@ const used = new Set<string>([
   // picked by a condition inside t(…)
   'emptyDownloads', 'appNotRunning', 'updateRequired', 'sendUnreachable', 'sendFailed',
   'popupConnected', 'popupUpdateRequired', 'popupUnreachable', 'videoButtonSent', 'videoButtonFailed', 'videoButtonUnreachable',
-  'batchEmpty', 'pageNotReady', 'siteOn', 'siteOff',
+  'batchEmpty', 'pageNotReady', 'siteOn', 'siteOff', 'skewExtensionOld', 'skewAppOld',
   // built at runtime: t(`state_${…}`), t(`cat_${…}`)
   ...['downloading', 'seeding', 'queued', 'paused', 'completed', 'failed'].map((s) => `state_${s}`),
   ...['all', ...CATEGORIES].map((c) => `cat_${c}`),

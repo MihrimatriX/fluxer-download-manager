@@ -325,5 +325,11 @@
   },
   "back": {
     "message": "Back"
+  },
+  "skewExtensionOld": {
+    "message": "Fluxer is newer than this extension. Update the extension to use its new features."
+  },
+  "skewAppOld": {
+    "message": "This extension is newer than Fluxer. Update Fluxer from Settings → Advanced."
   }
 }
