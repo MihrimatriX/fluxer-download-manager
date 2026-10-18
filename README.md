@@ -12,6 +12,8 @@ Fluxer is a download manager for Windows. It splits HTTP downloads across severa
 - A night queue that starts at a time you choose (01:00 by default).
 - A tray window with live speed, a mini graph, running downloads and a box for pasting links.
 - Deleting is undoable for 6 seconds, and files stay on disk unless you pick "Delete with files…" from the context menu.
+- Optional clipboard monitoring for copied file links and magnets, and a watch folder that adds any `.torrent` saved into it.
+- Finished downloads are handed to your antivirus through Windows Attachment Services, the way browsers do.
 - English and Turkish UI.
 
 ## Install
@@ -46,7 +48,9 @@ Closing the window sends Fluxer to the tray. Quit from the tray menu. Settings s
 
 ## Updates
 
-Installed copies update themselves. Set Settings → Advanced → Update source to this repository's GitHub URL (or any folder or URL that hosts a Velopack feed). Fluxer downloads new versions in the background and installs them when you exit.
+Installed copies update themselves from this repository's GitHub releases. Fluxer checks at start and every few hours, downloads new versions in the background and installs them when you exit (or right away from Settings → Advanced). Turn on "Beta versions" there to also get pre-releases, or point "Update source" at another folder or URL that hosts a Velopack feed.
+
+Signing the installer and publishing the extension to the Chrome Web Store and Edge Add-ons are described in [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Building from source
 

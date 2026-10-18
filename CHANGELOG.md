@@ -1,5 +1,25 @@
 # Changelog
 
+## Yayınlanmadı
+
+### Yeni
+- **Otomatik güncelleme varsayılan olarak açık:** kaynak boşsa Fluxer'ın GitHub sürümleri kullanılır; açılışta ve 6 saatte bir bakılır, indirilen sürüm çıkışta kurulur. Ayarlar → Gelişmiş: "Otomatik güncelleme" ve "Beta sürümler" (GitHub ön sürümleri). 0.8 ayarlarıyla gelen kopyalar da güncelleme almaya başlar.
+- **Pano izleme** (İndirmeler, varsayılan kapalı): dosya bağlantısı ya da magnet kopyalanınca yeni indirme penceresi açılır. Web sayfası bağlantıları ve listede zaten olanlar sorulmaz.
+- **Torrent izleme klasörü:** klasöre bırakılan `.torrent` dosyaları pencere açmadan eklenir ve `added` alt klasörüne taşınır.
+- **Biten indirmeler virüs korumasına gönderilir** (Windows Attachment Services, `IAttachmentExecute`): Mark of the Web yazılır ve Defender/yüklü antivirüs dosyayı tarar; engellenirse bildirim gelir. Torrentler hariç.
+- **Çökme sonrası tanılama:** yakalanmamış istisnalar (UI thread'i, `_ = …Async()` görevleri, diğer thread'ler) günlüğe yazılır. Uygulama böyle bir hatayla kapanırsa sonraki açılışta tanılama paketini kaydetmeyi önerir. Hiçbir şey kendiliğinden gönderilmez.
+
+### Düzeltildi
+- Proxy ayarı yt-dlp'ye de uygulanıyor; önceden video trafiği proxy'yi atlıyordu. Ayar açıklaması torrent eşlerinin proxy'den geçmediğini söylüyor.
+
+### Tarayıcı eklentisi
+- `clipboardRead` artık isteğe bağlı izin; yalnızca "Bağlantı yapıştır"a basınca istenir.
+- Açılır pencere uygulama ile eklentinin major.minor sürümü farklıysa hangisinin güncellenmesi gerektiğini söyler.
+- `npm run store`: mağazalar için `key` alanı çıkarılmış zip (`extension/store/`). CI bunu release'e de ekler.
+
+### Yayın
+- `build/pack.ps1` ve CI imzalamayı destekliyor (Azure Artifact Signing ya da signtool parametreleri); secret'lar yoksa imzasız paketler. Tireli etiketler (`v0.9.0-beta.1`) GitHub'da ön sürüm olur. Ayrıntı: `docs/RELEASING.md`.
+
 ## 0.8.1 — 2026-10-16
 
 ### Düzeltildi
