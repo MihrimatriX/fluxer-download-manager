@@ -1,4 +1,4 @@
-# Builds the Windows installer (Velopack): self-contained app + NativeAOT host + built extension.
+# Builds the Windows installer (Velopack): self-contained app + NativeAOT host + built extension (Chromium and Firefox).
 #   pwsh build/pack.ps1 [-Version 0.1.0]
 # Output: artifacts/releases/Fluxer-win-Setup.exe (+ update packages for the update feed).
 param([string]$Version = ([xml](Get-Content "$PSScriptRoot/../Directory.Build.props")).Project.PropertyGroup.Version)
@@ -24,6 +24,7 @@ npm run build
 if ($LASTEXITCODE) { Pop-Location; throw "extension build failed" }
 Pop-Location
 Copy-Item "$root/extension/dist" "$publish/extension" -Recurse -Force
+Copy-Item "$root/extension/dist-firefox" "$publish/extension-firefox" -Recurse -Force
 
 Get-ChildItem $publish -Filter *.pdb -Recurse | Remove-Item
 

@@ -10,5 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Fluxer.Core/Fluxer.Core.csproj" />
+    <ProjectReference Include="../../src/Fluxer.Ipc/Fluxer.Ipc.csproj" />
   </ItemGroup>
 </Project>
