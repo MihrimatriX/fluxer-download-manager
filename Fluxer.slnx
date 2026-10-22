@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Fluxer.App/Fluxer.App.csproj" />
+    <Project Path="src/Fluxer.Cli/Fluxer.Cli.csproj" />
+    <Project Path="src/Fluxer.Core/Fluxer.Core.csproj" />
+    <Project Path="src/Fluxer.Ipc/Fluxer.Ipc.csproj" />
+    <Project Path="src/Fluxer.NativeHost/Fluxer.NativeHost.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Fluxer.Core.Tests/Fluxer.Core.Tests.csproj" />
+    <Project Path="tests/Fluxer.Integration.Tests/Fluxer.Integration.Tests.csproj" />
+  </Folder>
+</Solution>

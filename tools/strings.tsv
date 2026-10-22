@@ -1,0 +1,471 @@
+AccentColor	Accent colour	Vurgu rengi
+AccentColorDesc	Buttons, progress and highlights. The first one is Fluxer orange.	Butonlar, ilerleme ve vurgular. İlki Fluxer turuncusu.
+AccentSystem	Windows accent	Windows vurgu rengi
+Accept	Accept	Kabul et
+AddPaused	Add paused	Duraklatılmış ekle
+AddToQueue	Add to queue	Kuyruğa ekle
+AddTorrent	Add torrent	Torrent ekle
+AddUrl	Add URL…	Bağlantı ekle…
+AdvancedOptions	Advanced options	Gelişmiş seçenekler
+AfterNothing	Do nothing	Hiçbir şey yapma
+AfterQueue	When the queue finishes	Kuyruk bitince
+AfterQueueDesc	Runs once, then switches back to "Do nothing".	Bir kez çalışır, sonra "Hiçbir şey yapma"ya döner.
+AfterShutdown	Shut down the computer	Bilgisayarı kapat
+AfterSleep	Put the computer to sleep	Bilgisayarı uyut
+AnimationsDesc	Smooth transitions and progress. Turn off to reduce motion.	Yumuşak geçişler ve ilerleme. Hareketi azaltmak için kapatın.
+AnimationsSetting	Animations	Animasyonlar
+AudioOnly	Audio only	Yalnızca ses
+AvgSpeedIs	avg. {0}	ort. {0}
+Back	Back	Geri
+Browse	Browse…	Gözat…
+BrowserStatus	Browser integration	Tarayıcı entegrasyonu
+BrowserStatusDesc	Native messaging registration per browser (Chromium browsers and Firefox). Opera and Vivaldi use Chrome's.	Tarayıcı başına native messaging kaydı (Chromium tabanlılar ve Firefox). Opera ve Vivaldi, Chrome'unkini kullanır.
+Cancel	Cancel	İptal
+CatAll	All downloads	Tüm indirmeler
+CatArchives	Archives	Arşivler
+CatAuto	Automatic	Otomatik
+CatDocuments	Documents	Belgeler
+Categories	CATEGORIES	KATEGORİLER
+Category	Category	Kategori
+CatMusic	Music	Müzik
+CatNone	No category	Kategorisiz
+CatPrograms	Programs	Programlar
+CatTorrent	Torrents	Torrentler
+CatVideo	Video	Video
+CheckingLink	Checking the new link…	Yeni bağlantı kontrol ediliyor…
+Checksum	Checksum (optional)	Sağlama toplamı (isteğe bağlı)
+ChecksumWatermark	Expected hash, hex	Beklenen özet (hex)
+ClearCompleted	Clear finished	Bitenleri temizle
+ClearCompletedConfirm	Remove {0} finished download(s) from the list? The files stay on disk.	{0} biten indirme listeden kaldırılsın mı? Dosyalar diskte kalır.
+ClearCompletedTip	Remove finished downloads from the list (files are kept)	Biten indirmeleri listeden kaldır (dosyalar silinmez)
+Close	Close	Kapat
+ClosesIn	Closes in {0} s	{0} sn içinde kapanacak
+ColAdded	Added	Eklenme
+ColEta	Time left	Kalan
+ColName	Name	Ad
+ColProgress	Progress	İlerleme
+ColSize	Size	Boyut
+ColSpeed	Speed	Hız
+ColStatus	Status	Durum
+CompactMode	Compact rows	Sıkı satırlar
+CompactModeDesc	44 px list rows; off gives roomier 54 px rows.	44 px liste satırları; kapalıyken daha ferah 54 px.
+CompactTip	Show or hide details	Ayrıntıları göster/gizle
+Conflict	If a file with the same name exists	Aynı adda dosya varsa
+ConflictOverwrite	Overwrite it	Üzerine yaz
+ConflictRename	Keep both: "name (1).ext"	İkisini de tut: "ad (1).uzantı"
+ConnActive	receiving	alınıyor
+ConnDone	done	tamam
+ConnDownloaded	Received	Alınan
+Connections	Connections per download	İndirme başına bağlantı
+ConnectionsDesc	Parallel connections for one HTTP download (1–32). Fluxer lowers it automatically if the server pushes back.	Tek bir HTTP indirmesi için paralel bağlantı (1–32). Sunucu itiraz ederse Fluxer otomatik düşürür.
+ConnectionsShort	conn.	bağl.
+ConnRange	Byte range	Bayt aralığı
+ConnWaiting	waiting	bekliyor
+ContinueAnyway	Continue anyway	Yine de devam et
+Copy	Copy	Kopyala
+CopyUrl	Copy address	Adresi kopyala
+Delete	Delete	Sil
+DeleteConfirm	Remove {0} download(s) from the list?	{0} indirme listeden kaldırılsın mı?
+DeleteFilesToo	Also delete the files from disk	Dosyaları diskten de sil
+Details	Details	Ayrıntılar
+Diagnostics	Diagnostics	Tanılama
+DiagnosticsDesc	Logs and settings for bug reports; cookies and download addresses are never included.	Hata bildirimi için loglar ve ayarlar; cookie'ler ve indirme adresleri asla eklenmez.
+Download	Download	İndir
+DownloadFolder	Download folder	İndirme klasörü
+EmptyBody	Paste a link (Ctrl+V), drop a .torrent file here, or download something in your browser.	Bir bağlantı yapıştırın (Ctrl+V), buraya bir .torrent dosyası bırakın ya da tarayıcınızdan bir şey indirin.
+EmptyTitle	Nothing here yet	Henüz bir şey yok
+ErrDiskFull	Not enough disk space	Yetersiz disk alanı
+ErrFileChanged	The file on the server has changed. Retry starts over.	Sunucudaki dosya değişmiş. Yeniden denemek baştan başlatır.
+ErrGotHtml	The server sent a web page instead of the file (sign-in, captcha or an expired link). Download it in the browser.	Sunucu dosya yerine bir web sayfası gönderdi (oturum, doğrulama ya da süresi dolmuş bağlantı). Tarayıcıdan indirin.
+ErrHashMismatch	Checksum does not match	Sağlama toplamı uyuşmuyor
+ErrHttp	Server error (HTTP {0})	Sunucu hatası (HTTP {0})
+ErrLinkExpired	The link has expired — click it again in your browser or paste a new one	Bağlantının süresi dolmuş — tarayıcıda tekrar tıklayın veya yeni bağlantı yapıştırın
+ErrMediaDrm	This content is DRM protected and cannot be downloaded	Bu içerik DRM korumalı, indirilemez
+ErrMediaFailed	The video could not be downloaded	Video indirilemedi
+ErrMediaForbidden	The site refused the download (403)	Site indirmeyi reddetti (403)
+ErrMediaFormat	The selected quality is not available	Seçilen kalite mevcut değil
+ErrMediaPrivate	This video is private	Bu video gizli
+ErrMediaSignin	The site asks you to sign in — open the page in your browser while signed in and send it again	Site oturum açmanızı istiyor — sayfayı tarayıcıda oturum açıkken açıp tekrar gönderin
+ErrMediaToolsMissing	Video tools are not installed	Video araçları kurulu değil
+ErrMediaUnsupported	This site is not supported	Bu site desteklenmiyor
+ErrNetwork	Network error	Ağ hatası
+ErrToolHash	The downloaded tool failed verification and was deleted	İndirilen araç doğrulanamadı ve silindi
+ErrToolStalled	The download stopped responding. Check your connection and try again.	İndirme yanıt vermeyi bıraktı. Bağlantınızı kontrol edip yeniden deneyin.
+EtaLeft	{0} left	{0} kaldı
+ExportDiagnostics	Export diagnostics package…	Tanılama paketini dışa aktar…
+ExtensionFolder	Extension folder (load unpacked)	Eklenti klasörü (paketlenmemiş yükle)
+ExtensionHowTo	chrome://extensions → Developer mode → Load unpacked → this folder.	chrome://extensions → Geliştirici modu → Paketlenmemiş öğe yükle → bu klasör.
+ExtensionId	Extension ID	Eklenti kimliği
+FirefoxExtensionFolder	Firefox extension folder	Firefox eklenti klasörü
+FirefoxExtensionHowTo	about:debugging → This Firefox → Load Temporary Add-on → manifest.json in this folder. Stays until Firefox restarts; the signed .xpi from the release page installs for good.	about:debugging → Bu Firefox → Geçici Eklenti Yükle → bu klasördeki manifest.json. Firefox yeniden başlayana kadar kalır; sürüm sayfasındaki imzalı .xpi kalıcı olarak kurulur.
+Extensions	Extensions	Uzantılar
+FileName	File name	Dosya adı
+FileNameAuto	Automatic	Otomatik
+Files	Files	Dosyalar
+FilesTotal	{0} files · {1}	{0} dosya · {1}
+FilterActive	Active	Etkin
+FilterAll	All	Tümü
+FilterDone	Completed	Tamamlanan
+FilterError	Failed	Hatalı
+FilterPaused	Paused	Duraklatılan
+FilterQueued	Queued	Sırada
+FragmentFormat	Fragment {0} / {1}	Parça {0} / {1}
+FreeSpace	{0} free on this drive	Bu sürücüde {0} boş
+GrabCount	{0} of {1} selected	{1} öğeden {0} seçili
+GrabEmpty	Nothing to download was found on this page.	Bu sayfada indirilecek bir şey bulunamadı.
+GrabTitle	Download from page	Sayfadan indir
+Hide	Hide	Arka plana al
+HideTip	Close this window; the download continues	Pencereyi kapat; indirme sürer
+HttpSlots	Simultaneous HTTP downloads	Aynı anda HTTP indirmesi
+InfoAdded	Added	Eklenme
+InfoConnections	Connections	Bağlantılar
+InfoError	Error	Hata
+InfoFinalUrl	Resolved address	Çözümlenen adres
+InfoInfoHash	Info hash	Bilgi özeti
+InfoMirrors	Mirrors	Aynalar
+InfoReferrer	Referrer	Yönlendiren
+InfoResumable	Resumable	Devam ettirilebilir
+InfoSavedTo	Saved to	Kayıt yeri
+InfoSize	Size	Boyut
+InfoStatus	Status	Durum
+InfoUploaded	Uploaded	Gönderilen
+InfoUrl	Address	Adres
+IntegrationMissing	not registered	kayıtlı değil
+IntegrationOk	ready	hazır
+InvalidTorrent	This is not a valid torrent or magnet link.	Bu geçerli bir torrent veya magnet bağlantısı değil.
+InvalidTorrentFile	The browser saved a ".torrent" that is not a valid torrent — the site probably sent a web page (sign-in or captcha).	Tarayıcının kaydettiği ".torrent" geçerli bir torrent değil — site büyük ihtimalle bir web sayfası gönderdi (oturum veya doğrulama).
+Kind	Type	Tür
+KindAll	All	Tümü
+KindFile	Files	Dosyalar
+KindImage	Images	Resimler
+KindMagnet	Magnet link — opens as a torrent	Magnet bağlantısı — torrent olarak açılır
+KindMedia	Media	Medya
+LangSystem	System language	Sistem dili
+Language	Language	Dil
+LayoutTip	Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.	İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Pencere boyutu, sütunlar, paneller ve kenar çubuğu hatırlanır.
+LimitHttp	HTTP downloads	HTTP indirmeleri
+LimitHttpDesc	Shared by all HTTP and video downloads.	Tüm HTTP ve video indirmeleri arasında paylaşılır.
+LimitTorrentDown	Torrent download	Torrent indirme
+LimitTorrentUp	Torrent upload	Torrent gönderme
+LinkMatchAttach	Attach and resume	Bağla ve devam et
+LinkMatchBody	"{0}" is waiting for a new link. Use this download to resume it?	"{0}" yeni bir bağlantı bekliyor. Kaldığı yerden devam etmek için bu indirme kullanılsın mı?
+LinkMatchNew	Start a new download	Yeni indirme başlat
+LinkMatchTitle	Attach to existing download?	Mevcut indirmeye bağlansın mı?
+LinkNoResume	The new link does not support resuming, so the download has to start again from the beginning.	Yeni bağlantı kaldığı yerden devam etmeyi desteklemiyor, indirmenin baştan başlaması gerekiyor.
+LinkSizeMismatch	The new link points to a file of a different size, so it was rejected.	Yeni bağlantı farklı boyutta bir dosyayı gösteriyor, bu yüzden reddedildi.
+LinkUnreachable	The new link could not be reached.	Yeni bağlantıya ulaşılamadı.
+LinkValidatorChanged	The server reports a different version of the file (ETag/Last-Modified changed). The part downloaded so far cannot be reused, so the download has to start again from the beginning.	Sunucu dosyanın farklı bir sürümünü bildiriyor (ETag/Last-Modified değişmiş). Şimdiye kadar indirilen kısım kullanılamaz, indirmenin baştan başlaması gerekiyor.
+MagnetNoFiles	The file list will be available once metadata is fetched from peers.	Dosya listesi, meta veriler eşlerden alındıktan sonra görünecek.
+MediaDisclaimer	Fluxer uses yt-dlp to save videos from websites. You are responsible for respecting copyright and the site's terms of service. DRM-protected content is not supported.	Fluxer, web sitelerindeki videoları kaydetmek için yt-dlp kullanır. Telif haklarına ve sitenin kullanım koşullarına uymak sizin sorumluluğunuzdadır. DRM korumalı içerik desteklenmez.
+MediaProbing	Reading video information…	Video bilgileri okunuyor…
+MediaTitle	Save video	Videoyu kaydet
+MediaTools	Video tools	Video araçları
+BackdropSetting	Style	Görünüm stili
+BackdropDesc	Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.	Lacivert standart görünüm; cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdınla renklenir; neumorfik yumuşak kabartmalı yüzeyler kullanır.
+BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
+BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
+BackdropMica	Mica (Windows 11)	Mica (Windows 11)
+BackdropNone	Navy (default)	Lacivert (varsayılan)
+RestartFromScratch	Restart from the beginning	Baştan başlat
+SelectAll	Select all	Tümünü seç
+SelectRow	Select	Seç
+MinDimension	Min. size (px)	En küçük boyut (px)
+MinSizeKb	Min. file size (KB)	En küçük dosya (KB)
+MirrorInvalid	Not an http(s) address: {0}	http(s) adresi değil: {0}
+Mirrors	Mirrors (optional)	Aynalar (isteğe bağlı)
+MirrorsDesc	Connections are shared between the link and its mirrors. Only mirrors that serve the same file (same size, resumable) are used.	Bağlantılar asıl adres ile aynalar arasında paylaştırılır. Yalnızca aynı dosyayı sunan (aynı boyutta ve devam ettirilebilir) aynalar kullanılır.
+MirrorsSummary	{0} · {1} in use, {2} dropped	{0} · {1} kullanımda, {2} devre dışı
+MirrorsWatermark	Other addresses of the same file, one per line	Aynı dosyanın diğer adresleri, her satıra bir tane
+MoveBottom	Move to bottom	En sona taşı
+MoveDown	Move down	Aşağı taşı
+MoveDownTip	Start later (Ctrl+Down)	Daha sonra başlat (Ctrl+Aşağı)
+MoveTop	Move to top	En başa taşı
+MoveUp	Move up	Yukarı taşı
+MoveUpTip	Start sooner (Ctrl+Up)	Daha önce başlat (Ctrl+Yukarı)
+NewDownload	New download	Yeni indirme
+No	No	Hayır
+NotEnoughSpace	— not enough space	— yer yetmiyor
+NotifyCompleted	Download complete	İndirme tamamlandı
+NotResumable	cannot resume	devam ettirilemez
+Ok	OK	Tamam
+OpenFile	Open	Aç
+OpenFolder	Show in folder	Klasörde göster
+OpenLogs	Open logs	Logları aç
+PasteTip	Paste from clipboard	Panodan yapıştır
+Pause	Pause	Duraklat
+PauseAll	Pause all	Tümünü duraklat
+PauseAllTip	Pause all (Ctrl+Shift+P)	Tümünü duraklat (Ctrl+Shift+P)
+PeersCount	{0} peers	{0} eş
+PlaylistItems	Playlist — {0} items	Oynatma listesi — {0} öğe
+Probing	Checking the address…	Adres kontrol ediliyor…
+ProgressWindow	Progress window…	İlerleme penceresi…
+Proxy	Proxy	Proxy
+ProxyDesc	Applies to downloads and video. Empty uses the Windows proxy settings. Torrent peers never go through the proxy.	İndirmelere ve videoya uygulanır. Boş bırakılırsa Windows proxy ayarları kullanılır. Torrent eşleri proxy üzerinden geçmez.
+Quality	Quality	Kalite
+QualityBest	Best available	En iyi
+Queue	Queue	Kuyruk
+QueuedAt	Queued (#{0})	Sırada ({0}.)
+QuickLimitTip	Speed limit for HTTP and torrent downloads	HTTP ve torrent indirmeleri için hız sınırı
+RecentFolders	Recent folders	Son klasörler
+RefreshLink	Refresh link…	Bağlantıyı yenile…
+RefreshLinkPrompt	Paste the new address of the same file:	Aynı dosyanın yeni adresini yapıştırın:
+RefreshLinkTitle	Refresh link	Bağlantıyı yenile
+RegisterAssociations	Open magnet links and .torrent files with Fluxer	Magnet bağlantılarını ve .torrent dosyalarını Fluxer ile aç
+RegisterAssociationsDesc	Clicking a magnet link or opening a .torrent file starts Fluxer.	Magnet bağlantısına tıklamak veya .torrent dosyası açmak Fluxer'ı başlatır.
+Repair	Repair	Onar
+Reset	Reset	Sıfırla
+ResetColumns	Reset columns	Sütunları sıfırla
+ResetDefaults	Reset settings	Ayarları sıfırla
+ResetDefaultsConfirm	Restore all settings to their defaults? Downloads are not affected.	Tüm ayarlar varsayılana dönsün mü? İndirmeler etkilenmez.
+ResetDefaultsDesc	Restore every option on this page to its default.	Bu sayfadaki tüm seçenekleri varsayılana döndürür.
+RestartToUpdate	Restart to install the update	Güncellemeyi kurmak için yeniden başlat
+Resumable	resumable	devam ettirilebilir
+Resume	Resume	Devam
+ResumeAll	Resume all	Tümünü sürdür
+ResumeAllTip	Resume all (Ctrl+Shift+R)	Tümünü sürdür (Ctrl+Shift+R)
+RowAction	Pause / resume / open folder	Duraklat / sürdür / klasörü aç
+RssAdd	Add feed	Besleme ekle
+RssCheckNow	Check now	Şimdi kontrol et
+RssExclude	Skip titles matching (regex)	Şuna uyan başlıkları atla (regex)
+RssFeeds	RSS feeds	RSS beslemeleri
+RssFeedsDesc	New torrents in these feeds are added automatically. Whatever a feed lists when you add it is skipped; only items published later are downloaded.	Bu beslemelere gelen yeni torrentler kendiliğinden eklenir. Besleme eklendiği anda listelenenler atlanır, yalnızca sonradan yayımlananlar indirilir.
+RssInclude	Only titles matching (regex)	Yalnızca şuna uyan başlıklar (regex)
+RssInterval	Check every (minutes)	Kontrol aralığı (dakika)
+RssIntervalDesc	How often each feed is fetched, 5–1440 minutes.	Her beslemenin ne sıklıkla okunacağı, 5–1440 dakika.
+RssInvalidFilter	Invalid filter pattern; nothing is added until it is fixed.	Filtre ifadesi geçersiz; düzeltilene kadar hiçbir şey eklenmez.
+RssLastCheck	Checked {0} · {1} added	Son kontrol {0} · {1} eklendi
+RssNotChecked	Not checked yet	Henüz kontrol edilmedi
+RssRemove	Remove feed	Beslemeyi kaldır
+RssSaveFolder	Save folder (default: torrent folder)	Kayıt klasörü (varsayılan: torrent klasörü)
+RssUrlHint	Feed address (https://…)	Besleme adresi (https://…)
+SaveTo	Save to	Kayıt yeri
+ScheduleStart	Start time	Başlama saati
+ScheduleStartDesc	Resume all paused downloads at this time every day.	Her gün bu saatte duraklatılmış tüm indirmeleri sürdür.
+ScheduleStop	Stop time	Durma saati
+ScheduleStopDesc	Pause all downloads at this time every day.	Her gün bu saatte tüm indirmeleri duraklat.
+Search	Search downloads	İndirmelerde ara
+SecAppearance	Appearance	Görünüm
+SecBrowser	Browser	Tarayıcı
+SecDownloads	Downloads	İndirmeler
+SecGeneral	General	Genel
+SecSchedule	Schedule	Zamanlayıcı
+SecSpeed	Speed limits	Hız sınırları
+SecTorrent	Torrent	Torrent
+SecVideo	Video sites	Video siteleri
+SeedMinutes	Seeding time (minutes)	Paylaşım süresi (dakika)
+SeedMinutesDesc	Stop seeding after this many minutes (0 = no limit).	Bu kadar dakika sonra paylaşımı durdur (0 = sınırsız).
+SeedOverride	Own seeding rules	Kendi paylaşım kuralları
+SeedOverrideDesc	Ratio and minutes for this torrent only; off = global setting.	Yalnızca bu torrent için oran ve dakika; kapalı = genel ayar.
+SeedRatio	Seeding ratio	Paylaşım oranı
+SeedRatioDesc	Stop seeding when uploaded ÷ size reaches this ratio (0 = no limit).	Gönderilen ÷ boyut bu orana ulaşınca paylaşımı durdur (0 = sınırsız).
+SegmentMap	Connections	Bağlantılar
+SelectNone	Select none	Hiçbirini seçme
+Sequential	Download in order (for previewing media)	Sıralı indir (medya önizlemesi için)
+Settings	Settings	Ayarlar
+SettingsSaved	Saved	Kaydedildi
+ShowAddDialog	Ask before starting downloads from the browser	Tarayıcıdan gelen indirmeleri başlatmadan önce sor
+ShowAddDialogDesc	Show the add window for downloads coming from the browser; off = start immediately.	Tarayıcıdan gelen indirmelerde ekleme penceresini göster; kapalı = hemen başlat.
+ShowCompletedCard	"Completed" card	"Tamamlandı" kartı
+ShowCompletedCardDesc	A small card in the corner when a download finishes; closes by itself.	İndirme bitince köşede küçük bir kart; kendiliğinden kapanır.
+ShowNotifications	Show notifications	Bildirimleri göster
+ShowNotificationsDesc	Windows notifications when a download finishes or fails.	İndirme bittiğinde veya başarısız olduğunda Windows bildirimi.
+ShowProgressWindow	Progress window for new downloads	Yeni indirmelerde ilerleme penceresi
+ShowProgressWindowDesc	Opens a detailed window for each download you start. Double-click a row to open it any time.	Başlattığınız her indirme için ayrıntılı bir pencere açar. Bir satıra çift tıklayarak her zaman açabilirsiniz.
+SlotsDesc	Video downloads count here too; the rest wait in the queue.	Video indirmeleri de buraya sayılır; kalanlar kuyrukta bekler.
+SpeedGraph	Speed (last minute)	Hız (son dakika)
+SpeedLimitPrompt	Speed limit for this download in KB/s (0 = unlimited):	Bu indirme için hız sınırı, KB/s (0 = sınırsız):
+SpeedLimitTitle	Speed limit…	Hız sınırı…
+StartNow	Start now	Hemen başlat
+StatAvgSpeed	Average speed	Ortalama hız
+StatConnections	Connections	Bağlantılar
+StateCompleted	Completed	Tamamlandı
+StateDiskFull	Disk full	Disk dolu
+StateDownloading	Downloading	İndiriliyor
+StateFailed	Failed	Başarısız
+StatElapsed	Elapsed	Geçen süre
+StateNeedsLinkRefresh	Link refresh needed	Bağlantı yenilenmeli
+StatePaused	Paused	Duraklatıldı
+StateQueued	Queued	Sırada
+StateSeeding	Seeding	Paylaşılıyor
+StateStarting	Connecting…	Bağlanıyor…
+StateVerifying	Verifying	Doğrulanıyor
+StatResumable	Resumable	Devam desteği
+StatServer	Server	Sunucu
+StatSize	Size	Boyut
+SummaryFormat	{0} downloads · {1} active · {2} queued	{0} indirme · {1} etkin · {2} sırada
+TabActivity	Activity	Etkinlik
+TabAdvanced	Advanced	Gelişmiş
+TabConnectionsList	Connections	Bağlantılar
+TabFiles	Files	Dosyalar
+TabGeneral	General	Genel
+TabHeaders	Headers	Başlıklar
+TabPeers	Peers	Eşler
+TabTorrentOptions	Options	Seçenekler
+Theme	Theme	Tema
+ThemeDark	Dark	Koyu
+ThemeLight	Light	Açık
+ThemeSystem	Follow system	Sistemi izle
+ToggleDetail	Show or hide the detail panel	Ayrıntı panelini göster/gizle
+ToggleSidebar	Collapse or expand the sidebar	Kenar çubuğunu daralt/genişlet
+TookIs	took {0}	{0} sürdü
+ToolbarLabelsDesc	Show text next to toolbar icons.	Araç çubuğu ikonlarının yanında yazı göster.
+ToolbarLabelsSetting	Toolbar labels	Araç çubuğu etiketleri
+ToolsConsent	To save videos, Fluxer needs yt-dlp, deno and ffmpeg (about 150 MB). They will be downloaded once from their official GitHub releases and verified with the publishers' SHA-256 checksums.	Video kaydetmek için Fluxer'ın yt-dlp, deno ve ffmpeg araçlarına ihtiyacı var (yaklaşık 150 MB). Resmi GitHub sürümlerinden bir kez indirilip yayıncıların SHA-256 özetleriyle doğrulanacaklar.
+ToolsDownloading	Downloading video tools…	Video araçları indiriliyor…
+ToolsFailed	The video tools could not be installed.	Video araçları kurulamadı.
+ToolsNotInstalled	Not installed yet — installed automatically on the first video download	Henüz kurulu değil — ilk video indirmesinde otomatik kurulur
+ToolsTitle	Video tools	Video araçları
+TorrentDownLimitItem	Download limit for this torrent (KB/s)	Bu torrent için indirme sınırı (KB/s)
+TorrentDuplicate	This torrent is already in the list.	Bu torrent zaten listede.
+TorrentFetchFailed	The torrent file could not be fetched (the site may require signing in). Try clicking it in the browser.	Torrent dosyası alınamadı (site oturum isteyebilir). Tarayıcıda tıklamayı deneyin.
+TorrentSlots	Simultaneous torrents	Aynı anda torrent
+TorrentSlotsDesc	A torrent still searching for peers never blocks HTTP downloads; seeding takes no slot.	Eş arayan bir torrent HTTP indirmelerini asla bekletmez; paylaşım slot kaplamaz.
+TorrentUpLimitItem	Upload limit for this torrent (KB/s)	Bu torrent için gönderme sınırı (KB/s)
+TorrentUpStat	↑ {0} · {1} sent	↑ {0} · {1} gönderildi
+TrayExit	Exit Fluxer	Fluxer'dan çık
+TrayOpen	Open Fluxer	Fluxer'ı aç
+UiScale	Interface size	Arayüz boyutu
+UiScaleDesc	Makes text and controls larger or smaller in every window.	Tüm pencerelerde yazıları ve kontrolleri büyütür veya küçültür.
+Unlimited	Unlimited	Sınırsız
+UpdateFeed	Update source	Güncelleme kaynağı
+UpdateFeedDesc	Empty uses Fluxer's GitHub releases. A folder, share or URL with a Velopack feed also works.	Boş bırakılırsa Fluxer'ın GitHub sürümleri kullanılır. Velopack beslemesi olan bir klasör, paylaşım ya da URL de olur.
+UpdateFeedWatermark	GitHub releases (default)	GitHub sürümleri (varsayılan)
+UpdateNow	Update now	Şimdi güncelle
+UpdateReadyBody	Version {0} will be installed when you exit Fluxer.	{0} sürümü Fluxer'dan çıkınca kurulacak.
+UpdateReadyTitle	Update downloaded	Güncelleme indirildi
+UpToDate	up to date	güncel
+UrlPattern	Address contains (or regular expression)	Adres şunu içersin (veya düzenli ifade)
+UrlPatternWatermark	e.g. /uploads/ or \.jpe?g$	ör. /uploads/ veya \.jpe?g$
+Urls	Addresses (one per line)	Adresler (her satıra bir tane)
+UrlsWatermark	https://example.com/file.zip	https://ornek.com/dosya.zip
+UseCategoryFolders	Sort into category folders (Video, Music, …)	Kategori klasörlerine ayır (Video, Müzik, …)
+UseCategoryFoldersDesc	Video, Music, Documents… subfolders by file type.	Dosya türüne göre Video, Müzik, Belgeler… alt klasörleri.
+WarnHtml	This address returns a web page, not a file (sign-in, captcha or an expired link). Download it in the browser instead.	Bu adres dosya değil bir web sayfası döndürüyor (oturum, doğrulama ya da süresi dolmuş bağlantı). Bunun yerine tarayıcıdan indirin.
+WarnHttp	The server answered HTTP {0}.	Sunucu HTTP {0} yanıtı verdi.
+WarnTorrent	This is a torrent file — it will open as a torrent.	Bu bir torrent dosyası — torrent olarak açılacak.
+WarnUnreachable	The server could not be reached.	Sunucuya ulaşılamadı.
+WhenDoneClose	Close this window	Bu pencereyi kapat
+WhenDoneOpenFile	Open the file	Dosyayı aç
+WhenDoneOpenFolder	Open the folder	Klasörü aç
+WhenToStart	Start	Başlatma
+Yes	Yes	Evet
+ZeroIsGlobal	0 = only the global limit applies.	0 = yalnızca genel sınır geçerli.
+Minimize	Minimize	Simge durumuna küçült
+Maximize	Maximize	Ekranı kapla
+CloseWindow	Close	Kapat
+EtaDays	{0}d {1}h	{0}g {1}sa
+AccentNames	Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite	Turuncu|Mavi|Çivit|Mor|Pembe|Yeşil|Turkuaz|Grafit
+BackToDownloads	Back to downloads	İndirmelere dön
+Concurrent	{0} at once	{0} eşzamanlı
+DayNames	Mon|Tue|Wed|Thu|Fri|Sat|Sun	Pzt|Sal|Çar|Per|Cum|Cmt|Paz
+DeleteTip	Remove from the list (files stay on disk, undoable)	Listeden kaldır (dosyalar diskte kalır, geri alınabilir)
+DeleteWithFiles	Delete with files…	Dosyalarıyla sil…
+DhtDesc	Find peers without a tracker	İzleyici olmadan eş bul
+DhtNodes	DHT {0} nodes	DHT {0} düğüm
+EncOff	Off	Kapalı
+EncPrefer	Prefer	Tercih et
+EncRequire	Require	Zorunlu
+Encryption	Encryption	Şifreleme
+ErrorKept	{0}. The {1} already downloaded is kept.	{0}. İndirilen {1} korunuyor.
+ErrorShort	Error	Hata
+EtaUnits	s|min|h|d	sn|dk|sa|g
+FreeShort	{0} free	{0} boş
+HeaderDownloading	{0} downloading	{0} indiriliyor
+InfoQueue	Queue	Kuyruk
+KindHttpMulti	HTTP · multiple connections	HTTP · çoklu bağlantı
+KindTorrentFiles	Torrent · {0} files	Torrent · {0} dosya
+Last60s	last 60 s	son 60 sn
+ListenPort	Listening port	Dinleme portu
+ListenPortDesc	Peers connect to this port (TCP and UDP).	Eşler bu porta bağlanır (TCP ve UDP).
+LogAdded	Added	Eklendi
+LsdDesc	Find peers on the same network	Aynı ağdaki eşleri bul
+LsdTitle	Local peer discovery	Yerel eş keşfi
+MainQueue	Main queue	Ana kuyruk
+Manual	manual	elle
+MaxPeers	Max peers per torrent	En fazla eş (torrent başına)
+MoveToNight	Move to night queue	Gece kuyruğuna taşı
+NightQueue	Night queue	Gece kuyruğu
+NightQueueAt	Night queue · {0}	Gece kuyruğu · {0}
+NightQueueManual	Night queue · manual start	Gece kuyruğu · elle başlar
+NightQueueStart	Start the night queue at	Gece kuyruğunu şu saatte başlat
+NightQueueTip	Downloads added to the night queue wait until its start time.	Gece kuyruğuna eklenen indirmeler başlama saatini bekler.
+NoPeers	No peers connected.	Bağlı eş yok.
+OpenInBrowser	Open in browser	Tarayıcıda aç
+PexDesc	Learn new peers from connected peers	Bağlı eşlerden yeni eşler öğren
+PexTitle	Peer exchange (PeX)	Eş değişimi (PeX)
+ProfileDown	Download	İndirme
+ProfileNames	Unlimited|Balanced|Background	Sınırsız|Dengeli|Arka plan
+ProfileSlots	At once	Eşzamanlı
+ProfileTip	Switch speed profile	Hız profilini değiştir
+ProfileUp	Upload	Yükleme
+Queues	QUEUES	KUYRUKLAR
+RemovedToast	{0} removed from the list · files stay on disk	{0} indirme listeden kaldırıldı · dosyalar diskte duruyor
+Retry	Retry	Yeniden dene
+ScheduleStopShort	Pause everything at	Her şeyi şu saatte duraklat
+Scheduler	Scheduler	Zamanlayıcı
+SecBrowserIntegration	Browser integration	Tarayıcı entegrasyonu
+SecSpeedSchedule	Speed and scheduler	Hız ve zamanlayıcı
+SeedAndNetwork	Seeding and network	Seed ve ağ
+SeedRatioFormat	Seeding · ratio {0}	Seed · oran {0}
+SelectedCount	{0} selected	{0} seçili
+SidebarCollapsedDesc	Icons only; Ctrl+B toggles it any time.	Yalnızca simgeler; Ctrl+B ile her an açılıp kapanır.
+SidebarCollapsedSetting	Narrow sidebar	Dar kenar çubuğu
+SpeedProfiles	Speed profiles	Hız profilleri
+SpeedProfilesDesc	Switch with the button in the status bar or by the scheduler. 0 MB/s means unlimited.	Durum çubuğundaki düğmeyle ya da zamanlayıcıyla geçiş yapılır. 0 MB/s sınırsız demektir.
+Start	Start	Başlat
+StateScheduled	Night queue	Gece kuyruğu
+TabInfo	Info	Bilgi
+TabLog	Log	Günlük
+TabTrackers	Trackers	İzleyici
+Today	Today	Bugün
+TorrentConnection	Connection	Bağlantı
+Undo	Undo	Geri al
+UpnpDesc	Open the port on the router automatically	Modemde portu otomatik aç
+WeekSchedule	Weekly scheduler	Haftalık zamanlayıcı
+WeekScheduleDesc	Click or drag over cells to paint a profile. Selected brush:	Hücrelere tıklayarak ya da sürükleyerek profil boya. Seçili fırça:
+Yesterday	Yesterday	Dün
+TrayHeader	{0} active · {1} seeding	{0} etkin · {1} seed
+TrayErrors	{0} download(s) failed · show	{0} indirme hata verdi · görüntüle
+TrayIdle	Nothing is downloading right now.	Şu an çalışan indirme yok.
+PasteLink	Paste a link…	Bağlantı yapıştır…
+QuickAdd	Quick add	Hızlı ekle
+OpenWindow	Open window	Pencereyi aç
+LinkOrMagnet	Link, magnet or file	Bağlantı, magnet ya da dosya
+ResumeTile	Resume	Sürdürme
+TypeTile	Type	Tür
+ConnectionCount	Connections	Bağlantı sayısı
+LinksFound	{0} links found	{0} bağlantı bulundu
+DontAskAgain	Don't ask again	Bir daha sorma
+Supported	Supported	Destekleniyor
+NotSupported	Not supported	Desteklenmiyor
+Ready	Ready	Hazır
+WebPage	Web page	Web sayfası
+NoAnswer	No answer	Yanıt yok
+MainQueueNow	Main queue (now)	Ana kuyruk (hemen)
+NightQueueOption	Night queue ({0})	Gece kuyruğu ({0})
+StartN	Start {0} downloads	{0} indirmeyi başlat
+StartDownload	Start download	İndirmeyi başlat
+AddToNight	Add to night queue	Gece kuyruğuna ekle
+BadgeBatch	BATCH	TOPLU
+MagnetDetected	Magnet link · metadata comes from peers	Magnet bağlantısı · meta veri eşlerden alınacak
+ServerAnswered	Server answered · ready to download	Sunucu yanıt verdi · indirmeye hazır
+LinksChecked	{0} links checked	{0} bağlantı doğrulandı
+LinksCheckedSome	{0} links checked, {1} not answering	{0} bağlantı doğrulandı, {1} bağlantı yanıt vermiyor
+Mixed	Mixed	Karışık
+CategoryAuto	Category: {0} · from the extension	Kategori: {0} · uzantıdan
+CategoryManual	Category: {0}	Kategori: {0}
+Add	Add	Ekle
+AutoUpdate	Automatic updates	Otomatik güncelleme
+AutoUpdateDesc	Checks every few hours and installs the new version when you exit Fluxer.	Birkaç saatte bir bakar, yeni sürümü Fluxer'dan çıkınca kurar.
+BetaUpdates	Beta versions	Beta sürümler
+BetaUpdatesDesc	Also install pre-release versions from GitHub.	GitHub'daki ön sürümleri de kur.
+ScanDownloads	Scan finished downloads	Biten indirmeleri tara
+ScanDownloadsDesc	Hands each finished file to your antivirus, the way browsers do.	Her biten dosyayı, tarayıcıların yaptığı gibi virüs korumasına gönderir.
+ScanBlockedTitle	Antivirus blocked a download	Virüs koruması bir indirmeyi engelledi
+ScanBlockedBody	{0} was blocked or removed by your antivirus.	{0} virüs koruması tarafından engellendi ya da silindi.
+WatchClipboard	Watch the clipboard	Panoyu izle
+WatchClipboardDesc	When you copy a link to a file or a magnet, Fluxer offers to download it.	Bir dosya bağlantısı ya da magnet kopyaladığınızda Fluxer indirmeyi önerir.
+WatchFolder	Torrent watch folder	Torrent izleme klasörü
+WatchFolderDesc	.torrent files saved here are added automatically and moved to "added".	Buraya kaydedilen .torrent dosyaları kendiliğinden eklenir ve "added" klasörüne taşınır.
+CrashTitle	Fluxer closed unexpectedly	Fluxer beklenmedik şekilde kapandı
+CrashBody	Your downloads were saved and will continue. You can save a diagnostics package (logs and settings, no download links) to report the problem.	İndirmeleriniz kaydedildi ve devam edecek. Sorunu bildirmek için bir tanılama paketi (günlükler ve ayarlar, indirme bağlantıları yok) kaydedebilirsiniz.

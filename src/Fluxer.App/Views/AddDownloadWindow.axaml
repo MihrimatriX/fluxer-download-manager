@@ -1,0 +1,202 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Fluxer.App.ViewModels"
+        xmlns:c="using:Fluxer.App.Controls"
+        xmlns:app="using:Fluxer.App"
+        x:Class="Fluxer.App.Views.AddDownloadWindow"
+        x:DataType="vm:AddDownloadViewModel"
+        Classes="ownchrome"
+        Title="{x:Static app:Strings.NewDownload}" Icon="avares://Fluxer/Assets/fluxer.ico"
+        SizeToContent="Height" Width="680" CanResize="False" MaxHeight="900"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+      <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+    <Style Selector="TextBox.big, ComboBox.big">
+      <Setter Property="MinHeight" Value="44" />
+    </Style>
+    <!-- link box: borderless text inside the field -->
+    <Style Selector="TextBox.bare">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TextBox.bare /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="BoxShadow" Value="none" />
+    </Style>
+  </Window.Styles>
+
+  <StackPanel Margin="24" Spacing="18">
+    <!-- header: drag area with the title, own close button -->
+    <Grid ColumnDefinitions="*,Auto" Background="Transparent" WindowDecorationProperties.ElementRole="TitleBar">
+      <TextBlock Text="{x:Static app:Strings.NewDownload}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" IsHitTestVisible="False" />
+      <Button Grid.Column="1" Classes="soft" Width="36" Height="36" CornerRadius="10" Click="OnCancel" WindowDecorationProperties.ElementRole="User"
+              AutomationProperties.Name="{x:Static app:Strings.CloseWindow}" ToolTip.Tip="Esc">
+        <c:Icon Data="{StaticResource IcClose}" Size="14" />
+      </Button>
+    </Grid>
+
+    <!-- link -->
+    <StackPanel>
+      <TextBlock Classes="label" Text="{x:Static app:Strings.LinkOrMagnet}" />
+      <Border Classes="field" MinHeight="46" Padding="4,0,8,0">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+          <TextBox x:Name="UrlBox" Classes="bare" Text="{Binding UrlsText}" AcceptsReturn="True" TextWrapping="NoWrap"
+                   MinHeight="44" MaxHeight="110" PlaceholderText="{x:Static app:Strings.UrlsWatermark}"
+                   AutomationProperties.Name="{x:Static app:Strings.Urls}" />
+          <Border Grid.Column="1" Classes="badge" Background="{Binding BadgeBackground}" Padding="8,3" IsVisible="{Binding Badge, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock Text="{Binding Badge}" Foreground="{Binding BadgeBrush}" />
+          </Border>
+          <Button Grid.Column="2" Classes="icon" Width="32" Height="32" Click="OnPaste" VerticalAlignment="Center"
+                  ToolTip.Tip="{x:Static app:Strings.PasteTip}" AutomationProperties.Name="{x:Static app:Strings.PasteTip}">
+            <c:Icon Data="{StaticResource IcCopy}" Size="15" />
+          </Button>
+        </Grid>
+      </Border>
+      <TextBlock Text="{Binding Detected}" Foreground="{Binding DetectedBrush}" FontSize="12" Margin="0,8,0,0" TextWrapping="Wrap"
+                 IsVisible="{Binding Detected, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </StackPanel>
+
+    <!-- single link: file name with size · resume · type underneath -->
+    <StackPanel Spacing="14" IsVisible="{Binding IsSingleHttp}">
+      <StackPanel DataContext="{Binding Single}" x:DataType="vm:AddItem">
+        <TextBlock Classes="label" Text="{x:Static app:Strings.FileName}" />
+        <TextBox Classes="big" Text="{Binding Name}" PlaceholderText="{x:Static app:Strings.FileNameAuto}" AutomationProperties.Name="{x:Static app:Strings.FileName}" />
+        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+          <TextBlock Text="{Binding SizeText}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+          <TextBlock Text="·" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+          <TextBlock Text="{Binding ResumeText}" FontSize="12" Foreground="{Binding ResumeBrush}" ToolTip.Tip="{x:Static app:Strings.ResumeTile}" />
+          <TextBlock Text="·" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+          <TextBlock Text="{Binding TypeText}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" TextTrimming="CharacterEllipsis" MaxWidth="300" />
+        </StackPanel>
+        <Border IsVisible="{Binding Warning, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" CornerRadius="6" Padding="12,10" Margin="0,10,0,0"
+                Background="{Binding WarningSoft}" BorderBrush="{Binding WarningBrush}" BorderThickness="1">
+          <TextBlock Text="{Binding Warning}" TextWrapping="Wrap" FontSize="12" Foreground="{Binding WarningBrush}" />
+        </Border>
+      </StackPanel>
+    </StackPanel>
+
+    <!-- several links -->
+    <StackPanel Spacing="8" IsVisible="{Binding IsMulti}">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="{Binding Count, StringFormat={x:Static app:Strings.LinksFound}}" FontWeight="SemiBold" />
+        <TextBlock Grid.Column="1" Text="{Binding TotalText}" Classes="subtle" />
+      </Grid>
+      <Border Classes="field" Padding="12,6" MaxHeight="260">
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Items}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AddItem">
+                <Border MinHeight="40" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+                  <Grid ColumnDefinitions="24,*,80,120" ColumnSpacing="10">
+                    <CheckBox IsChecked="{Binding IsIncluded}" MinWidth="0" Padding="0" AutomationProperties.Name="{Binding Name}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Url}" />
+                    <TextBlock Grid.Column="2" Text="{Binding SizeText}" Foreground="{DynamicResource SubtleBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="3" Text="{Binding StateText}" Foreground="{Binding StateBrush}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Warning}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </StackPanel>
+
+    <!-- folder -->
+      <StackPanel>
+        <TextBlock Classes="label" Text="{x:Static app:Strings.SaveTo}" />
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+          <TextBox x:Name="FolderBox" Classes="big" Text="{Binding Folder}" AutomationProperties.Name="{x:Static app:Strings.SaveTo}" />
+          <Button Grid.Column="1" Classes="soft" Width="44" Height="44" Click="OnBrowse"
+                  ToolTip.Tip="{x:Static app:Strings.Browse}" AutomationProperties.Name="{x:Static app:Strings.Browse}">
+            <c:Icon Data="{StaticResource IcFolder}" />
+          </Button>
+          <Button Grid.Column="2" Classes="soft" Width="44" Height="44" IsVisible="{Binding HasRecent}"
+                  ToolTip.Tip="{x:Static app:Strings.RecentFolders}" AutomationProperties.Name="{x:Static app:Strings.RecentFolders}">
+            <c:Icon Data="{StaticResource IcClock}" />
+            <Button.Flyout>
+              <MenuFlyout ItemsSource="{Binding RecentFolders}">
+                <MenuFlyout.ItemContainerTheme>
+                  <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="x:String">
+                    <Setter Property="Header" Value="{Binding}" />
+                    <Setter Property="Command" Value="{Binding $parent[Window].((vm:AddDownloadViewModel)DataContext).PickRecentCommand}" />
+                    <Setter Property="CommandParameter" Value="{Binding}" />
+                  </ControlTheme>
+                </MenuFlyout.ItemContainerTheme>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </Grid>
+        <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,6,0,0">
+          <TextBlock Text="{Binding FreeSpaceText}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" />
+          <TextBlock Text="{x:Static app:Strings.NotEnoughSpace}" Foreground="{DynamicResource ErrBrush}" FontSize="11" IsVisible="{Binding NotEnoughSpace}" />
+        </StackPanel>
+      </StackPanel>
+
+    <!-- everything most downloads never touch -->
+    <Expander Header="{x:Static app:Strings.AdvancedOptions}" HorizontalAlignment="Stretch" Padding="0,10,0,0">
+      <StackPanel Spacing="14">
+      <StackPanel Spacing="14" IsVisible="{Binding IsSingleHttp}">
+        <StackPanel>
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="label" Text="{x:Static app:Strings.ConnectionCount}" />
+            <TextBlock Grid.Column="1" Text="{Binding Connections, StringFormat='{}{0:0}'}" FontSize="12" />
+          </Grid>
+          <Slider Minimum="1" Maximum="32" Value="{Binding Connections}" TickFrequency="1" IsSnapToTickEnabled="True"
+                  AutomationProperties.Name="{x:Static app:Strings.ConnectionCount}" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Classes="label" Text="{x:Static app:Strings.Checksum}" />
+          <Grid ColumnDefinitions="Auto,*">
+            <ComboBox ItemsSource="{Binding HashAlgorithms}" SelectedIndex="{Binding HashIndex}" MinWidth="110" />
+            <TextBox Grid.Column="1" Text="{Binding Hash}" PlaceholderText="{x:Static app:Strings.ChecksumWatermark}" Margin="8,0,0,0" />
+          </Grid>
+        </StackPanel>
+        <StackPanel Spacing="6">
+          <TextBlock Classes="label" Text="{x:Static app:Strings.Mirrors}" Margin="0" />
+          <TextBox Text="{Binding MirrorsText}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="64" MaxHeight="120"
+                   PlaceholderText="{x:Static app:Strings.MirrorsWatermark}" AutomationProperties.Name="{x:Static app:Strings.Mirrors}" />
+          <TextBlock Text="{Binding MirrorError}" Foreground="{DynamicResource ErrBrush}" FontSize="12" TextWrapping="Wrap"
+                     IsVisible="{Binding MirrorError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Text="{x:Static app:Strings.MirrorsDesc}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Classes="label" Text="{x:Static app:Strings.InfoQueue}" />
+        <ComboBox Classes="big" ItemsSource="{Binding Queues}" SelectedIndex="{Binding QueueIndex}" HorizontalAlignment="Stretch"
+                  AutomationProperties.Name="{x:Static app:Strings.InfoQueue}" />
+        <Button Classes="link" FontWeight="Normal" FontSize="11" Foreground="{DynamicResource SubtleBrush}" Margin="0,6,0,0" HorizontalAlignment="Left"
+                Content="{Binding CategoryText}" ToolTip.Tip="{x:Static app:Strings.Category}">
+          <Button.Flyout>
+            <MenuFlyout ItemsSource="{Binding Categories}">
+              <MenuFlyout.ItemContainerTheme>
+                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="vm:CategoryChip">
+                  <Setter Property="Header" Value="{Binding Title}" />
+                  <Setter Property="Command" Value="{Binding $parent[Window].((vm:AddDownloadViewModel)DataContext).PickCategoryCommand}" />
+                  <Setter Property="CommandParameter" Value="{Binding}" />
+                </ControlTheme>
+              </MenuFlyout.ItemContainerTheme>
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+      </StackPanel>
+    </Expander>
+
+    <!-- footer -->
+    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" Margin="0,6,0,0">
+      <CheckBox IsChecked="{Binding DontAskAgain}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" Content="{x:Static app:Strings.DontAskAgain}"
+                ToolTip.Tip="{x:Static app:Strings.ShowAddDialogDesc}" VerticalAlignment="Center" />
+      <Button Grid.Column="1" Height="44" Padding="18,0" FontWeight="Medium" Click="OnQueue" IsEnabled="{Binding CanSubmit}" IsVisible="{Binding ShowQueueButton}"
+              Content="{x:Static app:Strings.AddToQueue}" />
+      <Button Grid.Column="2" Classes="accent" Height="44" Padding="20,0" Click="OnSubmit" IsDefault="True" IsEnabled="{Binding CanSubmit}"
+              Content="{Binding SubmitText}" AutomationProperties.Name="{Binding SubmitText}" />
+    </Grid>
+  </StackPanel>
+</Window>

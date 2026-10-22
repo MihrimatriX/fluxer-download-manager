@@ -1,0 +1,344 @@
+{
+  "extName": {
+    "message": "Fluxer"
+  },
+  "extDescription": {
+    "message": "Send browser downloads, links and page resources to the Fluxer download manager."
+  },
+  "menuDownload": {
+    "message": "Download with Fluxer"
+  },
+  "menuGrab": {
+    "message": "Grab files/images on this page"
+  },
+  "menuSendPage": {
+    "message": "Send this page to Fluxer"
+  },
+  "fallbackUnreachable": {
+    "message": "Fluxer is not reachable. The download continues in the browser."
+  },
+  "fallbackFailed": {
+    "message": "Fluxer couldn't take this download. It continues in the browser."
+  },
+  "fallbackIncognito": {
+    "message": "Fluxer couldn't take this download. Hold Alt and click the link again to download it in the browser."
+  },
+  "sendUnreachable": {
+    "message": "Fluxer is not reachable. Make sure the app is installed."
+  },
+  "sendFailed": {
+    "message": "Fluxer couldn't accept this request."
+  },
+  "updateRequired": {
+    "message": "Fluxer and this extension don't match. Please update the extension or the app."
+  },
+  "unsupportedUrl": {
+    "message": "This address can't be sent to Fluxer."
+  },
+  "pageNotReady": {
+    "message": "Couldn't read this page. Reload it and try again."
+  },
+  "nothingFound": {
+    "message": "No files or images found on this page."
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupConnected": {
+    "message": "App connected"
+  },
+  "popupUnreachable": {
+    "message": "App not reachable"
+  },
+  "popupUpdateRequired": {
+    "message": "Update required"
+  },
+  "popupActive": {
+    "message": "Active"
+  },
+  "popupQueued": {
+    "message": "Queued"
+  },
+  "popupSpeed": {
+    "message": "Speed"
+  },
+  "popupNoDownloads": {
+    "message": "No active downloads."
+  },
+  "popupSettings": {
+    "message": "Quick settings"
+  },
+  "popupCaptureEnabled": {
+    "message": "Capture browser downloads"
+  },
+  "popupMinSize": {
+    "message": "Leave files smaller than this to the browser (MiB)"
+  },
+  "popupAltHint": {
+    "message": "Hold Alt while clicking a link to skip Fluxer."
+  },
+  "perSecond": {
+    "message": "/s"
+  },
+  "tabDownloads": {
+    "message": "Downloads"
+  },
+  "tabPage": {
+    "message": "This page"
+  },
+  "tabSettings": {
+    "message": "Settings"
+  },
+  "openApp": {
+    "message": "Open Fluxer"
+  },
+  "pauseAll": {
+    "message": "Pause all"
+  },
+  "resumeAll": {
+    "message": "Resume all"
+  },
+  "emptyDownloads": {
+    "message": "No downloads yet. Click a download link or use the \"This page\" tab."
+  },
+  "state_downloading": {
+    "message": "Downloading"
+  },
+  "state_seeding": {
+    "message": "Seeding"
+  },
+  "state_queued": {
+    "message": "Queued"
+  },
+  "state_paused": {
+    "message": "Paused"
+  },
+  "state_completed": {
+    "message": "Done"
+  },
+  "state_failed": {
+    "message": "Failed"
+  },
+  "actPause": {
+    "message": "Pause"
+  },
+  "actResume": {
+    "message": "Resume"
+  },
+  "actOpen": {
+    "message": "Open file"
+  },
+  "actFolder": {
+    "message": "Show in folder"
+  },
+  "actRemove": {
+    "message": "Remove from list (the file stays)"
+  },
+  "actDetails": {
+    "message": "Click for the progress window"
+  },
+  "pageUnsupported": {
+    "message": "Fluxer can only work with web pages (http/https)."
+  },
+  "pageVideoTitle": {
+    "message": "Download the video on this page"
+  },
+  "pageVideoHint": {
+    "message": "YouTube, Vimeo, X and 1000+ sites — pick the quality in Fluxer."
+  },
+  "pageVideoButton": {
+    "message": "Download"
+  },
+  "mediaFound": {
+    "message": "Captured media"
+  },
+  "mediaEmpty": {
+    "message": "Nothing yet. Play the video: Fluxer catches the stream while it plays."
+  },
+  "mediaFile": {
+    "message": "Video/audio file"
+  },
+  "mediaStream": {
+    "message": "Stream (merged into one file)"
+  },
+  "mediaDownload": {
+    "message": "Download"
+  },
+  "batchTitle": {
+    "message": "Files on this page"
+  },
+  "batchEmpty": {
+    "message": "No downloadable files found on this page."
+  },
+  "batchSend": {
+    "message": "Download selected"
+  },
+  "selectedCount": {
+    "message": "$1 selected"
+  },
+  "selectAll": {
+    "message": "All"
+  },
+  "search": {
+    "message": "Filter by name or address"
+  },
+  "cat_all": {
+    "message": "All"
+  },
+  "cat_video": {
+    "message": "Video"
+  },
+  "cat_audio": {
+    "message": "Audio"
+  },
+  "cat_archive": {
+    "message": "Archives"
+  },
+  "cat_document": {
+    "message": "Documents"
+  },
+  "cat_program": {
+    "message": "Programs"
+  },
+  "cat_image": {
+    "message": "Images"
+  },
+  "cat_torrent": {
+    "message": "Torrents"
+  },
+  "cat_other": {
+    "message": "Other"
+  },
+  "sentOk": {
+    "message": "Sent to Fluxer"
+  },
+  "sentBatch": {
+    "message": "$1 files sent to Fluxer"
+  },
+  "settingSkipTypes": {
+    "message": "Leave these file types in the browser"
+  },
+  "settingSkipTypesHint": {
+    "message": "Extensions, separated by commas."
+  },
+  "settingSkipTypesPlaceholder": {
+    "message": "pdf, jpg"
+  },
+  "settingVideoButton": {
+    "message": "Download button on videos"
+  },
+  "settingVideoButtonHint": {
+    "message": "Shows \"Download with Fluxer\" when you point at a video."
+  },
+  "settingBadge": {
+    "message": "Media count on the icon"
+  },
+  "settingBadgeHint": {
+    "message": "How many videos Fluxer caught on the current tab."
+  },
+  "videoButton": {
+    "message": "Download with Fluxer"
+  },
+  "videoButtonTip": {
+    "message": "Send this video to Fluxer"
+  },
+  "videoButtonSending": {
+    "message": "Sending…"
+  },
+  "videoButtonSent": {
+    "message": "Sent to Fluxer ✓"
+  },
+  "videoButtonFailed": {
+    "message": "Fluxer could not take it"
+  },
+  "videoButtonUnreachable": {
+    "message": "Fluxer is not running"
+  },
+  "appNotRunning": {
+    "message": "Fluxer is not running. Start it from the Start menu or with \"Open Fluxer\" below."
+  },
+  "menuNight": {
+    "message": "Add to night queue"
+  },
+  "menuAllLinks": {
+    "message": "Send all links on the page to Fluxer"
+  },
+  "toastTitle": {
+    "message": "Fluxer caught a download"
+  },
+  "toastClose": {
+    "message": "Close"
+  },
+  "toastSend": {
+    "message": "Download with Fluxer"
+  },
+  "toastKeep": {
+    "message": "Leave in browser"
+  },
+  "toastHint": {
+    "message": "Starts in Fluxer in $1 s · Hold Alt while downloading to keep it in the browser"
+  },
+  "captureTitle": {
+    "message": "Capture downloads"
+  },
+  "captureHintOn": {
+    "message": "Files over $1 MB go to Fluxer"
+  },
+  "captureHintAll": {
+    "message": "All files go to Fluxer"
+  },
+  "captureHintOff": {
+    "message": "Off · the browser downloads itself"
+  },
+  "captureHintSite": {
+    "message": "Off on this site"
+  },
+  "siteOff": {
+    "message": "Turn off on this site"
+  },
+  "siteOn": {
+    "message": "Turn on on this site"
+  },
+  "summary": {
+    "message": "$1 active · $2 queued · $3"
+  },
+  "etaSec": {
+    "message": "$1 s left"
+  },
+  "etaMin": {
+    "message": "$1 min left"
+  },
+  "etaHour": {
+    "message": "$1 h left"
+  },
+  "kindMedia": {
+    "message": "Video"
+  },
+  "sentToday": {
+    "message": "$1 files sent to Fluxer from this browser today."
+  },
+  "pasteLink": {
+    "message": "Paste link"
+  },
+  "clipboardFailed": {
+    "message": "Couldn't read the clipboard."
+  },
+  "clipboardNoLink": {
+    "message": "No link on the clipboard."
+  },
+  "batchDownloadN": {
+    "message": "Download $1 files"
+  },
+  "batchPick": {
+    "message": "Select files"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "skewExtensionOld": {
+    "message": "Fluxer is newer than this extension. Update the extension to use its new features."
+  },
+  "skewAppOld": {
+    "message": "This extension is newer than Fluxer. Update Fluxer from Settings → Advanced."
+  }
+}

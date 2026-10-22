@@ -1,0 +1,493 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Fluxer.App.ViewModels"
+             xmlns:c="using:Fluxer.App.Controls"
+             xmlns:app="using:Fluxer.App"
+             x:Class="Fluxer.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="ComboBox">
+      <Setter Property="MinWidth" Value="220" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="Width" Value="150" />
+    </Style>
+    <Style Selector="ToggleSwitch">
+      <Setter Property="OnContent" Value="" />
+      <Setter Property="OffContent" Value="" />
+      <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <!-- section panel -->
+    <Style Selector="Border.sec">
+      <Setter Property="Padding" Value="22" />
+      <Setter Property="Margin" Value="0,0,0,20" />
+    </Style>
+    <Style Selector="StackPanel.page">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <!-- left navigation -->
+    <Style Selector="ListBox.secnav > ListBoxItem">
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="Margin" Value="0,0,0,4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ListBox.secnav > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+    <Style Selector="ListBox.secnav > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.secnav > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SelectedBrush}" />
+      <Setter Property="BoxShadow" Value="{DynamicResource AccentBarShadow}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <!-- speed profile cards -->
+    <Style Selector="Button.profile">
+      <Setter Property="Padding" Value="16" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Top" />
+      <Setter Property="Background" Value="{DynamicResource ChipBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PanelEdgeBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.profile.on">
+      <Setter Property="Background" Value="#1AF5A623" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
+    <Style Selector="Button.profile.on:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
+    <Style Selector="Button.profile NumericUpDown">
+      <Setter Property="Width" Value="84" />
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="ShowButtonSpinner" Value="False" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Right" />
+    </Style>
+    <Style Selector="Button.brush">
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.brush.on">
+      <Setter Property="Background" Value="{DynamicResource SelectedBrush}" />
+    </Style>
+    <Style Selector="Border.swatch">
+      <Setter Property="Width" Value="10" />
+      <Setter Property="Height" Value="10" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="240,*">
+    <!-- ===== Section navigation ===== -->
+    <StackPanel Margin="16,16,16,24">
+      <Button Classes="link" Foreground="{DynamicResource SubtleBrush}" FontWeight="Normal" FontSize="12" Margin="10,0,0,18"
+              Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseSettingsCommand}" AutomationProperties.Name="{x:Static app:Strings.BackToDownloads}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <c:Icon Data="{StaticResource IcBack}" Size="12" StrokeThickness="2" />
+          <TextBlock Text="{x:Static app:Strings.BackToDownloads}" />
+        </StackPanel>
+      </Button>
+      <TextBlock Text="{x:Static app:Strings.Settings}" Classes="h1" Margin="10,0,0,14" />
+      <ListBox Classes="secnav" ItemsSource="{Binding Sections}" SelectedItem="{Binding SelectedSection}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:SettingsSection"><TextBlock Text="{Binding Label}" /></DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel Orientation="Horizontal" Spacing="6" Margin="12,14,0,0" IsVisible="{Binding SavedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <TextBlock Classes="icon" Text="&#xE73E;" Foreground="{DynamicResource OkBrush}" FontSize="12" />
+        <TextBlock Text="{Binding SavedText}" Classes="subtle" />
+      </StackPanel>
+    </StackPanel>
+
+    <ScrollViewer Grid.Column="1">
+      <Panel Margin="8,16,32,24">
+
+        <!-- ===== General ===== -->
+        <StackPanel Classes="page" IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=general}">
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecGeneral}" />
+              <c:SettingRow Title="{x:Static app:Strings.Language}">
+                <ComboBox ItemsSource="{Binding Languages}" SelectedIndex="{Binding LanguageIndex}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ShowNotifications}" Description="{x:Static app:Strings.ShowNotificationsDesc}">
+                <ToggleSwitch IsChecked="{Binding Notifications}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ShowAddDialog}" Description="{x:Static app:Strings.ShowAddDialogDesc}">
+                <ToggleSwitch IsChecked="{Binding ShowAddDialog}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ShowProgressWindow}" Description="{x:Static app:Strings.ShowProgressWindowDesc}">
+                <ToggleSwitch IsChecked="{Binding ShowProgressWindow}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ShowCompletedCard}" Description="{x:Static app:Strings.ShowCompletedCardDesc}">
+                <ToggleSwitch IsChecked="{Binding ShowCompletedCard}" />
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecAppearance}" />
+              <c:SettingRow Title="{x:Static app:Strings.Theme}">
+                <ComboBox ItemsSource="{Binding Themes}" SelectedIndex="{Binding ThemeIndex}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.AccentColor}" Description="{x:Static app:Strings.AccentColorDesc}">
+                <ListBox ItemsSource="{Binding Accents}" SelectedIndex="{Binding AccentIndex}" Background="Transparent">
+                  <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                  </ListBox.ItemsPanel>
+                  <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                      <Setter Property="Padding" Value="3" />
+                      <Setter Property="Margin" Value="2,0" />
+                      <Setter Property="CornerRadius" Value="16" />
+                      <Setter Property="MinWidth" Value="0" />
+                    </Style>
+                  </ListBox.Styles>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AccentSwatch">
+                      <Ellipse Width="22" Height="22" Fill="{Binding Brush}" ToolTip.Tip="{Binding Name}" />
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.BackdropSetting}" Description="{x:Static app:Strings.BackdropDesc}">
+                <ComboBox ItemsSource="{Binding Backdrops}" SelectedIndex="{Binding BackdropIndex}" MinWidth="220" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.UiScale}" Description="{x:Static app:Strings.UiScaleDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Slider Minimum="85" Maximum="130" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding ScalePercent}" Width="180" />
+                  <TextBlock Text="{Binding ScaleText}" Width="44" VerticalAlignment="Center" FontWeight="SemiBold" />
+                </StackPanel>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.CompactMode}" Description="{x:Static app:Strings.CompactModeDesc}">
+                <ToggleSwitch IsChecked="{Binding Compact}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.AnimationsSetting}" Description="{x:Static app:Strings.AnimationsDesc}">
+                <ToggleSwitch IsChecked="{Binding Animations}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ToolbarLabelsSetting}" Description="{x:Static app:Strings.ToolbarLabelsDesc}">
+                <ToggleSwitch IsChecked="{Binding ToolbarLabelsOn}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.SidebarCollapsedSetting}" Description="{x:Static app:Strings.SidebarCollapsedDesc}">
+                <ToggleSwitch IsChecked="{Binding SidebarCollapsedOn}" />
+              </c:SettingRow>
+              <TextBlock Classes="subtle" Margin="0,12,0,0" Text="{x:Static app:Strings.LayoutTip}" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Downloads ===== -->
+        <StackPanel Classes="page" IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=downloads}">
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecDownloads}" />
+              <c:SettingRow Title="{x:Static app:Strings.DownloadFolder}" Description="{Binding DownloadDirectory}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Content="{x:Static app:Strings.Browse}" Command="{Binding BrowseFolderCommand}" />
+                  <Button Classes="soft" Width="36" Height="36" Command="{Binding OpenDownloadFolderCommand}"
+                          AutomationProperties.Name="{x:Static app:Strings.OpenFolder}" ToolTip.Tip="{x:Static app:Strings.OpenFolder}">
+                    <c:Icon Data="{StaticResource IcFolder}" />
+                  </Button>
+                </StackPanel>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.UseCategoryFolders}" Description="{x:Static app:Strings.UseCategoryFoldersDesc}">
+                <ToggleSwitch IsChecked="{Binding UseCategoryFolders}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.Conflict}">
+                <ComboBox ItemsSource="{Binding Conflicts}" SelectedIndex="{Binding ConflictIndex}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.Connections}" Description="{x:Static app:Strings.ConnectionsDesc}">
+                <NumericUpDown Value="{Binding Connections}" Minimum="1" Maximum="32" Increment="1" FormatString="0" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ScanDownloads}" Description="{x:Static app:Strings.ScanDownloadsDesc}">
+                <ToggleSwitch IsChecked="{Binding ScanDownloads}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.WatchClipboard}" Description="{x:Static app:Strings.WatchClipboardDesc}">
+                <ToggleSwitch IsChecked="{Binding WatchClipboard}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.WatchFolder}" Description="{x:Static app:Strings.WatchFolderDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding WatchFolder}" VerticalAlignment="Center" MaxWidth="220" TextTrimming="CharacterEllipsis" IsVisible="{Binding WatchFolderOn}" />
+                  <Button Content="{x:Static app:Strings.Browse}" Command="{Binding BrowseWatchFolderCommand}" />
+                  <ToggleSwitch IsChecked="{Binding WatchFolderOn}" />
+                </StackPanel>
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecVideo}" />
+              <c:SettingRow Title="{x:Static app:Strings.MediaTools}" Description="{Binding ToolsText}">
+                <Button Content="{x:Static app:Strings.UpdateNow}" Command="{Binding UpdateToolsCommand}" IsEnabled="{Binding CanUpdateTools}" />
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Speed and schedule ===== -->
+        <StackPanel Classes="page" IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=speed}">
+          <Border Classes="panel sec">
+            <StackPanel Spacing="16">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="h2" Text="{x:Static app:Strings.SpeedProfiles}" />
+                <TextBlock Classes="subtle" FontSize="13" Text="{x:Static app:Strings.SpeedProfilesDesc}" TextWrapping="Wrap" />
+              </StackPanel>
+              <ItemsControl ItemsSource="{Binding Profiles}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><UniformGrid Rows="1" ColumnSpacing="16" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ProfileCard">
+                    <Button Classes="profile" Classes.on="{Binding IsActive}"
+                            Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).PickProfileCommand}" CommandParameter="{Binding}"
+                            AutomationProperties.Name="{Binding Name}">
+                      <StackPanel Spacing="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border Classes="swatch" Background="{Binding Swatch}" />
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                          <TextBlock Text="{x:Static app:Strings.ProfileDown}" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+                          <NumericUpDown Grid.Column="1" Value="{Binding DownMb}" Minimum="0" Maximum="10000" Increment="1" FormatString="0.##" AutomationProperties.Name="{x:Static app:Strings.ProfileDown}" />
+                          <TextBlock Grid.Column="2" Text="MB/s" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                          <TextBlock Text="{x:Static app:Strings.ProfileUp}" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+                          <NumericUpDown Grid.Column="1" Value="{Binding UpMb}" Minimum="0" Maximum="10000" Increment="0.1" FormatString="0.##" AutomationProperties.Name="{x:Static app:Strings.ProfileUp}" />
+                          <TextBlock Grid.Column="2" Text="MB/s" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                          <TextBlock Text="{x:Static app:Strings.ProfileSlots}" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+                          <NumericUpDown Grid.Column="1" Value="{Binding Slots}" Minimum="1" Maximum="20" Increment="1" FormatString="0" AutomationProperties.Name="{x:Static app:Strings.ProfileSlots}" />
+                          <TextBlock Grid.Column="2" Text="MB/s" Opacity="0" VerticalAlignment="Center" />
+                        </Grid>
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="panel sec">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Classes="h2" Text="{x:Static app:Strings.WeekSchedule}" VerticalAlignment="Center" />
+                    <ToggleSwitch IsChecked="{Binding WeekScheduleOn}" AutomationProperties.Name="{x:Static app:Strings.WeekSchedule}" />
+                  </StackPanel>
+                  <TextBlock Classes="subtle" FontSize="13" TextWrapping="Wrap">
+                    <Run Text="{x:Static app:Strings.WeekScheduleDesc}" />
+                    <Run Text="{Binding BrushName}" Foreground="{DynamicResource TextBrush}" />
+                  </TextBlock>
+                </StackPanel>
+                <Border Grid.Column="1" Padding="4" CornerRadius="12" BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1" VerticalAlignment="Top">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Classes="brush" Classes.on="{Binding BrushIndex, Converter={x:Static vm:Is.Equal}, ConverterParameter=0}" Command="{Binding PickBrushCommand}" CommandParameter="0">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="swatch" Background="{DynamicResource SystemControlHighlightAccentBrush}" /><TextBlock Text="{Binding Profiles[0].Name}" /></StackPanel>
+                    </Button>
+                    <Button Classes="brush" Classes.on="{Binding BrushIndex, Converter={x:Static vm:Is.Equal}, ConverterParameter=1}" Command="{Binding PickBrushCommand}" CommandParameter="1">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="swatch" Background="{DynamicResource InfoBrush}" /><TextBlock Text="{Binding Profiles[1].Name}" /></StackPanel>
+                    </Button>
+                    <Button Classes="brush" Classes.on="{Binding BrushIndex, Converter={x:Static vm:Is.Equal}, ConverterParameter=2}" Command="{Binding PickBrushCommand}" CommandParameter="2">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="swatch" Background="#5B6478" /><TextBlock Text="{Binding Profiles[2].Name}" /></StackPanel>
+                    </Button>
+                  </StackPanel>
+                </Border>
+              </Grid>
+              <c:ScheduleGrid Schedule="{Binding WeekSchedule}" BrushIndex="{Binding BrushIndex}" Opacity="{Binding WeekScheduleOn, Converter={x:Static vm:Dim.WhenOff}}"
+                              AutomationProperties.Name="{x:Static app:Strings.WeekSchedule}" />
+              <WrapPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,24,8">
+                  <CheckBox IsChecked="{Binding ScheduleStartOn}" Content="{x:Static app:Strings.NightQueueStart}" />
+                  <TimePicker SelectedTime="{Binding ScheduleStart}" ClockIdentifier="24HourClock" IsEnabled="{Binding ScheduleStartOn}" MinuteIncrement="5" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,24,8">
+                  <CheckBox IsChecked="{Binding ScheduleStopOn}" Content="{x:Static app:Strings.ScheduleStopShort}" />
+                  <TimePicker SelectedTime="{Binding ScheduleStop}" ClockIdentifier="24HourClock" IsEnabled="{Binding ScheduleStopOn}" MinuteIncrement="5" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,24,8">
+                  <TextBlock Text="{x:Static app:Strings.AfterQueue}" VerticalAlignment="Center" />
+                  <ComboBox ItemsSource="{Binding AfterQueueOptions}" SelectedIndex="{Binding AfterQueueIndex}" MinWidth="180" />
+                </StackPanel>
+              </WrapPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Torrent ===== -->
+        <StackPanel Classes="page" IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=torrent}">
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.TorrentConnection}" />
+              <c:SettingRow Title="{x:Static app:Strings.ListenPort}" Description="{x:Static app:Strings.ListenPortDesc}">
+                <NumericUpDown Value="{Binding ListenPort}" Minimum="1024" Maximum="65535" Increment="1" FormatString="0" Width="120" />
+              </c:SettingRow>
+              <c:SettingRow Title="DHT" Description="{x:Static app:Strings.DhtDesc}">
+                <ToggleSwitch IsChecked="{Binding Dht}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.PexTitle}" Description="{x:Static app:Strings.PexDesc}">
+                <ToggleSwitch IsChecked="{Binding PeerExchange}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.LsdTitle}" Description="{x:Static app:Strings.LsdDesc}">
+                <ToggleSwitch IsChecked="{Binding LocalPeerDiscovery}" />
+              </c:SettingRow>
+              <c:SettingRow Title="UPnP / NAT-PMP" Description="{x:Static app:Strings.UpnpDesc}">
+                <ToggleSwitch IsChecked="{Binding PortForwarding}" />
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SeedAndNetwork}" />
+              <c:SettingRow Title="{x:Static app:Strings.SeedRatio}" Description="{x:Static app:Strings.SeedRatioDesc}">
+                <NumericUpDown Value="{Binding SeedRatio}" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.0" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.SeedMinutes}" Description="{x:Static app:Strings.SeedMinutesDesc}">
+                <NumericUpDown Value="{Binding SeedMinutes}" Minimum="0" Maximum="100000" Increment="10" FormatString="0" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.Encryption}">
+                <ComboBox ItemsSource="{Binding Encryptions}" SelectedIndex="{Binding EncryptionIndex}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.TorrentSlots}" Description="{x:Static app:Strings.TorrentSlotsDesc}">
+                <NumericUpDown Value="{Binding TorrentSlots}" Minimum="1" Maximum="20" Increment="1" FormatString="0" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.MaxPeers}">
+                <NumericUpDown Value="{Binding MaxPeers}" Minimum="5" Maximum="1000" Increment="10" FormatString="0" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.RegisterAssociations}" Description="{x:Static app:Strings.RegisterAssociationsDesc}">
+                <ToggleSwitch IsChecked="{Binding FileAssociations}" />
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.RssFeeds}" />
+              <TextBlock Classes="subtle" FontSize="13" Text="{x:Static app:Strings.RssFeedsDesc}" TextWrapping="Wrap" Margin="0,0,0,8" />
+              <c:SettingRow Title="{x:Static app:Strings.RssInterval}" Description="{x:Static app:Strings.RssIntervalDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Content="{x:Static app:Strings.RssCheckNow}" Command="{Binding CheckRssNowCommand}" IsEnabled="{Binding HasRssFeeds}" />
+                  <NumericUpDown Value="{Binding RssInterval}" Minimum="5" Maximum="1440" Increment="5" FormatString="0" />
+                </StackPanel>
+              </c:SettingRow>
+              <ItemsControl ItemsSource="{Binding RssFeeds}" Margin="0,8,0,0">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:RssFeedRow">
+                    <Border Padding="12" Margin="0,0,0,10" CornerRadius="12" Background="{DynamicResource ChipBrush}"
+                            BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1">
+                      <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                          <ToggleSwitch IsChecked="{Binding Enabled}" AutomationProperties.Name="{Binding Url}" />
+                          <TextBlock Grid.Column="1" Text="{Binding Url}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Url}" />
+                          <Button Grid.Column="2" Classes="soft" Width="36" Height="36"
+                                  Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).BrowseRssFolderCommand}" CommandParameter="{Binding}"
+                                  AutomationProperties.Name="{x:Static app:Strings.RssSaveFolder}" ToolTip.Tip="{Binding FolderTip}">
+                            <c:Icon Data="{StaticResource IcFolder}" />
+                          </Button>
+                          <Button Grid.Column="3" Classes="soft" Width="36" Height="36"
+                                  Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RemoveRssFeedCommand}" CommandParameter="{Binding}"
+                                  AutomationProperties.Name="{x:Static app:Strings.RssRemove}" ToolTip.Tip="{x:Static app:Strings.RssRemove}">
+                            <c:Icon Data="{StaticResource IcTrash}" />
+                          </Button>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                          <TextBox Text="{Binding Include}" PlaceholderText="{x:Static app:Strings.RssInclude}" AutomationProperties.Name="{x:Static app:Strings.RssInclude}" />
+                          <TextBox Grid.Column="1" Text="{Binding Exclude}" PlaceholderText="{x:Static app:Strings.RssExclude}" AutomationProperties.Name="{x:Static app:Strings.RssExclude}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" TextWrapping="Wrap" IsVisible="{Binding !HasProblem}" />
+                        <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{DynamicResource ErrTextBrush}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox Text="{Binding NewRssUrl}" PlaceholderText="{x:Static app:Strings.RssUrlHint}" AutomationProperties.Name="{x:Static app:Strings.RssUrlHint}" />
+                <Button Grid.Column="1" Content="{x:Static app:Strings.RssAdd}" Command="{Binding AddRssFeedCommand}" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Browser ===== -->
+        <StackPanel Classes="page" IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=browser}">
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecBrowserIntegration}" />
+              <c:SettingRow Title="{x:Static app:Strings.BrowserStatus}" Description="{x:Static app:Strings.BrowserStatusDesc}">
+                <StackPanel Spacing="8" HorizontalAlignment="Right">
+                  <ItemsControl ItemsSource="{Binding Browsers}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:BrowserRow">
+                        <Grid ColumnDefinitions="90,Auto,*" Margin="0,1">
+                          <TextBlock Text="{Binding Browser}" />
+                          <TextBlock Grid.Column="1" Classes="icon" Text="{Binding Glyph}" FontSize="12" Margin="0,0,6,0" />
+                          <TextBlock Grid.Column="2" Text="{Binding Text}" Classes="subtle" />
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <Button Content="{x:Static app:Strings.Repair}" Command="{Binding RepairIntegrationCommand}" HorizontalAlignment="Right" />
+                </StackPanel>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ExtensionFolder}" Description="{x:Static app:Strings.ExtensionHowTo}">
+                <Button Content="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenExtensionFolderCommand}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.FirefoxExtensionFolder}" Description="{x:Static app:Strings.FirefoxExtensionHowTo}">
+                <Button Content="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFirefoxExtensionFolderCommand}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ExtensionId}" Description="{Binding ExtensionId}">
+                <Button Content="{x:Static app:Strings.Copy}" Command="{Binding CopyExtensionIdCommand}" />
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Advanced ===== -->
+        <StackPanel Classes="page" IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=advanced}">
+          <Border Classes="panel sec">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{x:Static app:Strings.TabAdvanced}" />
+              <c:SettingRow Title="{x:Static app:Strings.Proxy}" Description="{x:Static app:Strings.ProxyDesc}">
+                <TextBox Text="{Binding Proxy}" PlaceholderText="http://host:port" Width="260" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.AutoUpdate}" Description="{x:Static app:Strings.AutoUpdateDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Content="{x:Static app:Strings.RestartToUpdate}" Command="{Binding RestartToUpdateCommand}" IsVisible="{Binding HasPendingUpdate}" Classes="accent" />
+                  <ToggleSwitch IsChecked="{Binding AutoUpdate}" />
+                </StackPanel>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.BetaUpdates}" Description="{x:Static app:Strings.BetaUpdatesDesc}" IsEnabled="{Binding AutoUpdate}">
+                <ToggleSwitch IsChecked="{Binding BetaUpdates}" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.UpdateFeed}" Description="{x:Static app:Strings.UpdateFeedDesc}" IsEnabled="{Binding AutoUpdate}">
+                <TextBox Text="{Binding UpdateFeed}" PlaceholderText="{x:Static app:Strings.UpdateFeedWatermark}" Width="260" />
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.Diagnostics}" Description="{x:Static app:Strings.DiagnosticsDesc}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Content="{x:Static app:Strings.OpenLogs}" Command="{Binding OpenLogsCommand}" />
+                  <Button Content="{x:Static app:Strings.ExportDiagnostics}" Command="{Binding ExportDiagnosticsCommand}" />
+                </StackPanel>
+              </c:SettingRow>
+              <c:SettingRow Title="{x:Static app:Strings.ResetDefaults}" Description="{x:Static app:Strings.ResetDefaultsDesc}">
+                <Button Content="{x:Static app:Strings.Reset}" Command="{Binding ResetDefaultsCommand}" />
+              </c:SettingRow>
+            </StackPanel>
+          </Border>
+          <TextBlock Classes="subtle" Margin="2,0,0,0" Text="{Binding Version, StringFormat='Fluxer {0}'}" />
+        </StackPanel>
+      </Panel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
