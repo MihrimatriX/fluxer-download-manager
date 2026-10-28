@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="dark">
+  <title>Fluxer</title>
+  <link rel="stylesheet" href="./popup.css">
+</head>
+<body>
+  <header class="top">
+    <span class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M6 20h12"/></svg></span>
+    <span class="brand" data-i18n="extName"></span>
+    <span id="status" class="status" role="status"><span class="dot"></span><span id="statusText" data-i18n="popupChecking"></span></span>
+    <span class="grow"></span>
+    <button id="openSettings" class="icon-btn big" type="button" data-tab="settings" data-i18n-title="popupSettings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+    </button>
+  </header>
+
+  <div id="home">
+    <p id="skew" class="skew" role="status" hidden></p>
+    <div class="panel capture">
+      <div class="cap-row">
+        <label class="cap-text" for="captureEnabled"><span data-i18n="captureTitle"></span><span id="captureHint" class="sub"></span></label>
+        <input id="captureEnabled" class="switch" type="checkbox" role="switch" data-i18n-title="captureTitle">
+      </div>
+      <div id="siteRow" class="site-row" hidden>
+        <span id="siteHost" class="host"></span>
+        <button id="siteToggle" class="ghost" type="button"></button>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button role="tab" type="button" data-tab="downloads"><span data-i18n="tabDownloads"></span> <span id="dlCount" class="count"></span></button>
+      <button role="tab" type="button" data-tab="page"><span data-i18n="tabPage"></span> <span id="pageCount" class="count"></span></button>
+    </nav>
+  </div>
+
+  <main>
+    <!-- ===== Downloads ===== -->
+    <section id="tab-downloads" role="tabpanel" hidden>
+      <div id="summaryRow" class="summary" hidden>
+        <span id="summary"></span>
+        <button id="resumeAll" class="icon-btn" type="button" data-i18n-title="resumeAll">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5l12 7.5-12 7.5z"/></svg>
+        </button>
+        <button id="pauseAll" class="icon-btn" type="button" data-i18n-title="pauseAll">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
+        </button>
+      </div>
+      <ul id="list" class="dl-list"></ul>
+      <p id="empty" class="empty" data-i18n="emptyDownloads" hidden></p>
+      <p id="sentToday" class="note"></p>
+    </section>
+
+    <!-- ===== This page ===== -->
+    <section id="tab-page" role="tabpanel" hidden>
+      <p id="pageUnsupported" class="empty" data-i18n="pageUnsupported" hidden></p>
+      <div id="pageContent">
+        <div class="panel hero">
+          <div class="hero-text">
+            <span data-i18n="pageVideoTitle"></span>
+            <small data-i18n="pageVideoHint"></small>
+          </div>
+          <button id="pageVideo" class="btn primary small" type="button" data-i18n="pageVideoButton"></button>
+        </div>
+
+        <h2><span data-i18n="mediaFound"></span><span id="mediaCount" class="count"></span></h2>
+        <ul id="media" class="media-list"></ul>
+        <p id="mediaEmpty" class="empty small" data-i18n="mediaEmpty" hidden></p>
+
+        <h2><span data-i18n="batchTitle"></span><span id="linkCount" class="count"></span></h2>
+        <div id="cats" class="chips" role="group"></div>
+        <div class="search-row">
+          <input id="query" type="search" data-i18n-placeholder="search" autocomplete="off">
+          <label class="chk"><input id="selectAll" type="checkbox"><span data-i18n="selectAll"></span></label>
+        </div>
+        <ul id="links" class="link-list"></ul>
+        <p id="linksEmpty" class="empty small" hidden></p>
+      </div>
+    </section>
+
+    <!-- ===== Settings (header button) ===== -->
+    <section id="tab-settings" hidden>
+      <button id="back" class="back" type="button" data-i18n-title="back">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="tabSettings"></span>
+      </button>
+      <p class="note" data-i18n="popupAltHint"></p>
+      <label class="panel setting">
+        <span><span data-i18n="popupMinSize"></span></span>
+        <input type="number" id="minSizeMiB" min="0" step="0.5">
+      </label>
+      <label class="panel setting">
+        <span><span data-i18n="settingSkipTypes"></span><small data-i18n="settingSkipTypesHint"></small></span>
+        <input type="text" id="skipTypes" spellcheck="false" autocomplete="off" data-i18n-placeholder="settingSkipTypesPlaceholder">
+      </label>
+      <label class="panel setting">
+        <span><span data-i18n="settingVideoButton"></span><small data-i18n="settingVideoButtonHint"></small></span>
+        <input type="checkbox" class="switch" role="switch" id="showVideoButton">
+      </label>
+      <label class="panel setting">
+        <span><span data-i18n="settingBadge"></span><small data-i18n="settingBadgeHint"></small></span>
+        <input type="checkbox" class="switch" role="switch" id="showBadge">
+      </label>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <button id="paste" class="btn" type="button" data-i18n="pasteLink"></button>
+    <button id="batchGo" class="btn primary" type="button" disabled><span id="selCount"></span></button>
+    <button id="openApp" class="btn" type="button" data-i18n="openApp"></button>
+  </footer>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script type="module" src="./popup.ts"></script>
+</body>
+</html>

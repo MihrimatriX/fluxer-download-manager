@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="tr" data-lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxer: Windows için indirme yöneticisi</title>
+<meta name="description" content="Fluxer, Windows için bir indirme yöneticisi: çok bağlantılı HTTP, torrent, video ve tarayıcı eklentisi.">
+<meta name="theme-color" content="#0F1424">
+<meta property="og:title" content="Fluxer">
+<meta property="og:description" content="Windows için indirme yöneticisi: çok bağlantılı HTTP, torrent, video ve tarayıcı eklentisi.">
+<meta property="og:image" content="https://mihrimatrix.github.io/fluxer-download-manager/img/app-en-dark.png">
+<link rel="icon" href="fluxer.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F1424;
+    --tile: #161C2F;
+    --tile-2: #1C2338;
+    --line: rgba(255, 255, 255, .08);
+    --ink: #EEF1F7;
+    --ink-2: #A3AABB;
+    --ink-3: #7C8499;
+    --amber: #F5A623;
+    --amber-hot: #FFC14D;
+    --on-amber: #1D1607;
+    --green: #5CC8A0;
+    color-scheme: dark;
+  }
+  html[data-lang="tr"] [lang="en"], html[data-lang="en"] [lang="tr"] { display: none; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 17px/1.6 "Instrument Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { display: block; max-width: 100%; height: auto; }
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 6px; }
+  code { font: .86em/1.4 ui-monospace, Consolas, monospace; background: rgba(255, 255, 255, .07); padding: 2px 6px; border-radius: 5px; overflow-wrap: anywhere; }
+  .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
+
+  /* Header: sticky, translucent */
+  .top { position: sticky; top: 0; z-index: 10; background: rgba(15, 20, 36, .72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; text-decoration: none; }
+  .brand img { width: 26px; height: 26px; border-radius: 7px; }
+  nav { display: flex; align-items: center; gap: 22px; font-size: .94rem; color: var(--ink-2); }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--ink); }
+  .lang { font: inherit; font-weight: 600; color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 7px; padding: 3px 10px; cursor: pointer; }
+  .btn-sm { padding: 7px 14px; border-radius: 9px; background: var(--amber); color: var(--on-amber); font-weight: 600; }
+  nav .btn-sm:hover { color: var(--on-amber); background: var(--amber-hot); }
+
+  /* Hero */
+  .hero { position: relative; padding-top: 88px; text-align: center; overflow: hidden; }
+  .hero::before { /* faint grid, faded toward the edges */
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background-image: linear-gradient(rgba(255, 255, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 30%, transparent 75%);
+  }
+  .pill { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .03); font-size: .88rem; color: var(--ink-2); text-decoration: none; }
+  .pill b { padding: 2px 9px; border-radius: 999px; background: rgba(245, 166, 35, .14); color: var(--amber-hot); font-weight: 600; }
+  .pill:hover { color: var(--ink); }
+  .pill[hidden] { display: none; }
+  h1 {
+    margin: 26px auto 0;
+    max-width: 15ch;
+    font-size: clamp(2.6rem, 6.4vw, 5rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -.04em;
+    text-wrap: balance;
+  }
+  .lede { max-width: 54ch; margin: 24px auto 0; font-size: 1.15rem; color: var(--ink-2); text-wrap: pretty; }
+  .cta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px 16px; margin-top: 34px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 26px; border-radius: 12px;
+    background: var(--amber); color: var(--on-amber);
+    font-weight: 700; text-decoration: none;
+    box-shadow: 0 10px 30px -10px rgba(245, 166, 35, .6);
+  }
+  .btn:hover { background: var(--amber-hot); }
+  .btn svg { width: 20px; height: 20px; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 15px 22px; border-radius: 12px; border: 1px solid var(--line); text-decoration: none; font-weight: 600; color: var(--ink); }
+  .btn-ghost:hover { background: rgba(255, 255, 255, .05); }
+  .btn-ghost svg { width: 18px; height: 18px; }
+  .meta { margin: 16px 0 0; font-size: .88rem; color: var(--ink-3); }
+
+  .stage { position: relative; margin-top: 64px; perspective: 1600px; }
+  .stage::before { /* amber halo behind the window */
+    content: ""; position: absolute; left: 50%; top: 8%; width: 80%; height: 70%; transform: translateX(-50%); z-index: -1;
+    background: radial-gradient(closest-side, rgba(245, 166, 35, .32), rgba(245, 166, 35, .08) 60%, transparent);
+    filter: blur(40px);
+  }
+  .window { border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 50px 120px -40px rgba(0, 0, 0, .8); transform-origin: 50% 0; }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .window { animation: settle linear both; animation-timeline: view(); animation-range: entry 10% cover 45%; }
+      @keyframes settle { from { transform: rotateX(16deg) scale(.94); } to { transform: none; } }
+    }
+  }
+
+  /* Section heads */
+  section { margin-top: 136px; }
+  .head { max-width: 640px; }
+  h2 { margin: 0; font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 700; line-height: 1.08; letter-spacing: -.03em; text-wrap: balance; }
+  .head p { margin: 16px 0 0; color: var(--ink-2); font-size: 1.08rem; }
+
+  /* Bento */
+  .bento {
+    display: grid; gap: 16px; margin-top: 44px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas:
+      "demo demo side speed"
+      "demo demo side links"
+      "theme theme theme torrent"
+      "video ext av update";
+  }
+  .tile { position: relative; overflow: hidden; padding: 26px; border-radius: 20px; background: var(--tile); border: 1px solid var(--line); }
+  .tile h3 { margin: 0; font-size: 1.12rem; font-weight: 600; letter-spacing: -.01em; }
+  .tile p { margin: 8px 0 0; color: var(--ink-2); font-size: .95rem; }
+  .tile .ico { width: 40px; height: 40px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 11px; background: rgba(245, 166, 35, .12); color: var(--amber); }
+  .tile .ico svg { width: 22px; height: 22px; }
+  .t-demo { grid-area: demo; display: flex; flex-direction: column; background: linear-gradient(160deg, var(--tile-2), var(--tile) 60%); }
+  .t-side { grid-area: side; padding-bottom: 0; display: flex; flex-direction: column; }
+  .t-speed { grid-area: speed; }
+  .t-links { grid-area: links; }
+  .t-theme { grid-area: theme; display: grid; grid-template-columns: 1fr 2.2fr; gap: 28px; align-items: center; }
+  .t-torrent { grid-area: torrent; }
+  .t-video { grid-area: video; }
+  .t-ext { grid-area: ext; }
+  .t-av { grid-area: av; }
+  .t-update { grid-area: update; }
+
+  /* Segment demo */
+  .demo { margin: auto 0 0; padding-top: 28px; } /* figure's default 40px side margin off */
+  .file { display: flex; justify-content: space-between; gap: 16px; font-size: .92rem; }
+  .file span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .file span:last-child { color: var(--ink-2); white-space: nowrap; }
+  .bar { position: relative; height: 88px; margin-top: 12px; border-radius: 10px; background: rgba(0, 0, 0, .35); overflow: hidden; }
+  .seg { position: absolute; top: 0; bottom: 0; background: var(--amber); border-left: 1px solid rgba(15, 20, 36, .6); }
+  .seg.live { box-shadow: inset -3px 0 #FFD98A; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px 40px; margin-top: 18px; }
+  .stats div { min-width: 5.5rem; }
+  .stats div:nth-child(2) { min-width: 9.5rem; } /* room for "000,0 MB/s" so the row doesn't jitter */
+  .stats b { display: block; font-size: 1.7rem; font-weight: 700; letter-spacing: -.02em; }
+  .stats span { font-size: .84rem; color: var(--ink-2); }
+
+  /* Sidebar shot: anchored to the tile's bottom edge */
+  .t-side .shot {
+    margin: 22px -2px 0; align-self: center; width: 236px; max-height: 300px;
+    border-radius: 12px 12px 0 0; overflow: hidden; border: 1px solid var(--line); border-bottom: 0; background: #1E2438;
+    -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent);
+  }
+
+  /* Speed profiles */
+  .profiles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+  .profiles button { font: inherit; font-size: .82rem; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: none; color: var(--ink-2); cursor: pointer; }
+  .profiles button[aria-pressed="true"] { background: var(--amber); border-color: var(--amber); color: var(--on-amber); }
+  .limits { margin: 14px 0 0; font-size: .92rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* Theme compare */
+  .compare { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); --x: 50%; }
+  .compare .top { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--x)); }
+  .compare .handle { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: var(--amber); pointer-events: none; }
+  .compare .handle::after {
+    content: ""; position: absolute; top: 50%; left: 50%; width: 38px; height: 38px; margin: -19px 0 0 -19px;
+    border-radius: 50%; background: var(--amber); box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D1607' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 6-6 6 6 6M15 6l6 6-6 6'/%3E%3C/svg%3E");
+    background-size: 20px; background-position: center; background-repeat: no-repeat;
+  }
+  .compare input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+  .compare:has(input:focus-visible) { outline: 2px solid var(--amber); outline-offset: 4px; }
+  .hint { margin-top: 14px; font-size: .86rem; color: var(--ink-3); }
+
+  /* Install */
+  .steps { list-style: none; counter-reset: step; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .steps li { counter-increment: step; padding: 26px; border-radius: 20px; border: 1px solid var(--line); background: var(--tile); }
+  .steps li::before {
+    content: counter(step);
+    display: grid; place-items: center;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--amber); color: var(--on-amber); font-weight: 700;
+  }
+  .steps strong { display: block; margin-top: 16px; font-size: 1.08rem; font-weight: 600; }
+  .steps p { margin: 6px 0 0; color: var(--ink-2); font-size: .95rem; }
+  .steps a { color: var(--amber-hot); }
+
+  /* Closing */
+  .closing { position: relative; text-align: center; padding-block: 120px; overflow: hidden; }
+  .closing::before {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 700px; height: 360px; transform: translate(-50%, -50%); z-index: -1;
+    background: radial-gradient(closest-side, rgba(245, 166, 35, .18), transparent); filter: blur(30px);
+  }
+  .closing h2 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+  footer { border-top: 1px solid var(--line); color: var(--ink-3); font-size: .9rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-block: 28px 40px; }
+
+  @media (max-width: 1000px) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-areas: "demo demo" "side speed" "side links" "theme theme" "torrent video" "ext av" "update update";
+    }
+    .t-theme { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .bento { grid-template-columns: 1fr; grid-template-areas: "demo" "side" "speed" "links" "theme" "torrent" "video" "ext" "av" "update"; }
+    .hero { padding-top: 56px; }
+    section { margin-top: 96px; }
+    nav .hide-sm { display: none; }
+    .tile { padding: 22px; }
+    .bar { height: 48px; }
+    .stats { gap: 10px 24px; }
+    .stats div, .stats div:nth-child(2) { min-width: 0; }
+    .closing { padding-block: 88px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="fluxer.png" alt="">Fluxer</a>
+    <nav>
+      <a class="hide-sm" href="#features"><span lang="tr">Özellikler</span><span lang="en">Features</span></a>
+      <a class="hide-sm" href="#install"><span lang="tr">Kurulum</span><span lang="en">Install</span></a>
+      <a class="hide-sm" href="https://github.com/MihrimatriX/fluxer-download-manager">GitHub</a>
+      <button class="lang" type="button" id="lang" aria-label="Dil / Language">EN</button>
+      <a class="btn-sm" href="https://github.com/MihrimatriX/fluxer-download-manager/releases/latest/download/Fluxer-win-Setup.exe"><span lang="tr">İndir</span><span lang="en">Download</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <a class="pill" id="pill" href="https://github.com/MihrimatriX/fluxer-download-manager/releases/latest" hidden>
+        <b id="ver"></b><span lang="tr">Sürüm notlarını oku</span><span lang="en">Read the release notes</span>
+      </a>
+      <h1>
+        <span lang="tr">Büyük dosyalar, sekiz bağlantıdan birden.</span>
+        <span lang="en">Big files, over eight connections at once.</span>
+      </h1>
+      <p class="lede">
+        <span lang="tr">Fluxer, Windows için bir indirme yöneticisi. Dosyayı parçalara bölüp aynı anda indirir, bağlantı kopunca kaldığı yerden sürdürür. Torrentler ve videolar da aynı listede.</span>
+        <span lang="en">Fluxer is a download manager for Windows. It splits a file into parts, fetches them at the same time and picks up where it stopped when the connection drops. Torrents and videos go in the same list.</span>
+      </p>
+      <div class="cta">
+        <a class="btn" href="https://github.com/MihrimatriX/fluxer-download-manager/releases/latest/download/Fluxer-win-Setup.exe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          <span lang="tr">Windows için indir</span><span lang="en">Download for Windows</span>
+        </a>
+        <a class="btn-ghost" href="https://github.com/MihrimatriX/fluxer-download-manager">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+          <span lang="tr">Kaynak kodu</span><span lang="en">Source code</span>
+        </a>
+      </div>
+      <p class="meta">
+        <span lang="tr">Windows 10 (1809+) ve 11, x64. Ücretsiz ve yönetici izni istemez.</span>
+        <span lang="en">Windows 10 (1809+) and 11, x64. Free, and it doesn't need admin rights.</span>
+      </p>
+      <div class="stage">
+        <div class="window">
+          <img lang="tr" src="img/app-tr-dark.png" width="1344" height="812" alt="Fluxer ana penceresi: dört indirme sürüyor, toplam 68 MB/s">
+          <img lang="en" src="img/app-en-dark.png" width="1344" height="812" alt="Fluxer main window: four downloads running at 68 MB/s in total">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="wrap" id="features">
+    <div class="head">
+      <h2><span lang="tr">Özellikler</span><span lang="en">Features</span></h2>
+      <p>
+        <span lang="tr">HTTP, torrent ve video indirmeleri tek bir uygulamada. Tarayıcıdan gelen indirmeler de aynı listeye düşer.</span>
+        <span lang="en">HTTP, torrent and video downloads in one app. Downloads from the browser land in the same list.</span>
+      </p>
+    </div>
+
+    <div class="bento">
+      <article class="tile t-demo">
+        <h3><span lang="tr">Parçalı indirme</span><span lang="en">Split downloads</span></h3>
+        <p>
+          <span lang="tr">Dosya sekiz parçaya bölünür ve her parça kendi bağlantısından iner. İşini erken bitiren bağlantı, kalan en büyük parçanın yarısını devralır. Böylece indirmenin sonu tek bir yavaş bağlantıya kalmaz. Bilgisayar kapansa da ilerleme diske yazılır; sunucudaki dosya bu arada değiştiyse Fluxer bunu fark eder ve baştan başlatmayı önerir.</span>
+          <span lang="en">The file is split into eight parts and each one comes down its own connection. A connection that finishes early takes over half of the largest part still left, so the end of the download doesn't hang on one slow connection. Progress is written to disk even if the computer shuts down, and if the file on the server changed in the meantime, Fluxer notices and offers to start over.</span>
+        </p>
+        <figure class="demo" aria-label="Segment map demo">
+          <div class="file"><span>ubuntu-24.04.1-desktop-amd64.iso</span><span>6,0 GB</span></div>
+          <div class="bar" id="bar"></div>
+          <div class="stats">
+            <div><b id="pct">0%</b><span lang="tr">tamamlandı</span><span lang="en">done</span></div>
+            <div><b id="speed">0,0 MB/s</b><span lang="tr">hız</span><span lang="en">speed</span></div>
+            <div><b id="conns">8</b><span lang="tr">bağlantı</span><span lang="en">connections</span></div>
+          </div>
+        </figure>
+      </article>
+
+      <article class="tile t-side">
+        <h3><span lang="tr">Kategoriler ve kuyruklar</span><span lang="en">Categories and queues</span></h3>
+        <p>
+          <span lang="tr">İndirmeler dosya türüne göre ayrılır. Ana kuyruk aynı anda kaç indirmenin çalışacağını belirler; gece kuyruğu seçtiğin saatte başlar, varsayılan olarak 01:00'de.</span>
+          <span lang="en">Downloads are grouped by file type. The main queue decides how many run at once, and the night queue starts at the hour you pick, 01:00 by default.</span>
+        </p>
+        <div class="shot">
+          <img lang="tr" src="img/sidebar-tr.png" width="236" height="456" loading="lazy" alt="Kategoriler ve kuyruklar">
+          <img lang="en" src="img/sidebar-en.png" width="236" height="456" loading="lazy" alt="Categories and queues">
+        </div>
+      </article>
+
+      <article class="tile t-speed">
+        <h3><span lang="tr">Hız profilleri</span><span lang="en">Speed profiles</span></h3>
+        <p><span lang="tr">Haftalık bir plan kurarsan Fluxer gün içinde profiller arasında kendisi geçer.</span><span lang="en">Set up a weekly schedule and Fluxer switches profiles during the day.</span></p>
+        <div class="profiles" id="profiles">
+          <button type="button" aria-pressed="true" data-i="0"><span lang="tr">Sınırsız</span><span lang="en">Unlimited</span></button>
+          <button type="button" aria-pressed="false" data-i="1"><span lang="tr">Dengeli</span><span lang="en">Balanced</span></button>
+          <button type="button" aria-pressed="false" data-i="2"><span lang="tr">Arka plan</span><span lang="en">Background</span></button>
+        </div>
+        <p class="limits" id="limits" aria-live="polite"></p>
+      </article>
+
+      <article class="tile t-links">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <h3><span lang="tr">Süresi dolan linkler</span><span lang="en">Expired links</span></h3>
+        <p><span lang="tr">Linkin süresi dolunca indirme bekler; sayfadan yenilediğinde devam eder. Aynı dosyanın başka adresleri bağlantıları paylaşır.</span><span lang="en">When a link expires, the download waits until you refresh it from the page. Other addresses of the same file share the connections.</span></p>
+      </article>
+
+      <article class="tile t-theme">
+        <div>
+          <h3><span lang="tr">Açık ve koyu tema</span><span lang="en">Light and dark themes</span></h3>
+          <p><span lang="tr">Fluxer Windows'un temasını izler ya da seçtiğin temada kalır. Arayüz Türkçe ve İngilizce.</span><span lang="en">Fluxer follows the Windows theme or stays on the one you pick. The interface is in English and Turkish.</span></p>
+          <p class="hint"><span lang="tr">Karşılaştırmak için sürükle.</span><span lang="en">Drag to compare.</span></p>
+        </div>
+        <div class="compare" id="compare">
+          <img lang="tr" src="img/app-tr-dark.png" width="1344" height="812" loading="lazy" alt="Koyu tema">
+          <img lang="en" src="img/app-en-dark.png" width="1344" height="812" loading="lazy" alt="Dark theme">
+          <img class="top" lang="tr" src="img/app-tr-light.png" width="1344" height="812" loading="lazy" alt="Açık tema">
+          <img class="top" lang="en" src="img/app-en-light.png" width="1344" height="812" loading="lazy" alt="Light theme">
+          <div class="handle"></div>
+          <input type="range" min="0" max="100" value="50" aria-label="Açık ve koyu temayı karşılaştır / Compare light and dark theme">
+        </div>
+      </article>
+
+      <article class="tile t-torrent">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15"/><path d="m5 8 4 4"/><path d="m12 15 4 4"/></svg></div>
+        <h3><span lang="tr">Torrent</span><span lang="en">Torrents</span></h3>
+        <p><span lang="tr">Magnet linkleri ve .torrent dosyaları; DHT, eş değişimi, UPnP. RSS beslemelerindeki yeni torrentler kendiliğinden eklenir.</span><span lang="en">Magnet links and .torrent files with DHT, peer exchange and UPnP. New torrents from RSS feeds are added on their own.</span></p>
+      </article>
+
+      <article class="tile t-video">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg></div>
+        <h3><span lang="tr">Video</span><span lang="en">Video</span></h3>
+        <p><span lang="tr">yt-dlp'nin desteklediği sitelerden indirir. Gereken araçlar ilk kullanımda indirilir ve SHA-256 ile doğrulanır.</span><span lang="en">Downloads from sites yt-dlp supports. The tools it needs are fetched on first use and checked against SHA-256 sums.</span></p>
+      </article>
+
+      <article class="tile t-ext">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
+        <h3><span lang="tr">Tarayıcı eklentisi</span><span lang="en">Browser extension</span></h3>
+        <p><span lang="tr">Chrome, Edge, Brave, Opera, Vivaldi ve Firefox. Alt'a basılı tıklarsan dosya tarayıcıda kalır.</span><span lang="en">Chrome, Edge, Brave, Opera, Vivaldi and Firefox. Hold Alt while clicking to keep a file in the browser.</span></p>
+      </article>
+
+      <article class="tile t-av">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3><span lang="tr">Antivirüs taraması</span><span lang="en">Antivirus scan</span></h3>
+        <p><span lang="tr">Biten dosyalar, tarayıcıların yaptığı gibi Windows üzerinden antivirüse gönderilir.</span><span lang="en">Finished files go to your antivirus through Windows, the same way browsers do.</span></p>
+      </article>
+
+      <article class="tile t-update">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
+        <h3><span lang="tr">Kendini günceller</span><span lang="en">Updates itself</span></h3>
+        <p><span lang="tr">Yeni sürüm arka planda iner, uygulamadan çıkarken kurulur.</span><span lang="en">New versions download in the background and install when you quit.</span></p>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap" id="install">
+    <div class="head">
+      <h2><span lang="tr">Kurulum</span><span lang="en">Installing</span></h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <strong><span lang="tr">Kurulum dosyasını çalıştır</span><span lang="en">Run the installer</span></strong>
+        <p><span lang="tr"><a href="https://github.com/MihrimatriX/fluxer-download-manager/releases/latest/download/Fluxer-win-Setup.exe">Fluxer-win-Setup.exe</a> kullanıcı hesabına kurulur ve Başlat menüsüne eklenir.</span><span lang="en"><a href="https://github.com/MihrimatriX/fluxer-download-manager/releases/latest/download/Fluxer-win-Setup.exe">Fluxer-win-Setup.exe</a> installs for your user account and adds a Start menu entry.</span></p>
+      </li>
+      <li>
+        <strong><span lang="tr">Eklentiyi yükle</span><span lang="en">Load the extension</span></strong>
+        <p><span lang="tr"><code>chrome://extensions</code> sayfasında Geliştirici modunu aç, "Paketlenmemiş öğe yükle" ile <code>%LOCALAPPDATA%\Fluxer\current\extension</code> klasörünü seç. Firefox'ta <code>about:debugging</code> sayfasını aç, "Geçici eklenti yükle"ye tıkla ve <code>extension-firefox</code> içindeki <code>manifest.json</code> dosyasını seç.</span><span lang="en">In <code>chrome://extensions</code> turn on Developer mode, click "Load unpacked" and pick <code>%LOCALAPPDATA%\Fluxer\current\extension</code>. In Firefox, open <code>about:debugging</code>, click "Load Temporary Add-on" and pick <code>manifest.json</code> in <code>extension-firefox</code>.</span></p>
+      </li>
+      <li>
+        <strong><span lang="tr">Bir dosya indir</span><span lang="en">Download a file</span></strong>
+        <p><span lang="tr">Tarayıcıda başlattığın indirme Fluxer'a geçer. Linkleri doğrudan uygulamaya da yapıştırabilirsin.</span><span lang="en">Downloads you start in the browser land in Fluxer. You can also paste links straight into the app.</span></p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="closing">
+    <div class="wrap">
+      <h2><span lang="tr">Windows için Fluxer</span><span lang="en">Fluxer for Windows</span></h2>
+      <div class="cta">
+        <a class="btn" href="https://github.com/MihrimatriX/fluxer-download-manager/releases/latest/download/Fluxer-win-Setup.exe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          <span lang="tr">Windows için indir</span><span lang="en">Download for Windows</span>
+        </a>
+      </div>
+      <p class="meta"><span lang="tr">Ücretsiz ve yönetici izni istemez.</span><span lang="en">Free, and it doesn't need admin rights.</span></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><span lang="tr">Fluxer'ın kaynak kodu GitHub'da.</span><span lang="en">Fluxer's source code is on GitHub.</span></span>
+    <nav>
+      <a href="https://github.com/MihrimatriX/fluxer-download-manager/releases"><span lang="tr">Sürümler</span><span lang="en">Releases</span></a>
+      <a href="https://github.com/MihrimatriX/fluxer-download-manager/blob/master/CHANGELOG.md"><span lang="tr">Değişiklikler</span><span lang="en">Changelog</span></a>
+      <a href="https://github.com/MihrimatriX/fluxer-download-manager/issues"><span lang="tr">Sorun bildir</span><span lang="en">Report an issue</span></a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Language: saved choice, else the browser's.
+  const root = document.documentElement, langBtn = document.getElementById('lang');
+  // Declared before the first setLang call, which reads them (let/const can't be used before this line).
+  // Speed profiles: the app's default limits (AppSettings.Profiles).
+  const PROFILES = [
+    { tr: 'Hız sınırı yok, aynı anda 5 indirme', en: 'No speed limit, 5 downloads at once' },
+    { tr: '↓ 10 MB/s, ↑ 1 MB/s, aynı anda 3 indirme', en: '↓ 10 MB/s, ↑ 1 MB/s, 3 downloads at once' },
+    { tr: '↓ 2 MB/s, ↑ 200 KB/s, tek indirme', en: '↓ 2 MB/s, ↑ 200 KB/s, one download at a time' },
+  ];
+  const profileBtns = [...document.querySelectorAll('#profiles button')], limits = document.getElementById('limits');
+  let saved = null, version = null, profile = 0;
+  try { saved = localStorage.getItem('lang'); } catch {}
+  setLang(saved || (navigator.language.toLowerCase().startsWith('tr') ? 'tr' : 'en'));
+  langBtn.onclick = () => {
+    const next = root.dataset.lang === 'tr' ? 'en' : 'tr';
+    setLang(next);
+    try { localStorage.setItem('lang', next); } catch {}
+  };
+  function setLang(l) {
+    root.dataset.lang = root.lang = l;
+    langBtn.textContent = l === 'tr' ? 'EN' : 'TR';
+    document.title = l === 'tr' ? 'Fluxer: Windows için indirme yöneticisi' : 'Fluxer: a download manager for Windows';
+    showVersion();
+    showProfile();
+  }
+
+  // Latest release number in the pill above the headline; the pill stays hidden if GitHub can't be reached.
+  fetch('https://api.github.com/repos/MihrimatriX/fluxer-download-manager/releases/latest')
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { version = j && j.tag_name ? j.tag_name.replace(/^v/, '') : null; showVersion(); })
+    .catch(() => {});
+  function showVersion() {
+    if (!version) return;
+    document.getElementById('ver').textContent = (root.lang === 'tr' ? 'Sürüm ' : 'Version ') + version;
+    document.getElementById('pill').hidden = false;
+  }
+
+  profileBtns.forEach(b => b.onclick = () => { profile = +b.dataset.i; showProfile(); });
+  function showProfile() {
+    profileBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === profile)));
+    limits.textContent = PROFILES[profile][root.lang === 'tr' ? 'tr' : 'en'];
+  }
+
+  // Theme compare slider.
+  const compare = document.getElementById('compare');
+  compare.querySelector('input').addEventListener('input', e => compare.style.setProperty('--x', e.target.value + '%'));
+
+  // Segment map: the file is split into 8 ranges; a connection that finishes steals the
+  // back half of the largest range left, like the engine does.
+  const N = 8, MBPS = 5.6; // per-connection MB/s shown in the readout
+  const bar = document.getElementById('bar'), pct = document.getElementById('pct'),
+        speed = document.getElementById('speed'), conns = document.getElementById('conns');
+  let segs, holdUntil = 0;
+  const rate = () => 0.007 + Math.random() * 0.007; // share of the file per second
+
+  function reset() {
+    bar.replaceChildren();
+    segs = Array.from({ length: N }, (_, i) => seg(i / N, (i + 1) / N));
+    for (let t = 0; t < 15; t++) step(0.1); // open mid-download, not on an empty bar
+    draw();
+  }
+  function seg(s, e) {
+    const el = document.createElement('div');
+    el.className = 'seg live';
+    bar.append(el);
+    return { s, p: s, e, r: rate(), el };
+  }
+  function step(dt) {
+    for (const g of segs.filter(g => g.p < g.e)) {
+      g.p = Math.min(g.e, g.p + g.r * dt * (0.8 + Math.random() * 0.4));
+      if (g.p < g.e) continue;
+      g.el.classList.remove('live');
+      const donor = segs.filter(d => d.p < d.e).sort((a, b) => (b.e - b.p) - (a.e - a.p))[0];
+      if (donor && donor.e - donor.p > 0.01) {
+        const mid = (donor.p + donor.e) / 2, end = donor.e;
+        donor.e = mid;
+        segs.push(seg(mid, end));
+      }
+    }
+  }
+  function draw() {
+    let done = 0, live = 0, mbps = 0;
+    for (const g of segs) {
+      g.el.style.left = g.s * 100 + '%';
+      g.el.style.width = (g.p - g.s) * 100 + '%';
+      done += g.p - g.s;
+      if (g.p < g.e) { live++; mbps += MBPS * g.r / 0.0105; }
+    }
+    const fmt = n => n.toLocaleString(root.lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+    pct.textContent = Math.min(100, Math.round(done * 100)) + '%';
+    speed.textContent = fmt(mbps) + ' MB/s';
+    conns.textContent = live;
+  }
+
+  reset();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    for (let t = 0; t < 40; t++) step(0.1); // a still frame partway through
+    draw();
+  } else {
+    let last = performance.now();
+    requestAnimationFrame(function tick(now) {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (now > holdUntil) {
+        if (segs.every(g => g.p >= g.e)) { holdUntil = now + 2500; setTimeout(reset, 2500); }
+        else step(dt);
+        draw();
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AccentColor" xml:space="preserve"><value>Accent colour</value></data>
+  <data name="AccentColorDesc" xml:space="preserve"><value>Buttons, progress and highlights. The first one is Fluxer orange.</value></data>
+  <data name="Accept" xml:space="preserve"><value>Accept</value></data>
+  <data name="AddPaused" xml:space="preserve"><value>Add paused</value></data>
+  <data name="AddToQueue" xml:space="preserve"><value>Add to queue</value></data>
+  <data name="AddTorrent" xml:space="preserve"><value>Add torrent</value></data>
+  <data name="AddUrl" xml:space="preserve"><value>Add URL…</value></data>
+  <data name="AdvancedOptions" xml:space="preserve"><value>Advanced options</value></data>
+  <data name="AfterNothing" xml:space="preserve"><value>Do nothing</value></data>
+  <data name="AfterQueue" xml:space="preserve"><value>When the queue finishes</value></data>
+  <data name="AfterShutdown" xml:space="preserve"><value>Shut down the computer</value></data>
+  <data name="AfterSleep" xml:space="preserve"><value>Put the computer to sleep</value></data>
+  <data name="AnimationsDesc" xml:space="preserve"><value>Smooth transitions and progress. Turn off to reduce motion.</value></data>
+  <data name="AnimationsSetting" xml:space="preserve"><value>Animations</value></data>
+  <data name="AudioOnly" xml:space="preserve"><value>Audio only</value></data>
+  <data name="AvgSpeedIs" xml:space="preserve"><value>avg. {0}</value></data>
+  <data name="Browse" xml:space="preserve"><value>Browse…</value></data>
+  <data name="BrowserStatus" xml:space="preserve"><value>Browser integration</value></data>
+  <data name="BrowserStatusDesc" xml:space="preserve"><value>Native messaging registration per browser (Chromium browsers and Firefox). Opera and Vivaldi use Chrome's.</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="CatAll" xml:space="preserve"><value>All downloads</value></data>
+  <data name="CatArchives" xml:space="preserve"><value>Archives</value></data>
+  <data name="CatAuto" xml:space="preserve"><value>Automatic</value></data>
+  <data name="CatDocuments" xml:space="preserve"><value>Documents</value></data>
+  <data name="Categories" xml:space="preserve"><value>CATEGORIES</value></data>
+  <data name="Category" xml:space="preserve"><value>Category</value></data>
+  <data name="CatMusic" xml:space="preserve"><value>Music</value></data>
+  <data name="CatNone" xml:space="preserve"><value>No category</value></data>
+  <data name="CatPrograms" xml:space="preserve"><value>Programs</value></data>
+  <data name="CatTorrent" xml:space="preserve"><value>Torrents</value></data>
+  <data name="CatVideo" xml:space="preserve"><value>Video</value></data>
+  <data name="CheckingLink" xml:space="preserve"><value>Checking the new link…</value></data>
+  <data name="Checksum" xml:space="preserve"><value>Checksum (optional)</value></data>
+  <data name="ChecksumWatermark" xml:space="preserve"><value>Expected hash, hex</value></data>
+  <data name="ClearCompleted" xml:space="preserve"><value>Clear finished</value></data>
+  <data name="ClearCompletedTip" xml:space="preserve"><value>Remove finished downloads from the list (files are kept)</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="ClosesIn" xml:space="preserve"><value>Closes in {0} s</value></data>
+  <data name="ColAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="ColName" xml:space="preserve"><value>Name</value></data>
+  <data name="ColProgress" xml:space="preserve"><value>Progress</value></data>
+  <data name="ColSize" xml:space="preserve"><value>Size</value></data>
+  <data name="ColSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="CompactMode" xml:space="preserve"><value>Compact rows</value></data>
+  <data name="CompactModeDesc" xml:space="preserve"><value>44 px list rows; off gives roomier 54 px rows.</value></data>
+  <data name="CompactTip" xml:space="preserve"><value>Show or hide details</value></data>
+  <data name="Conflict" xml:space="preserve"><value>If a file with the same name exists</value></data>
+  <data name="ConflictOverwrite" xml:space="preserve"><value>Overwrite it</value></data>
+  <data name="ConflictRename" xml:space="preserve"><value>Keep both: "name (1).ext"</value></data>
+  <data name="ConnActive" xml:space="preserve"><value>receiving</value></data>
+  <data name="ConnDone" xml:space="preserve"><value>done</value></data>
+  <data name="ConnDownloaded" xml:space="preserve"><value>Received</value></data>
+  <data name="Connections" xml:space="preserve"><value>Connections per download</value></data>
+  <data name="ConnectionsDesc" xml:space="preserve"><value>Parallel connections for one HTTP download (1–32). Fluxer lowers it automatically if the server pushes back.</value></data>
+  <data name="ConnRange" xml:space="preserve"><value>Byte range</value></data>
+  <data name="ConnWaiting" xml:space="preserve"><value>waiting</value></data>
+  <data name="Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="CopyUrl" xml:space="preserve"><value>Copy address</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Remove {0} download(s) from the list?</value></data>
+  <data name="DeleteFilesToo" xml:space="preserve"><value>Also delete the files from disk</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Diagnostics" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DiagnosticsDesc" xml:space="preserve"><value>Logs and settings for bug reports; cookies and download addresses are never included.</value></data>
+  <data name="Download" xml:space="preserve"><value>Download</value></data>
+  <data name="DownloadFolder" xml:space="preserve"><value>Download folder</value></data>
+  <data name="EmptyBody" xml:space="preserve"><value>Paste a link (Ctrl+V), drop a .torrent file here, or download something in your browser.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Nothing here yet</value></data>
+  <data name="ErrDiskFull" xml:space="preserve"><value>Not enough disk space</value></data>
+  <data name="ErrFileChanged" xml:space="preserve"><value>The file on the server has changed. Retry starts over.</value></data>
+  <data name="ErrGotHtml" xml:space="preserve"><value>The server sent a web page instead of the file (sign-in, captcha or an expired link). Download it in the browser.</value></data>
+  <data name="ErrHashMismatch" xml:space="preserve"><value>Checksum does not match</value></data>
+  <data name="ErrHttp" xml:space="preserve"><value>Server error (HTTP {0})</value></data>
+  <data name="ErrLinkExpired" xml:space="preserve"><value>The link has expired — click it again in your browser or paste a new one</value></data>
+  <data name="ErrMediaDrm" xml:space="preserve"><value>This content is DRM protected and cannot be downloaded</value></data>
+  <data name="ErrMediaFailed" xml:space="preserve"><value>The video could not be downloaded</value></data>
+  <data name="ErrMediaForbidden" xml:space="preserve"><value>The site refused the download (403)</value></data>
+  <data name="ErrMediaFormat" xml:space="preserve"><value>The selected quality is not available</value></data>
+  <data name="ErrMediaPrivate" xml:space="preserve"><value>This video is private</value></data>
+  <data name="ErrMediaSignin" xml:space="preserve"><value>The site asks you to sign in — open the page in your browser while signed in and send it again</value></data>
+  <data name="ErrMediaToolsMissing" xml:space="preserve"><value>Video tools are not installed</value></data>
+  <data name="ErrMediaUnsupported" xml:space="preserve"><value>This site is not supported</value></data>
+  <data name="ErrNetwork" xml:space="preserve"><value>Network error</value></data>
+  <data name="ErrToolHash" xml:space="preserve"><value>The downloaded tool failed verification and was deleted</value></data>
+  <data name="ErrToolStalled" xml:space="preserve"><value>The download stopped responding. Check your connection and try again.</value></data>
+  <data name="EtaLeft" xml:space="preserve"><value>{0} left</value></data>
+  <data name="ExportDiagnostics" xml:space="preserve"><value>Export diagnostics package…</value></data>
+  <data name="ExtensionFolder" xml:space="preserve"><value>Extension folder (load unpacked)</value></data>
+  <data name="ExtensionHowTo" xml:space="preserve"><value>"Add to browser" opens the extensions page and selects this folder in Explorer: turn on Developer mode (top right), then drag the folder onto the page. Or Load unpacked and paste the path, which is on the clipboard.</value></data>
+  <data name="ExtensionId" xml:space="preserve"><value>Extension ID</value></data>
+  <data name="FirefoxExtensionFolder" xml:space="preserve"><value>Firefox extension folder</value></data>
+  <data name="FirefoxExtensionHowTo" xml:space="preserve"><value>about:debugging → This Firefox → Load Temporary Add-on → manifest.json in this folder. Stays until Firefox restarts; the signed .xpi from the release page installs for good.</value></data>
+  <data name="Extensions" xml:space="preserve"><value>Extensions</value></data>
+  <data name="FileName" xml:space="preserve"><value>File name</value></data>
+  <data name="FileNameAuto" xml:space="preserve"><value>Automatic</value></data>
+  <data name="Files" xml:space="preserve"><value>Files</value></data>
+  <data name="FilesTotal" xml:space="preserve"><value>{0} files · {1}</value></data>
+  <data name="FilterActive" xml:space="preserve"><value>Active</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="FilterDone" xml:space="preserve"><value>Completed</value></data>
+  <data name="FilterError" xml:space="preserve"><value>Failed</value></data>
+  <data name="FilterPaused" xml:space="preserve"><value>Paused</value></data>
+  <data name="FilterQueued" xml:space="preserve"><value>Queued</value></data>
+  <data name="FragmentFormat" xml:space="preserve"><value>Fragment {0} / {1}</value></data>
+  <data name="FreeSpace" xml:space="preserve"><value>{0} free on this drive</value></data>
+  <data name="GrabCount" xml:space="preserve"><value>{0} of {1} selected</value></data>
+  <data name="GrabEmpty" xml:space="preserve"><value>Nothing to download was found on this page.</value></data>
+  <data name="GrabTitle" xml:space="preserve"><value>Download from page</value></data>
+  <data name="Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="HideTip" xml:space="preserve"><value>Close this window; the download continues</value></data>
+  <data name="InfoAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="InfoConnections" xml:space="preserve"><value>Connections</value></data>
+  <data name="InfoError" xml:space="preserve"><value>Error</value></data>
+  <data name="InfoFinalUrl" xml:space="preserve"><value>Resolved address</value></data>
+  <data name="InfoInfoHash" xml:space="preserve"><value>Info hash</value></data>
+  <data name="InfoMirrors" xml:space="preserve"><value>Mirrors</value></data>
+  <data name="InfoReferrer" xml:space="preserve"><value>Referrer</value></data>
+  <data name="InfoResumable" xml:space="preserve"><value>Resumable</value></data>
+  <data name="InfoSavedTo" xml:space="preserve"><value>Saved to</value></data>
+  <data name="InfoSize" xml:space="preserve"><value>Size</value></data>
+  <data name="InfoUploaded" xml:space="preserve"><value>Uploaded</value></data>
+  <data name="InfoUrl" xml:space="preserve"><value>Address</value></data>
+  <data name="IntegrationMissing" xml:space="preserve"><value>not registered</value></data>
+  <data name="IntegrationOk" xml:space="preserve"><value>ready</value></data>
+  <data name="InvalidTorrent" xml:space="preserve"><value>This is not a valid torrent or magnet link.</value></data>
+  <data name="InvalidTorrentFile" xml:space="preserve"><value>The browser saved a ".torrent" that is not a valid torrent — the site probably sent a web page (sign-in or captcha).</value></data>
+  <data name="Kind" xml:space="preserve"><value>Type</value></data>
+  <data name="KindAll" xml:space="preserve"><value>All</value></data>
+  <data name="KindFile" xml:space="preserve"><value>Files</value></data>
+  <data name="KindImage" xml:space="preserve"><value>Images</value></data>
+  <data name="KindMagnet" xml:space="preserve"><value>Magnet link — opens as a torrent</value></data>
+  <data name="KindMedia" xml:space="preserve"><value>Media</value></data>
+  <data name="LangSystem" xml:space="preserve"><value>System language</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="LayoutTip" xml:space="preserve"><value>Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.</value></data>
+  <data name="LinkMatchAttach" xml:space="preserve"><value>Attach and resume</value></data>
+  <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" is waiting for a new link. Use this download to resume it?</value></data>
+  <data name="LinkMatchNew" xml:space="preserve"><value>Start a new download</value></data>
+  <data name="LinkMatchTitle" xml:space="preserve"><value>Attach to existing download?</value></data>
+  <data name="LinkNoResume" xml:space="preserve"><value>The new link does not support resuming, so the download has to start again from the beginning.</value></data>
+  <data name="LinkSizeMismatch" xml:space="preserve"><value>The new link points to a file of a different size, so it was rejected.</value></data>
+  <data name="LinkUnreachable" xml:space="preserve"><value>The new link could not be reached.</value></data>
+  <data name="LinkValidatorChanged" xml:space="preserve"><value>The server reports a different version of the file (ETag/Last-Modified changed). The part downloaded so far cannot be reused, so the download has to start again from the beginning.</value></data>
+  <data name="MagnetNoFiles" xml:space="preserve"><value>The file list will be available once metadata is fetched from peers.</value></data>
+  <data name="MediaDisclaimer" xml:space="preserve"><value>Fluxer uses yt-dlp to save videos from websites. You are responsible for respecting copyright and the site's terms of service. DRM-protected content is not supported.</value></data>
+  <data name="MediaProbing" xml:space="preserve"><value>Reading video information…</value></data>
+  <data name="MediaTitle" xml:space="preserve"><value>Save video</value></data>
+  <data name="MediaTools" xml:space="preserve"><value>Video tools</value></data>
+  <data name="BackdropSetting" xml:space="preserve"><value>Style</value></data>
+  <data name="BackdropDesc" xml:space="preserve"><value>Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.</value></data>
+  <data name="BackdropNeu" xml:space="preserve"><value>Neumorphic (soft, raised)</value></data>
+  <data name="BackdropGlass" xml:space="preserve"><value>Glass (blurred, translucent)</value></data>
+  <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
+  <data name="BackdropNone" xml:space="preserve"><value>Navy (default)</value></data>
+  <data name="RestartFromScratch" xml:space="preserve"><value>Restart from the beginning</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
+  <data name="MinDimension" xml:space="preserve"><value>Min. size (px)</value></data>
+  <data name="MinSizeKb" xml:space="preserve"><value>Min. file size (KB)</value></data>
+  <data name="MirrorInvalid" xml:space="preserve"><value>Not an http(s) address: {0}</value></data>
+  <data name="Mirrors" xml:space="preserve"><value>Mirrors (optional)</value></data>
+  <data name="MirrorsDesc" xml:space="preserve"><value>Connections are shared between the link and its mirrors. Only mirrors that serve the same file (same size, resumable) are used.</value></data>
+  <data name="MirrorsSummary" xml:space="preserve"><value>{0} · {1} in use, {2} dropped</value></data>
+  <data name="MirrorsWatermark" xml:space="preserve"><value>Other addresses of the same file, one per line</value></data>
+  <data name="MoveBottom" xml:space="preserve"><value>Move to bottom</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="MoveDownTip" xml:space="preserve"><value>Start later (Ctrl+Down)</value></data>
+  <data name="MoveTop" xml:space="preserve"><value>Move to top</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="MoveUpTip" xml:space="preserve"><value>Start sooner (Ctrl+Up)</value></data>
+  <data name="NewDownload" xml:space="preserve"><value>New download</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="NotEnoughSpace" xml:space="preserve"><value>— not enough space</value></data>
+  <data name="NotifyCompleted" xml:space="preserve"><value>Download complete</value></data>
+  <data name="NotResumable" xml:space="preserve"><value>cannot resume</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="OpenFile" xml:space="preserve"><value>Open</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>Show in folder</value></data>
+  <data name="OpenLogs" xml:space="preserve"><value>Open logs</value></data>
+  <data name="PasteTip" xml:space="preserve"><value>Paste from clipboard</value></data>
+  <data name="Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="PauseAll" xml:space="preserve"><value>Pause all</value></data>
+  <data name="PeersCount" xml:space="preserve"><value>{0} peers</value></data>
+  <data name="PlaylistItems" xml:space="preserve"><value>Playlist — {0} items</value></data>
+  <data name="Probing" xml:space="preserve"><value>Checking the address…</value></data>
+  <data name="ProgressWindow" xml:space="preserve"><value>Progress window…</value></data>
+  <data name="Proxy" xml:space="preserve"><value>Proxy</value></data>
+  <data name="ProxyDesc" xml:space="preserve"><value>Applies to downloads and video. Empty uses the Windows proxy settings. Torrent peers never go through the proxy.</value></data>
+  <data name="Quality" xml:space="preserve"><value>Quality</value></data>
+  <data name="QualityBest" xml:space="preserve"><value>Best available</value></data>
+  <data name="Queue" xml:space="preserve"><value>Queue</value></data>
+  <data name="QueuedAt" xml:space="preserve"><value>Queued (#{0})</value></data>
+  <data name="RecentFolders" xml:space="preserve"><value>Recent folders</value></data>
+  <data name="RefreshLink" xml:space="preserve"><value>Refresh link…</value></data>
+  <data name="RefreshLinkPrompt" xml:space="preserve"><value>Paste the new address of the same file:</value></data>
+  <data name="RefreshLinkTitle" xml:space="preserve"><value>Refresh link</value></data>
+  <data name="RegisterAssociations" xml:space="preserve"><value>Open magnet links and .torrent files with Fluxer</value></data>
+  <data name="RegisterAssociationsDesc" xml:space="preserve"><value>Clicking a magnet link or opening a .torrent file starts Fluxer.</value></data>
+  <data name="Repair" xml:space="preserve"><value>Repair</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="ResetColumns" xml:space="preserve"><value>Reset columns</value></data>
+  <data name="ResetDefaults" xml:space="preserve"><value>Reset settings</value></data>
+  <data name="ResetDefaultsConfirm" xml:space="preserve"><value>Restore all settings to their defaults? Downloads are not affected.</value></data>
+  <data name="ResetDefaultsDesc" xml:space="preserve"><value>Restore every option on this page to its default.</value></data>
+  <data name="RestartToUpdate" xml:space="preserve"><value>Restart to install the update</value></data>
+  <data name="Resumable" xml:space="preserve"><value>resumable</value></data>
+  <data name="Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="ResumeAll" xml:space="preserve"><value>Resume all</value></data>
+  <data name="RssAdd" xml:space="preserve"><value>Add feed</value></data>
+  <data name="RssCheckNow" xml:space="preserve"><value>Check now</value></data>
+  <data name="RssExclude" xml:space="preserve"><value>Skip titles matching (regex)</value></data>
+  <data name="RssFeeds" xml:space="preserve"><value>RSS feeds</value></data>
+  <data name="RssFeedsDesc" xml:space="preserve"><value>New torrents in these feeds are added automatically. Whatever a feed lists when you add it is skipped; only items published later are downloaded.</value></data>
+  <data name="RssInclude" xml:space="preserve"><value>Only titles matching (regex)</value></data>
+  <data name="RssInterval" xml:space="preserve"><value>Check every (minutes)</value></data>
+  <data name="RssIntervalDesc" xml:space="preserve"><value>How often each feed is fetched, 5–1440 minutes.</value></data>
+  <data name="RssInvalidFilter" xml:space="preserve"><value>Invalid filter pattern; nothing is added until it is fixed.</value></data>
+  <data name="RssLastCheck" xml:space="preserve"><value>Checked {0} · {1} added</value></data>
+  <data name="RssNotChecked" xml:space="preserve"><value>Not checked yet</value></data>
+  <data name="RssRemove" xml:space="preserve"><value>Remove feed</value></data>
+  <data name="RssSaveFolder" xml:space="preserve"><value>Save folder (default: torrent folder)</value></data>
+  <data name="RssUrlHint" xml:space="preserve"><value>Feed address (https://…)</value></data>
+  <data name="SaveTo" xml:space="preserve"><value>Save to</value></data>
+  <data name="Search" xml:space="preserve"><value>Search downloads</value></data>
+  <data name="SecAppearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="SecDownloads" xml:space="preserve"><value>Downloads</value></data>
+  <data name="SecGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="SecTorrent" xml:space="preserve"><value>Torrent</value></data>
+  <data name="SecVideo" xml:space="preserve"><value>Video sites</value></data>
+  <data name="SeedMinutes" xml:space="preserve"><value>Seeding time (minutes)</value></data>
+  <data name="SeedMinutesDesc" xml:space="preserve"><value>Stop seeding after this many minutes (0 = no limit).</value></data>
+  <data name="SeedOverride" xml:space="preserve"><value>Own seeding rules</value></data>
+  <data name="SeedOverrideDesc" xml:space="preserve"><value>Ratio and minutes for this torrent only; off = global setting.</value></data>
+  <data name="SeedRatio" xml:space="preserve"><value>Seeding ratio</value></data>
+  <data name="SeedRatioDesc" xml:space="preserve"><value>Stop seeding when uploaded ÷ size reaches this ratio (0 = no limit).</value></data>
+  <data name="SegmentMap" xml:space="preserve"><value>Connections</value></data>
+  <data name="SelectNone" xml:space="preserve"><value>Select none</value></data>
+  <data name="Sequential" xml:space="preserve"><value>Download in order (for previewing media)</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Saved</value></data>
+  <data name="ShowAddDialog" xml:space="preserve"><value>Ask before starting downloads from the browser</value></data>
+  <data name="ShowAddDialogDesc" xml:space="preserve"><value>Show the add window for downloads coming from the browser; off = start immediately.</value></data>
+  <data name="ShowCompletedCard" xml:space="preserve"><value>"Completed" card</value></data>
+  <data name="ShowCompletedCardDesc" xml:space="preserve"><value>A small card in the corner when a download finishes; closes by itself.</value></data>
+  <data name="ShowNotifications" xml:space="preserve"><value>Show notifications</value></data>
+  <data name="ShowNotificationsDesc" xml:space="preserve"><value>Windows notifications when a download finishes or fails.</value></data>
+  <data name="ShowProgressWindow" xml:space="preserve"><value>Progress window for new downloads</value></data>
+  <data name="ShowProgressWindowDesc" xml:space="preserve"><value>Opens a detailed window for each download you start. Double-click a row to open it any time.</value></data>
+  <data name="SpeedGraph" xml:space="preserve"><value>Speed (last minute)</value></data>
+  <data name="SpeedLimitPrompt" xml:space="preserve"><value>Speed limit for this download in KB/s (0 = unlimited):</value></data>
+  <data name="SpeedLimitTitle" xml:space="preserve"><value>Speed limit…</value></data>
+  <data name="StatAvgSpeed" xml:space="preserve"><value>Average speed</value></data>
+  <data name="StatConnections" xml:space="preserve"><value>Connections</value></data>
+  <data name="StateCompleted" xml:space="preserve"><value>Completed</value></data>
+  <data name="StateDiskFull" xml:space="preserve"><value>Disk full</value></data>
+  <data name="StateDownloading" xml:space="preserve"><value>Downloading</value></data>
+  <data name="StateFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="StatElapsed" xml:space="preserve"><value>Elapsed</value></data>
+  <data name="StateNeedsLinkRefresh" xml:space="preserve"><value>Link refresh needed</value></data>
+  <data name="StatePaused" xml:space="preserve"><value>Paused</value></data>
+  <data name="StateQueued" xml:space="preserve"><value>Queued</value></data>
+  <data name="StateSeeding" xml:space="preserve"><value>Seeding</value></data>
+  <data name="StateStarting" xml:space="preserve"><value>Connecting…</value></data>
+  <data name="StateVerifying" xml:space="preserve"><value>Verifying</value></data>
+  <data name="StatResumable" xml:space="preserve"><value>Resumable</value></data>
+  <data name="StatServer" xml:space="preserve"><value>Server</value></data>
+  <data name="StatSize" xml:space="preserve"><value>Size</value></data>
+  <data name="SummaryFormat" xml:space="preserve"><value>{0} downloads · {1} active · {2} queued</value></data>
+  <data name="TabAdvanced" xml:space="preserve"><value>Advanced</value></data>
+  <data name="TabConnectionsList" xml:space="preserve"><value>Connections</value></data>
+  <data name="TabFiles" xml:space="preserve"><value>Files</value></data>
+  <data name="TabHeaders" xml:space="preserve"><value>Headers</value></data>
+  <data name="TabPeers" xml:space="preserve"><value>Peers</value></data>
+  <data name="TabTorrentOptions" xml:space="preserve"><value>Options</value></data>
+  <data name="Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>Follow system</value></data>
+  <data name="ToggleDetail" xml:space="preserve"><value>Show or hide the detail panel</value></data>
+  <data name="TookIs" xml:space="preserve"><value>took {0}</value></data>
+  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Show text next to toolbar icons.</value></data>
+  <data name="ToolbarLabelsSetting" xml:space="preserve"><value>Toolbar labels</value></data>
+  <data name="ToolsConsent" xml:space="preserve"><value>To save videos, Fluxer needs yt-dlp, deno and ffmpeg (about 150 MB). They will be downloaded once from their official GitHub releases and verified with the publishers' SHA-256 checksums.</value></data>
+  <data name="ToolsDownloading" xml:space="preserve"><value>Downloading video tools…</value></data>
+  <data name="ToolsFailed" xml:space="preserve"><value>The video tools could not be installed.</value></data>
+  <data name="ToolsNotInstalled" xml:space="preserve"><value>Not installed yet — installed automatically on the first video download</value></data>
+  <data name="ToolsTitle" xml:space="preserve"><value>Video tools</value></data>
+  <data name="TorrentDownLimitItem" xml:space="preserve"><value>Download limit for this torrent (KB/s)</value></data>
+  <data name="TorrentDuplicate" xml:space="preserve"><value>This torrent is already in the list.</value></data>
+  <data name="TorrentFetchFailed" xml:space="preserve"><value>The torrent file could not be fetched (the site may require signing in). Try clicking it in the browser.</value></data>
+  <data name="TorrentSlots" xml:space="preserve"><value>Simultaneous torrents</value></data>
+  <data name="TorrentSlotsDesc" xml:space="preserve"><value>A torrent still searching for peers never blocks HTTP downloads; seeding takes no slot.</value></data>
+  <data name="TorrentUpLimitItem" xml:space="preserve"><value>Upload limit for this torrent (KB/s)</value></data>
+  <data name="TorrentUpStat" xml:space="preserve"><value>↑ {0} · {1} sent</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit Fluxer</value></data>
+  <data name="TrayOpen" xml:space="preserve"><value>Open Fluxer</value></data>
+  <data name="UiScale" xml:space="preserve"><value>Interface size</value></data>
+  <data name="UiScaleDesc" xml:space="preserve"><value>Makes text and controls larger or smaller in every window.</value></data>
+  <data name="UpdateFeed" xml:space="preserve"><value>Update source</value></data>
+  <data name="UpdateFeedDesc" xml:space="preserve"><value>Empty uses Fluxer's GitHub releases. A folder, share or URL with a Velopack feed also works.</value></data>
+  <data name="UpdateFeedWatermark" xml:space="preserve"><value>GitHub releases (default)</value></data>
+  <data name="UpdateNow" xml:space="preserve"><value>Update now</value></data>
+  <data name="UpdateReadyBody" xml:space="preserve"><value>Version {0} will be installed when you exit Fluxer.</value></data>
+  <data name="UpdateReadyTitle" xml:space="preserve"><value>Update downloaded</value></data>
+  <data name="UpToDate" xml:space="preserve"><value>up to date</value></data>
+  <data name="UrlPattern" xml:space="preserve"><value>Address contains (or regular expression)</value></data>
+  <data name="UrlPatternWatermark" xml:space="preserve"><value>e.g. /uploads/ or \.jpe?g$</value></data>
+  <data name="Urls" xml:space="preserve"><value>Addresses (one per line)</value></data>
+  <data name="UrlsWatermark" xml:space="preserve"><value>https://example.com/file.zip</value></data>
+  <data name="UseCategoryFolders" xml:space="preserve"><value>Sort into category folders (Video, Music, …)</value></data>
+  <data name="UseCategoryFoldersDesc" xml:space="preserve"><value>Video, Music, Documents… subfolders by file type.</value></data>
+  <data name="WarnHtml" xml:space="preserve"><value>This address returns a web page, not a file (sign-in, captcha or an expired link). Download it in the browser instead.</value></data>
+  <data name="WarnHttp" xml:space="preserve"><value>The server answered HTTP {0}.</value></data>
+  <data name="WarnTorrent" xml:space="preserve"><value>This is a torrent file — it will open as a torrent.</value></data>
+  <data name="WarnUnreachable" xml:space="preserve"><value>The server could not be reached.</value></data>
+  <data name="WhenDoneClose" xml:space="preserve"><value>Close this window</value></data>
+  <data name="WhenDoneOpenFile" xml:space="preserve"><value>Open the file</value></data>
+  <data name="WhenDoneOpenFolder" xml:space="preserve"><value>Open the folder</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="ZeroIsGlobal" xml:space="preserve"><value>0 = only the global limit applies.</value></data>
+  <data name="Minimize" xml:space="preserve"><value>Minimize</value></data>
+  <data name="Maximize" xml:space="preserve"><value>Maximize</value></data>
+  <data name="CloseWindow" xml:space="preserve"><value>Close</value></data>
+  <data name="EtaDays" xml:space="preserve"><value>{0}d {1}h</value></data>
+  <data name="AccentNames" xml:space="preserve"><value>Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite</value></data>
+  <data name="BackToDownloads" xml:space="preserve"><value>Back to downloads</value></data>
+  <data name="Concurrent" xml:space="preserve"><value>{0} at once</value></data>
+  <data name="DayNames" xml:space="preserve"><value>Mon|Tue|Wed|Thu|Fri|Sat|Sun</value></data>
+  <data name="DeleteTip" xml:space="preserve"><value>Remove from the list (files stay on disk, undoable)</value></data>
+  <data name="DeleteWithFiles" xml:space="preserve"><value>Delete with files…</value></data>
+  <data name="DhtDesc" xml:space="preserve"><value>Find peers without a tracker</value></data>
+  <data name="DhtNodes" xml:space="preserve"><value>DHT {0} nodes</value></data>
+  <data name="EncOff" xml:space="preserve"><value>Off</value></data>
+  <data name="EncPrefer" xml:space="preserve"><value>Prefer</value></data>
+  <data name="EncRequire" xml:space="preserve"><value>Require</value></data>
+  <data name="Encryption" xml:space="preserve"><value>Encryption</value></data>
+  <data name="ErrorKept" xml:space="preserve"><value>{0}. The {1} already downloaded is kept.</value></data>
+  <data name="ErrorShort" xml:space="preserve"><value>Error</value></data>
+  <data name="EtaUnits" xml:space="preserve"><value>s|min|h|d</value></data>
+  <data name="FreeShort" xml:space="preserve"><value>{0} free</value></data>
+  <data name="HeaderDownloading" xml:space="preserve"><value>{0} downloading</value></data>
+  <data name="InfoQueue" xml:space="preserve"><value>Queue</value></data>
+  <data name="KindHttpMulti" xml:space="preserve"><value>HTTP · multiple connections</value></data>
+  <data name="KindTorrentFiles" xml:space="preserve"><value>Torrent · {0} files</value></data>
+  <data name="Last60s" xml:space="preserve"><value>last 60 s</value></data>
+  <data name="ListenPort" xml:space="preserve"><value>Listening port</value></data>
+  <data name="ListenPortDesc" xml:space="preserve"><value>Peers connect to this port (TCP and UDP).</value></data>
+  <data name="LogAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="LsdDesc" xml:space="preserve"><value>Find peers on the same network</value></data>
+  <data name="LsdTitle" xml:space="preserve"><value>Local peer discovery</value></data>
+  <data name="MainQueue" xml:space="preserve"><value>Main queue</value></data>
+  <data name="Manual" xml:space="preserve"><value>manual</value></data>
+  <data name="MaxPeers" xml:space="preserve"><value>Max peers per torrent</value></data>
+  <data name="MoveToNight" xml:space="preserve"><value>Move to night queue</value></data>
+  <data name="NightQueue" xml:space="preserve"><value>Night queue</value></data>
+  <data name="NightQueueAt" xml:space="preserve"><value>Night queue · {0}</value></data>
+  <data name="NightQueueManual" xml:space="preserve"><value>Night queue · manual start</value></data>
+  <data name="NightQueueStart" xml:space="preserve"><value>Start the night queue at</value></data>
+  <data name="NightQueueTip" xml:space="preserve"><value>Downloads added to the night queue wait until its start time.</value></data>
+  <data name="NoPeers" xml:space="preserve"><value>No peers connected.</value></data>
+  <data name="OpenInBrowser" xml:space="preserve"><value>Open in browser</value></data>
+  <data name="PexDesc" xml:space="preserve"><value>Learn new peers from connected peers</value></data>
+  <data name="PexTitle" xml:space="preserve"><value>Peer exchange (PeX)</value></data>
+  <data name="ProfileDown" xml:space="preserve"><value>Download</value></data>
+  <data name="ProfileNames" xml:space="preserve"><value>Unlimited|Balanced|Background</value></data>
+  <data name="ProfileSlots" xml:space="preserve"><value>At once</value></data>
+  <data name="ProfileTip" xml:space="preserve"><value>Switch speed profile</value></data>
+  <data name="ProfileUp" xml:space="preserve"><value>Upload</value></data>
+  <data name="Queues" xml:space="preserve"><value>QUEUES</value></data>
+  <data name="RemovedToast" xml:space="preserve"><value>{0} removed from the list · files stay on disk</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="ScheduleStopShort" xml:space="preserve"><value>Pause everything at</value></data>
+  <data name="Scheduler" xml:space="preserve"><value>Scheduler</value></data>
+  <data name="SecBrowserIntegration" xml:space="preserve"><value>Browser integration</value></data>
+  <data name="SecSpeedSchedule" xml:space="preserve"><value>Speed and scheduler</value></data>
+  <data name="SeedAndNetwork" xml:space="preserve"><value>Seeding and network</value></data>
+  <data name="SeedRatioFormat" xml:space="preserve"><value>Seeding · ratio {0}</value></data>
+  <data name="SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="SidebarCollapsedDesc" xml:space="preserve"><value>Icons only; Ctrl+B toggles it any time.</value></data>
+  <data name="SidebarCollapsedSetting" xml:space="preserve"><value>Narrow sidebar</value></data>
+  <data name="SpeedProfiles" xml:space="preserve"><value>Speed profiles</value></data>
+  <data name="SpeedProfilesDesc" xml:space="preserve"><value>Switch with the button in the status bar or by the scheduler. 0 MB/s means unlimited.</value></data>
+  <data name="Start" xml:space="preserve"><value>Start</value></data>
+  <data name="StateScheduled" xml:space="preserve"><value>Night queue</value></data>
+  <data name="TabInfo" xml:space="preserve"><value>Info</value></data>
+  <data name="TabLog" xml:space="preserve"><value>Log</value></data>
+  <data name="TabTrackers" xml:space="preserve"><value>Trackers</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="TorrentConnection" xml:space="preserve"><value>Connection</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="UpnpDesc" xml:space="preserve"><value>Open the port on the router automatically</value></data>
+  <data name="WeekSchedule" xml:space="preserve"><value>Weekly scheduler</value></data>
+  <data name="WeekScheduleDesc" xml:space="preserve"><value>Click or drag over cells to paint a profile. Selected brush:</value></data>
+  <data name="Yesterday" xml:space="preserve"><value>Yesterday</value></data>
+  <data name="TrayHeader" xml:space="preserve"><value>{0} active · {1} seeding</value></data>
+  <data name="TrayErrors" xml:space="preserve"><value>{0} download(s) failed · show</value></data>
+  <data name="TrayIdle" xml:space="preserve"><value>Nothing is downloading right now.</value></data>
+  <data name="PasteLink" xml:space="preserve"><value>Paste a link…</value></data>
+  <data name="QuickAdd" xml:space="preserve"><value>Quick add</value></data>
+  <data name="OpenWindow" xml:space="preserve"><value>Open window</value></data>
+  <data name="LinkOrMagnet" xml:space="preserve"><value>Link, magnet or file</value></data>
+  <data name="ResumeTile" xml:space="preserve"><value>Resume</value></data>
+  <data name="ConnectionCount" xml:space="preserve"><value>Connections</value></data>
+  <data name="LinksFound" xml:space="preserve"><value>{0} links found</value></data>
+  <data name="DontAskAgain" xml:space="preserve"><value>Don't ask again</value></data>
+  <data name="Supported" xml:space="preserve"><value>Supported</value></data>
+  <data name="NotSupported" xml:space="preserve"><value>Not supported</value></data>
+  <data name="Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="WebPage" xml:space="preserve"><value>Web page</value></data>
+  <data name="NoAnswer" xml:space="preserve"><value>No answer</value></data>
+  <data name="MainQueueNow" xml:space="preserve"><value>Main queue (now)</value></data>
+  <data name="NightQueueOption" xml:space="preserve"><value>Night queue ({0})</value></data>
+  <data name="StartN" xml:space="preserve"><value>Start {0} downloads</value></data>
+  <data name="StartDownload" xml:space="preserve"><value>Start download</value></data>
+  <data name="AddToNight" xml:space="preserve"><value>Add to night queue</value></data>
+  <data name="BadgeBatch" xml:space="preserve"><value>BATCH</value></data>
+  <data name="MagnetDetected" xml:space="preserve"><value>Magnet link · metadata comes from peers</value></data>
+  <data name="ServerAnswered" xml:space="preserve"><value>Server answered · ready to download</value></data>
+  <data name="LinksChecked" xml:space="preserve"><value>{0} links checked</value></data>
+  <data name="LinksCheckedSome" xml:space="preserve"><value>{0} links checked, {1} not answering</value></data>
+  <data name="FirewallTitle" xml:space="preserve"><value>Incoming connections</value></data>
+  <data name="FirewallBody" xml:space="preserve"><value>Windows Firewall blocks peers that try to connect to Fluxer, so torrents only use the few peers Fluxer reaches on its own and download slower than in other torrent programs. Allow incoming connections for Fluxer? Windows asks for administrator permission once.</value></data>
+  <data name="FirewallAllow" xml:space="preserve"><value>Allow</value></data>
+  <data name="FirewallOn" xml:space="preserve"><value>Allowed in Windows Firewall: peers can connect to Fluxer.</value></data>
+  <data name="FirewallOff" xml:space="preserve"><value>Blocked by Windows Firewall: peers cannot connect to Fluxer, torrents download slower.</value></data>
+  <data name="LinksCheckedPages" xml:space="preserve"><value>{0} files ready · {1} need your browser's sign-in (unticked). "Start in browser" downloads them with your session.</value></data>
+  <data name="Mixed" xml:space="preserve"><value>Mixed</value></data>
+  <data name="CategoryAuto" xml:space="preserve"><value>Category: {0} · from the extension</value></data>
+  <data name="CategoryManual" xml:space="preserve"><value>Category: {0}</value></data>
+  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <data name="AutoUpdate" xml:space="preserve"><value>Automatic updates</value></data>
+  <data name="AutoUpdateDesc" xml:space="preserve"><value>Checks every few hours and installs the new version when you exit Fluxer.</value></data>
+  <data name="BetaUpdates" xml:space="preserve"><value>Beta versions</value></data>
+  <data name="BetaUpdatesDesc" xml:space="preserve"><value>Also install pre-release versions from GitHub.</value></data>
+  <data name="ScanDownloads" xml:space="preserve"><value>Scan finished downloads</value></data>
+  <data name="ScanDownloadsDesc" xml:space="preserve"><value>Hands each finished file to your antivirus, the way browsers do.</value></data>
+  <data name="ScanBlockedTitle" xml:space="preserve"><value>Antivirus blocked a download</value></data>
+  <data name="ScanBlockedBody" xml:space="preserve"><value>{0} was blocked or removed by your antivirus.</value></data>
+  <data name="WatchClipboard" xml:space="preserve"><value>Watch the clipboard</value></data>
+  <data name="WatchClipboardDesc" xml:space="preserve"><value>When you copy a link to a file or a magnet, Fluxer offers to download it.</value></data>
+  <data name="WatchFolder" xml:space="preserve"><value>Torrent watch folder</value></data>
+  <data name="WatchFolderDesc" xml:space="preserve"><value>.torrent files saved here are added automatically and moved to "added".</value></data>
+  <data name="CrashTitle" xml:space="preserve"><value>Fluxer closed unexpectedly</value></data>
+  <data name="CrashBody" xml:space="preserve"><value>Your downloads were saved and will continue. You can save a diagnostics package (logs and settings, no download links) to report the problem.</value></data>
+  <data name="ExtensionInstall" xml:space="preserve"><value>Browser extension</value></data>
+  <data name="ExtensionInstallButton" xml:space="preserve"><value>Add to browser</value></data>
+  <data name="ExtensionSeenAt" xml:space="preserve"><value>Connected · last message {0}</value></data>
+  <data name="ExtensionNotSeen" xml:space="preserve"><value>No word from the extension since Fluxer started. Already installed? Click its icon once.</value></data>
+  <data name="ExtensionConnected" xml:space="preserve"><value>Browser extension connected</value></data>
+  <data name="ExtensionConnectedBody" xml:space="preserve"><value>Downloads started in the browser now come to Fluxer.</value></data>
+  <data name="StartInBrowser" xml:space="preserve"><value>Start in browser</value></data>
+</root>
