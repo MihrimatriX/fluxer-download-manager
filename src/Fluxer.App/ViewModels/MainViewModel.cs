@@ -197,6 +197,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Detail.Show(value);
         OnPropertyChanged(nameof(SelectedIsArchive));
+        OnPropertyChanged(nameof(SelectedIsTorrent));
     }
 
     public void Reload()
@@ -645,6 +646,46 @@ public sealed partial class MainViewModel : ObservableObject
     /// A finished zip/rar/7z/tar in the selection: "Extract" is offered.
     public bool SelectedIsArchive => SelectedItem?.Download is { State: DownloadState.Completed, Kind: DownloadKind.Http } d
         && Fluxer.Core.Automation.Extractor.KeyOf(d.FileName) is not null;
+
+    public bool SelectedIsTorrent => SelectedItem?.Download is TorrentDownload;
+
+    /// Reads the torrent's data back from disk and checks every piece; it continues if it was running.
+    [RelayCommand]
+    private async Task RecheckTorrent()
+    {
+        if (SelectedItem?.Download is not TorrentDownload td) return;
+        await RunPausedAsync(td, () => td.RecheckAsync());
+    }
+
+    /// Move the data elsewhere, or point the torrent at a copy that is already elsewhere.
+    [RelayCommand]
+    private async Task RelocateTorrent()
+    {
+        if (SelectedItem?.Download is not TorrentDownload td || _host.Owner is not { } w) return;
+        if (await Dialogs.PickFolderAsync(w, td.Record.SaveDirectory) is not { } folder || folder == td.Record.SaveDirectory) return;
+        var choice = await Dialogs.ChoiceAsync(w, Strings.RelocateTitle, string.Format(CultureInfo.CurrentCulture, Strings.RelocateBody, folder),
+            Strings.Cancel, Strings.RelocateAlreadyThere, Strings.RelocateMove);
+        if (choice is not (1 or 2)) return;
+        await RunPausedAsync(td, () => td.RelocateAsync(folder, move: choice == 2));
+        Detail.Show(SelectedItem);
+    }
+
+    private async Task RunPausedAsync(TorrentDownload td, Func<Task> work)
+    {
+        var queue = _host.Engine.Queue;
+        var wasRunning = queue.IsRunning(td.Id) || td.State == DownloadState.Queued;
+        await queue.PauseAsync(td.Id);
+        try { await work(); }
+        catch (Exception e)
+        {
+            Serilog.Log.Warning(e, "Torrent {Id}: {Action} failed", td.Id, work.Method.Name);
+            await Dialogs.MessageAsync(_host.Owner, td.FileName, Loc.Error(e.Message) is { Length: > 0 } m ? m : e.Message);
+        }
+        if (wasRunning) queue.Resume(td.Id);
+    }
+
+    [RelayCommand]
+    private Task SearchTorrents() => Dialogs.TorrentSearchAsync(_host);
 
     [RelayCommand]
     private async Task OpenStats()

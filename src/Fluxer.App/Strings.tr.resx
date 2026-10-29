@@ -679,4 +679,51 @@
   <data name="PermDownloadsShort" xml:space="preserve"><value>İndirmeler</value></data>
   <data name="PermHttpShort" xml:space="preserve"><value>Web istekleri</value></data>
   <data name="PluginNoPermissions" xml:space="preserve"><value>İzin yok</value></data>
+  <data name="ExtraTrackers" xml:space="preserve"><value>Ek tracker'lar</value></data>
+  <data name="TrackerListSub" xml:space="preserve"><value>Tracker listesine abone ol</value></data>
+  <data name="TrackerListSubDesc" xml:space="preserve"><value>Herkese açık torrentlere bu listedeki tracker'lar da eklenir (her gün yenilenir), böylece daha çok eş bulunur. Özel torrentlere asla eklenmez.</value></data>
+  <data name="TrackerListStatus" xml:space="preserve"><value>{0} tracker · {1} güncellendi</value></data>
+  <data name="TrackerListPending" xml:space="preserve"><value>Alınıyor…</value></data>
+  <data name="TrackerListFailed" xml:space="preserve"><value>Liste alınamadı; son kopya kullanılmaya devam ediyor.</value></data>
+  <data name="OwnTrackers" xml:space="preserve"><value>Kendi tracker'larınız</value></data>
+  <data name="OwnTrackersDesc" xml:space="preserve"><value>Her satıra bir duyuru adresi; her herkese açık torrente eklenir.</value></data>
+  <data name="RefreshNow" xml:space="preserve"><value>Yenile</value></data>
+  <data name="IpFilter" xml:space="preserve"><value>Eş engelleme listesi</value></data>
+  <data name="IpFilterDesc" xml:space="preserve"><value>Bu adres aralıklarındaki eşler bağlanamaz: ipfilter.dat, PeerGuardian .p2p ya da CIDR satırları, gzip de olur. Web adresi haftada bir yeniden indirilir.</value></data>
+  <data name="IpFilterHint" xml:space="preserve"><value>Dosya yolu ya da https:// adresi</value></data>
+  <data name="IpFilterLoaded" xml:space="preserve"><value>{0:N0} adres aralığı engellendi</value></data>
+  <data name="IpFilterFailed" xml:space="preserve"><value>Liste okunamadı: {0}</value></data>
+  <data name="BannedPeers" xml:space="preserve"><value>Engellenen eşler</value></data>
+  <data name="BannedCount" xml:space="preserve"><value>{0} adres, Eşler sekmesinden engellendi</value></data>
+  <data name="BannedNone" xml:space="preserve"><value>Yok. Bir torrentin Eşler sekmesinden eş engelleyebilirsiniz.</value></data>
+  <data name="BannedClear" xml:space="preserve"><value>Temizle</value></data>
+  <data name="BanPeer" xml:space="preserve"><value>Bu eşi engelle</value></data>
+  <data name="BanPeerConfirm" xml:space="preserve"><value>{0} bir daha bağlanamayacak (şu anki bağlantısı kendiliğinden bitene kadar sürer).</value></data>
+  <data name="TorznabTitle" xml:space="preserve"><value>Torrent arama (Torznab)</value></data>
+  <data name="TorznabDesc" xml:space="preserve"><value>Jackett, Prowlarr ya da bir tracker'ın kendi Torznab adresi üzerinden arama. API anahtarı şifrelenerek saklanır.</value></data>
+  <data name="TorznabAddIndexer" xml:space="preserve"><value>Dizin ekle</value></data>
+  <data name="TorznabName" xml:space="preserve"><value>Ad</value></data>
+  <data name="TorznabApiKey" xml:space="preserve"><value>API anahtarı</value></data>
+  <data name="TorznabRemove" xml:space="preserve"><value>Dizini kaldır</value></data>
+  <data name="TorznabTestOk" xml:space="preserve"><value>Çalışıyor: "ubuntu" için {0} sonuç.</value></data>
+  <data name="TorznabTestFailed" xml:space="preserve"><value>Çalışmadı: {0}</value></data>
+  <data name="SearchTorrents" xml:space="preserve"><value>Torrent ara…</value></data>
+  <data name="TorznabNone" xml:space="preserve"><value>Önce Ayarlar → Torrent'te bir Torznab dizini (Jackett, Prowlarr…) ekleyin.</value></data>
+  <data name="OpenSettingsShort" xml:space="preserve"><value>Ayarları aç</value></data>
+  <data name="TorznabQuery" xml:space="preserve"><value>Ne arıyorsunuz?</value></data>
+  <data name="TorznabSearch" xml:space="preserve"><value>Ara</value></data>
+  <data name="TorznabSearching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="TorznabResults" xml:space="preserve"><value>{2} dizinin {1} tanesinden {0} sonuç</value></data>
+  <data name="TorznabAdd" xml:space="preserve"><value>Ekle</value></data>
+  <data name="TorznabCatAll" xml:space="preserve"><value>Hepsi</value></data>
+  <data name="TorznabCatBooks" xml:space="preserve"><value>Kitaplar</value></data>
+  <data name="RecheckTorrent" xml:space="preserve"><value>Verileri yeniden denetle</value></data>
+  <data name="RelocateTorrent" xml:space="preserve"><value>Veri klasörünü değiştir…</value></data>
+  <data name="RelocateTitle" xml:space="preserve"><value>Veri klasörünü değiştir</value></data>
+  <data name="RelocateBody" xml:space="preserve"><value>Yeni klasör: {0}. İndirilen dosyalar oraya taşınsın mı, yoksa zaten oradalar mı (elle taşındı)? O durumda yeniden denetlenir.</value></data>
+  <data name="RelocateMove" xml:space="preserve"><value>Dosyaları taşı</value></data>
+  <data name="RelocateAlreadyThere" xml:space="preserve"><value>Zaten orada</value></data>
+  <data name="PieceTip" xml:space="preserve"><value>{0:N0} parça · erişilebilirlik {1:0.00}</value></data>
+  <data name="TorrentSearchTitle" xml:space="preserve"><value>Torrent arama</value></data>
+  <data name="IpFilterEmpty" xml:space="preserve"><value>Listede adres aralığı yok (doğru dosya mı?).</value></data>
 </root>

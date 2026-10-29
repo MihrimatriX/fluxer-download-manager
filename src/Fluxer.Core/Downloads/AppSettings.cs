@@ -51,6 +51,21 @@ public sealed class AppSettings
     public bool PortForwarding { get; set; } = true;
     public string Encryption { get; set; } = "prefer"; // prefer | require | off
     public int MaxPeersPerTorrent { get; set; } = 100;
+    /// Extra trackers for public torrents: the user's own, plus a subscribed list refreshed daily (null = none).
+    public List<string> ExtraTrackers { get; set; } = [];
+    public string? TrackerListUrl { get; set; }
+    public List<string> TrackerListCache { get; set; } = [];
+    public long TrackerListAt { get; set; }
+    /// Peer block list: a file, or an http(s) address downloaded weekly into the data folder (null = none).
+    public string? IpFilterSource { get; set; }
+    public long IpFilterAt { get; set; }
+    /// Peers banned by hand from the Peers tab.
+    public List<string> BannedPeers { get; set; } = [];
+    /// Torrent search (Torznab: Jackett, Prowlarr…).
+    public List<Torrent.TorznabIndexer> Indexers { get; set; } = [];
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public List<string> AllExtraTrackers => Torrent.TrackerList.Merge(ExtraTrackers, TrackerListUrl is null ? [] : TrackerListCache);
 
     private const long KB = 1024, MB = 1024 * 1024;
 

@@ -658,6 +658,80 @@
                 </c:SettingRow>
               </StackPanel>
             </Border>
+            <TextBlock Classes="section" Text="{x:Static app:Strings.ExtraTrackers}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.TrackerListSub}" Description="{x:Static app:Strings.TrackerListSubDesc}">
+                  <ToggleSwitch IsChecked="{Binding TrackerListOn}" />
+                </c:SettingRow>
+                <StackPanel Margin="16,0,16,12" Spacing="6" IsVisible="{Binding TrackerListOn}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding TrackerListUrl}" FontSize="12" AutomationProperties.Name="{x:Static app:Strings.TrackerListSub}" />
+                    <Button Grid.Column="1" Content="{x:Static app:Strings.RefreshNow}" Command="{Binding RefreshTrackersCommand}" />
+                  </Grid>
+                  <TextBlock Text="{Binding TrackerStatus}" Classes="subtle" FontSize="11.5" />
+                </StackPanel>
+                <Border Padding="16,10,16,14" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,1,0,0">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{x:Static app:Strings.OwnTrackers}" />
+                    <TextBlock Classes="subtle" FontSize="12" Text="{x:Static app:Strings.OwnTrackersDesc}" TextWrapping="Wrap" />
+                    <TextBox Text="{Binding ExtraTrackersText}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="56" MaxHeight="120" FontSize="12"
+                             PlaceholderText="udp://tracker.example.org:1337/announce" AutomationProperties.Name="{x:Static app:Strings.OwnTrackers}" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
+            <TextBlock Classes="section" Text="{x:Static app:Strings.IpFilter}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.IpFilter}" Description="{x:Static app:Strings.IpFilterDesc}">
+                  <ToggleSwitch IsChecked="{Binding IpFilterOn}" />
+                </c:SettingRow>
+                <StackPanel Margin="16,0,16,12" Spacing="6" IsVisible="{Binding IpFilterOn}">
+                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding IpFilterSource}" PlaceholderText="{x:Static app:Strings.IpFilterHint}" FontSize="12" AutomationProperties.Name="{x:Static app:Strings.IpFilter}" />
+                    <Button Grid.Column="1" Content="{x:Static app:Strings.Browse}" Command="{Binding BrowseIpFilterCommand}" />
+                    <Button Grid.Column="2" Content="{x:Static app:Strings.RefreshNow}" Command="{Binding RefreshIpFilterCommand}" />
+                  </Grid>
+                  <TextBlock Text="{Binding IpFilterStatus}" Classes="subtle" FontSize="11.5" TextWrapping="Wrap"
+                             IsVisible="{Binding IpFilterStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.BannedPeers}" Description="{Binding BannedText}">
+                  <Button Content="{x:Static app:Strings.BannedClear}" Command="{Binding ClearBannedCommand}" />
+                </c:SettingRow>
+              </StackPanel>
+            </Border>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="section" Text="{x:Static app:Strings.TorznabTitle}" VerticalAlignment="Bottom" />
+              <Button Grid.Column="1" Classes="accent" Content="{x:Static app:Strings.TorznabAddIndexer}" Command="{Binding AddIndexerCommand}" />
+            </Grid>
+            <TextBlock Classes="subtle" Text="{x:Static app:Strings.TorznabDesc}" TextWrapping="Wrap" Margin="2,6,0,10" />
+            <ItemsControl ItemsSource="{Binding IndexerRows}" Margin="0,0,0,10">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:IndexerRow">
+                  <Border Classes="card group" Padding="14,10" Margin="0,0,0,8">
+                    <StackPanel Spacing="8">
+                      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <TextBox Text="{Binding Name}" FontWeight="SemiBold" MaxWidth="260" MinWidth="160" HorizontalAlignment="Left" AutomationProperties.Name="{x:Static app:Strings.TorznabName}" />
+                        <Button Grid.Column="1" Content="{x:Static app:Strings.Test}"
+                                Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).TestIndexerCommand}" CommandParameter="{Binding}" />
+                        <Button Grid.Column="2" Classes="tool" Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RemoveIndexerCommand}" CommandParameter="{Binding}"
+                                ToolTip.Tip="{x:Static app:Strings.TorznabRemove}" AutomationProperties.Name="{x:Static app:Strings.TorznabRemove}">
+                          <c:Icon Data="{StaticResource IcTrash}" Size="14" />
+                        </Button>
+                      </Grid>
+                      <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
+                        <TextBox Text="{Binding Url}" FontSize="12" PlaceholderText="Torznab URL" AutomationProperties.Name="Torznab URL" />
+                        <TextBox Grid.Column="1" Text="{Binding ApiKey}" PasswordChar="●" FontSize="12" PlaceholderText="{x:Static app:Strings.TorznabApiKey}"
+                                 AutomationProperties.Name="{x:Static app:Strings.TorznabApiKey}" />
+                      </Grid>
+                      <TextBlock Text="{Binding Status}" Classes="subtle" FontSize="11.5" TextWrapping="Wrap"
+                                 IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <TextBlock Classes="section" Text="{x:Static app:Strings.RssFeeds}" />
             <Border Classes="card group" Padding="14,10">
               <StackPanel Spacing="10">

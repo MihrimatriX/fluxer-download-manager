@@ -61,6 +61,7 @@ public sealed class TorrentDownload : IDownload
                 if (m.MetadataPath is { } path && File.Exists(path)) Info.TorrentFile = await File.ReadAllBytesAsync(path, CancellationToken.None);
             }
             Record.FileName = m.Torrent!.Name;
+            await AddExtraTrackersAsync(m);
             await ApplySelectionAsync(m);
             Record.TotalBytes = SelectedSize(m);
             _db.Update(Record);
@@ -178,6 +179,102 @@ public sealed class TorrentDownload : IDownload
         return m;
     }
 
+    private bool _trackersAdded;
+
+    /// The user's extra trackers (Settings → Torrent), for public torrents only and once per session.
+    private async Task AddExtraTrackersAsync(TorrentManager m)
+    {
+        if (_trackersAdded || m.Torrent is not { IsPrivate: false }) return;
+        _trackersAdded = true;
+        var known = m.TrackerManager.Tiers.SelectMany(t => t.Trackers).Select(t => t.Uri.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var added = 0;
+        foreach (var url in _settings().AllExtraTrackers.Where(u => !known.Contains(u)))
+        {
+            try
+            {
+                await m.TrackerManager.AddTrackerAsync(new Uri(url));
+                added++;
+            }
+            catch (Exception e) when (e is ArgumentException or NotSupportedException or UriFormatException or InvalidOperationException) { }
+        }
+        if (added > 0) Log.Information("Torrent {Id}: {Count} extra trackers", Record.Id, added);
+    }
+
+    /// Reads the data back from disk and checks every piece: after files were changed, replaced or moved by hand.
+    /// Only while the download is not running (the caller pauses it first).
+    public async Task RecheckAsync()
+    {
+        var m = _manager ??= await AddAsync();
+        if (!m.HasMetadata) throw new InvalidOperationException("no-metadata");
+        if (m.State != TorrentState.Stopped) await StopAsync(m);
+        SetState(DownloadState.Verifying, null);
+        try { await m.HashCheckAsync(autoStart: false); }
+        finally
+        {
+            Record.DoneBytes = (long)(SelectedSize(m) * m.PartialProgress / 100.0);
+            SetState(DownloadState.Paused, null);
+        }
+    }
+
+    /// Moves the data to `folder` (move), or points the torrent at a copy that is already there and checks it.
+    /// Only while the download is not running.
+    public async Task RelocateAsync(string folder, bool move)
+    {
+        if (move)
+        {
+            var m = _manager ??= await AddAsync();
+            if (m.State != TorrentState.Stopped) await StopAsync(m);
+            await m.MoveFilesAsync(folder, false);     // never over files already there
+            Record.SaveDirectory = folder;
+            _db.Update(Record);
+            return;
+        }
+        await DetachAsync();      // MonoTorrent fixes the save path when it adds the torrent
+        Record.SaveDirectory = folder;
+        _db.Update(Record);
+        await RecheckAsync();
+    }
+
+    /// The piece map drawn in the detail panel, in `buckets` columns: how much of each column is here, how much
+    /// of it some connected peer has, and the swarm's distributed copies (like "availability" in other clients).
+    public sealed record PieceMap(double[] Have, double[] Available, double Availability, int Pieces);
+
+    public async Task<PieceMap?> GetPieceMapAsync(int buckets)
+    {
+        if (_manager is not { HasMetadata: true } m) return null;
+        var have = m.Bitfield;
+        var n = have.Length;
+        if (n == 0) return null;
+        var peers = await m.GetPeersAsync();
+        return await Task.Run(() =>
+        {
+            var counts = new int[n];
+            var seeds = 0;
+            foreach (var bf in peers.Take(150).Select(p => p.BitField).Where(bf => bf.Length == n))
+            {
+                if (bf.AllTrue) { seeds++; continue; }
+                for (var i = bf.FirstTrue(); i >= 0 && i < n; i = i + 1 < n ? bf.FirstTrue(i + 1, n - 1) : -1) counts[i]++;
+            }
+            var b = Math.Clamp(buckets, 1, n);
+            double[] haveCols = new double[b], availCols = new double[b];
+            for (var c = 0; c < b; c++)
+            {
+                int from = (int)((long)c * n / b), to = (int)((long)(c + 1) * n / b);
+                int had = 0, avail = 0;
+                for (var i = from; i < to; i++)
+                {
+                    if (have[i]) had++;
+                    if (counts[i] + seeds > 0) avail++;
+                }
+                var len = Math.Max(1, to - from);
+                (haveCols[c], availCols[c]) = ((double)had / len, (double)avail / len);
+            }
+            var min = counts.Min() + seeds;
+            var above = counts.Count(x => x + seeds > min);
+            return new PieceMap(haveCols, availCols, min + (double)above / n, n);
+        });
+    }
+
     /// Touches only files whose priority changes: each call is a round trip to the engine loop,
     /// and one check box change must not re-apply every file of a big torrent.
     private async Task ApplySelectionAsync(TorrentManager m)
@@ -229,6 +326,7 @@ public sealed class TorrentDownload : IDownload
     {
         if (_manager is not { } m) return;
         _manager = null;
+        _trackersAdded = false;     // the next manager starts with the torrent's own trackers again
         if (m.State != TorrentState.Stopped) await StopAsync(m);
         await _host.Engine.RemoveAsync(m, RemoveMode.CacheDataOnly);
     }

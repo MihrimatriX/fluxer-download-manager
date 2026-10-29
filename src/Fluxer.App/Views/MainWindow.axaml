@@ -155,6 +155,7 @@
                 <MenuItem Header="{x:Static app:Strings.NewDownload}" Command="{Binding AddUrlCommand}" InputGesture="Ctrl+N" />
                 <MenuItem Header="{x:Static app:Strings.AddTorrent}" Command="{Binding AddTorrentCommand}" InputGesture="Ctrl+O" />
                 <MenuItem Header="{x:Static app:Strings.PasteLinks}" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />
+                <MenuItem Header="{x:Static app:Strings.SearchTorrents}" Command="{Binding SearchTorrentsCommand}" />
               </MenuFlyout>
             </Button.Flyout>
           </Button>
@@ -286,6 +287,8 @@
                     <MenuItem Header="{x:Static app:Strings.OpenFile}" Command="{Binding OpenFileCommand}" InputGesture="Enter" />
                     <MenuItem Header="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFolderCommand}" />
                     <MenuItem Header="{x:Static app:Strings.ExtractHere}" Command="{Binding ExtractCommand}" IsVisible="{Binding SelectedIsArchive}" />
+                    <MenuItem Header="{x:Static app:Strings.RecheckTorrent}" Command="{Binding RecheckTorrentCommand}" IsVisible="{Binding SelectedIsTorrent}" />
+                    <MenuItem Header="{x:Static app:Strings.RelocateTorrent}" Command="{Binding RelocateTorrentCommand}" IsVisible="{Binding SelectedIsTorrent}" />
                     <Separator />
                     <MenuItem Header="{x:Static app:Strings.Resume}" Command="{Binding ResumeCommand}" />
                     <MenuItem Header="{x:Static app:Strings.Pause}" Command="{Binding PauseCommand}" InputGesture="Space" />
@@ -440,11 +443,19 @@
                   </StackPanel>
                 </Grid>
 
-                <!-- progress: the HTTP segment map, or a plain bar -->
-                <Panel DockPanel.Dock="Top" Height="5" Margin="0,4,0,6">
-                  <c:SegmentMap IsVisible="{Binding ShowSegments}" Segments="{Binding Segments}" Total="{Binding TotalBytes}" />
-                  <c:Bar IsVisible="{Binding !ShowSegments}" Height="5" Value="{Binding Item.Progress}" Indeterminate="{Binding Item.Indeterminate}"
-                         Classes.error="{Binding Item.IsError}" Classes.done="{Binding Item.IsDone}" Classes.seed="{Binding Item.IsSeeding}" Classes.idle="{Binding Item.IsIdle}" />
+                <!-- progress: the HTTP segment map, the torrent piece map, or a plain bar -->
+                <Panel DockPanel.Dock="Top" Margin="0,4,0,6">
+                  <c:SegmentMap IsVisible="{Binding ShowSegments}" Height="5" Segments="{Binding Segments}" Total="{Binding TotalBytes}" />
+                  <c:PieceBar IsVisible="{Binding ShowPieces}" Height="8" Have="{Binding PieceHave}" Available="{Binding PieceAvailable}" ToolTip.Tip="{Binding PieceTip}" />
+                  <c:Bar Height="5" Value="{Binding Item.Progress}" Indeterminate="{Binding Item.Indeterminate}"
+                         Classes.error="{Binding Item.IsError}" Classes.done="{Binding Item.IsDone}" Classes.seed="{Binding Item.IsSeeding}" Classes.idle="{Binding Item.IsIdle}">
+                    <c:Bar.IsVisible>
+                      <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!ShowSegments" />
+                        <Binding Path="!ShowPieces" />
+                      </MultiBinding>
+                    </c:Bar.IsVisible>
+                  </c:Bar>
                 </Panel>
 
                 <!-- error -->
@@ -516,11 +527,16 @@
                         <ItemsControl.ItemTemplate>
                           <DataTemplate x:DataType="vm:PeerRow">
                             <Border MinHeight="28" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
-                              <Grid ColumnDefinitions="*,140,120,80" ColumnSpacing="14">
+                              <Grid ColumnDefinitions="*,140,120,80,Auto" ColumnSpacing="14">
                                 <TextBlock Classes="cell" Text="{Binding Address}" FontSize="12" />
                                 <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Client}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
                                 <ProgressBar Grid.Column="2" Value="{Binding Have}" Height="4" Classes="seed" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="3" Classes="cell" Text="{Binding Down}" FontSize="12" HorizontalAlignment="Right" />
+                                <Button Grid.Column="4" Classes="tool" Width="24" Height="24" Padding="0"
+                                        Command="{Binding $parent[ItemsControl].((vm:DetailViewModel)DataContext).BanPeerCommand}" CommandParameter="{Binding}"
+                                        ToolTip.Tip="{x:Static app:Strings.BanPeer}" AutomationProperties.Name="{x:Static app:Strings.BanPeer}">
+                                  <c:Icon Data="{StaticResource IcBan}" Size="12" />
+                                </Button>
                               </Grid>
                             </Border>
                           </DataTemplate>

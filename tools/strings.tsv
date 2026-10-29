@@ -710,3 +710,50 @@ PermNotifyShort	Notifications	Bildirim
 PermDownloadsShort	Downloads	İndirmeler
 PermHttpShort	Web requests	Web istekleri
 PluginNoPermissions	No permissions	İzin yok
+ExtraTrackers	Extra trackers	Ek tracker'lar
+TrackerListSub	Subscribe to a tracker list	Tracker listesine abone ol
+TrackerListSubDesc	Public torrents get the trackers of this list too (refreshed daily), so they find more peers. Private torrents never do.	Herkese açık torrentlere bu listedeki tracker'lar da eklenir (her gün yenilenir), böylece daha çok eş bulunur. Özel torrentlere asla eklenmez.
+TrackerListStatus	{0} trackers · updated {1}	{0} tracker · {1} güncellendi
+TrackerListPending	Fetching…	Alınıyor…
+TrackerListFailed	The list could not be fetched; the last copy stays in use.	Liste alınamadı; son kopya kullanılmaya devam ediyor.
+OwnTrackers	Your own trackers	Kendi tracker'larınız
+OwnTrackersDesc	One announce address per line, added to every public torrent.	Her satıra bir duyuru adresi; her herkese açık torrente eklenir.
+RefreshNow	Refresh	Yenile
+IpFilter	Peer block list	Eş engelleme listesi
+IpFilterDesc	Peers in these address ranges cannot connect: ipfilter.dat, PeerGuardian .p2p or CIDR lines, also gzip. A web address is downloaded again weekly.	Bu adres aralıklarındaki eşler bağlanamaz: ipfilter.dat, PeerGuardian .p2p ya da CIDR satırları, gzip de olur. Web adresi haftada bir yeniden indirilir.
+IpFilterHint	File path or https:// address	Dosya yolu ya da https:// adresi
+IpFilterLoaded	{0:N0} address ranges blocked	{0:N0} adres aralığı engellendi
+IpFilterFailed	Could not read the list: {0}	Liste okunamadı: {0}
+BannedPeers	Banned peers	Engellenen eşler
+BannedCount	{0} address(es), banned from the Peers tab	{0} adres, Eşler sekmesinden engellendi
+BannedNone	None. Ban a peer from the Peers tab of a torrent.	Yok. Bir torrentin Eşler sekmesinden eş engelleyebilirsiniz.
+BannedClear	Clear	Temizle
+BanPeer	Ban this peer	Bu eşi engelle
+BanPeerConfirm	{0} will not be able to connect again (a connection it has now stays until it ends).	{0} bir daha bağlanamayacak (şu anki bağlantısı kendiliğinden bitene kadar sürer).
+TorznabTitle	Torrent search (Torznab)	Torrent arama (Torznab)
+TorznabDesc	Search through Jackett, Prowlarr or a tracker's own Torznab address. The API key is stored encrypted.	Jackett, Prowlarr ya da bir tracker'ın kendi Torznab adresi üzerinden arama. API anahtarı şifrelenerek saklanır.
+TorznabAddIndexer	Add indexer	Dizin ekle
+TorznabName	Name	Ad
+TorznabApiKey	API key	API anahtarı
+TorznabRemove	Remove indexer	Dizini kaldır
+TorznabTestOk	Works: {0} results for "ubuntu".	Çalışıyor: "ubuntu" için {0} sonuç.
+TorznabTestFailed	Did not work: {0}	Çalışmadı: {0}
+SearchTorrents	Search torrents…	Torrent ara…
+TorznabNone	Add a Torznab indexer (Jackett, Prowlarr…) in Settings → Torrent first.	Önce Ayarlar → Torrent'te bir Torznab dizini (Jackett, Prowlarr…) ekleyin.
+OpenSettingsShort	Open settings	Ayarları aç
+TorznabQuery	What are you looking for?	Ne arıyorsunuz?
+TorznabSearch	Search	Ara
+TorznabSearching	Searching…	Aranıyor…
+TorznabResults	{0} results from {1} of {2} indexers	{2} dizinin {1} tanesinden {0} sonuç
+TorznabAdd	Add	Ekle
+TorznabCatAll	Everything	Hepsi
+TorznabCatBooks	Books	Kitaplar
+RecheckTorrent	Check data again	Verileri yeniden denetle
+RelocateTorrent	Change data folder…	Veri klasörünü değiştir…
+RelocateTitle	Change data folder	Veri klasörünü değiştir
+RelocateBody	New folder: {0}. Move the downloaded files there, or are they already there (moved by hand)? Then they are checked again.	Yeni klasör: {0}. İndirilen dosyalar oraya taşınsın mı, yoksa zaten oradalar mı (elle taşındı)? O durumda yeniden denetlenir.
+RelocateMove	Move files	Dosyaları taşı
+RelocateAlreadyThere	Already there	Zaten orada
+PieceTip	{0:N0} pieces · availability {1:0.00}	{0:N0} parça · erişilebilirlik {1:0.00}
+TorrentSearchTitle	Torrent search	Torrent arama
+IpFilterEmpty	The list holds no address ranges (is it the right file?).	Listede adres aralığı yok (doğru dosya mı?).

@@ -89,6 +89,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         ApplyWatchers();
         _ = ApplyRemoteAsync();
         StartPlugins();
+        _ = RefreshIpFilterAsync(download: false);
         Engine.Rss.Start();           // stopped by Engine.DisposeAsync on exit
         if (!args.Contains("--background")) ShowMainWindow();
         Mark("window");
@@ -233,6 +234,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         RunScheduler();
         RunWeekSchedule();
         RunSmartSpeed();
+        RunTorrentLists();
         RunBackup();
         PollClipboard();
         if (DateTime.UtcNow - _lastUpdateCheck > UpdateInterval) _ = CheckAppUpdateAsync();

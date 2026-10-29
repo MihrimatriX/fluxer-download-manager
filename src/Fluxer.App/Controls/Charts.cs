@@ -273,3 +273,47 @@ public sealed class Heatmap : Control
             : date;
     }
 }
+
+/// A torrent's pieces in columns: the top band is what is here (accent), the thin band under it what connected
+/// peers can give (faint: nobody has it, so the download cannot finish yet).
+public sealed class PieceBar : Control
+{
+    public static readonly StyledProperty<double[]> HaveProperty = AvaloniaProperty.Register<PieceBar, double[]>(nameof(Have), []);
+    public static readonly StyledProperty<double[]> AvailableProperty = AvaloniaProperty.Register<PieceBar, double[]>(nameof(Available), []);
+
+    static PieceBar() => AffectsRender<PieceBar>(HaveProperty, AvailableProperty);
+
+    public double[] Have { get => GetValue(HaveProperty); set => SetValue(HaveProperty, value); }
+    public double[] Available { get => GetValue(AvailableProperty); set => SetValue(AvailableProperty, value); }
+
+    public override void Render(DrawingContext ctx)
+    {
+        var b = new Rect(Bounds.Size);
+        var accent = SegmentMap.Accent(this);
+        var top = Math.Round(b.Height * 0.62);
+        var band = new Rect(0, 0, b.Width, top);
+        using (ctx.PushClip(new RoundedRect(band, 2)))
+        {
+            ctx.FillRectangle(new SolidColorBrush(accent, 0.12), band);
+            var have = Have;
+            for (var i = 0; i < have.Length; i++)
+                if (have[i] > 0) ctx.FillRectangle(new SolidColorBrush(accent, 0.25 + 0.75 * have[i]), Column(i, have.Length, b.Width, 0, top));
+        }
+        var low = new Rect(0, top + 1, b.Width, Math.Max(1, b.Height - top - 1));
+        using (ctx.PushClip(new RoundedRect(low, 1)))
+        {
+            var avail = Available;
+            var gray = this.TryFindResource("FaintBrush", ActualThemeVariant, out var f) && f is ISolidColorBrush fb ? fb.Color : Colors.Gray;
+            for (var i = 0; i < avail.Length; i++)
+                ctx.FillRectangle(new SolidColorBrush(avail[i] >= 0.999 ? gray : Color.Parse("#E5484D"), avail[i] >= 0.999 ? 0.55 : 0.35 + 0.4 * (1 - avail[i])),
+                    Column(i, avail.Length, b.Width, low.Y, low.Height));
+        }
+    }
+
+    private static Rect Column(int i, int n, double width, double y, double height)
+    {
+        var x0 = Math.Floor(i * width / n);
+        var x1 = Math.Floor((i + 1) * width / n);
+        return new Rect(x0, y, Math.Max(1, x1 - x0), height);
+    }
+}

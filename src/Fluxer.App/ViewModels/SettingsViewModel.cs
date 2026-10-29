@@ -281,7 +281,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
         nameof(WebhookStatus), nameof(BackupText), nameof(DataText), nameof(QuotaUsedText),
-        nameof(RemoteStatus), nameof(RemoteNote),
+        nameof(RemoteStatus), nameof(RemoteNote), nameof(TrackerStatus), nameof(IpFilterStatus), nameof(BannedText),
     ];
 
     public void Load()
@@ -364,6 +364,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         LoadSites(s);
         LoadArchives(s);
         LoadRemote(s);
+        LoadTorrentExtras(s);
         RefreshPlugins();
         SavedText = "";
         _loading = false;
@@ -507,6 +508,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.Queues = [.. QueueRows.Select(r => r.ToQueue())];
         SaveSites(s);
         SaveArchives(s);
+        var (trackersChanged, filterChanged) = SaveTorrentExtras(s, old);
         // The key is not edited here; the copy keeps it.
         s.Remote.On = RemoteOn;
         s.Remote.Port = (int)Math.Clamp(RemotePort ?? 6800, 1024, 65535);
@@ -523,6 +525,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (rssChanged) engine.Rss.Reschedule();
         await _host.ApplyRemoteAsync();
         RefreshRemote();
+        if (trackersChanged || filterChanged) _ = FetchChangedListsAsync(trackersChanged, filterChanged);
         if (updatesChanged) _host.CheckForAppUpdate();
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
         _host.Main.LoadUi();

@@ -25,7 +25,8 @@ public sealed class FluxerEngine : IAsyncDisposable
         Http.GlobalBucket.BytesPerSecond = Settings.HttpLimit;
         HttpEngine.SiteRules = host => Settings.SiteRuleFor(host);
         // The torrent engine opens ports and joins DHT; only start it once a torrent exists.
-        _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings));
+        _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings, Blocker));
+        Blocker.SetBanned(Settings.BannedPeers);
         Tools = new ToolManager(Path.Combine(dataDirectory, "tools"), Http);
         Queue = new DownloadQueue(Db, () => Settings, Create);
         // Not started here: the CLI has no use for it; the app calls Rss.Start().
@@ -43,6 +44,55 @@ public sealed class FluxerEngine : IAsyncDisposable
     public RssPoller Rss { get; }
     public AppSettings Settings { get; private set; }
     public TransferMeter Meter { get; } = new();
+    public PeerBlocker Blocker { get; } = new();
+
+    private string IpFilterCache => Path.Combine(DataDirectory, "ipfilter.cache");
+
+    /// Loads the block list (Settings → Torrent); an address is downloaded when asked, when there is no copy yet, or
+    /// weekly. Returns the number of ranges; throws when the list cannot be read.
+    public async Task<int> RefreshIpFilterAsync(bool download, CancellationToken ct = default)
+    {
+        var source = Settings.IpFilterSource;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            Blocker.Filter = IpFilter.Empty;
+            return 0;
+        }
+        var path = source;
+        if (Uri.TryCreate(source, UriKind.Absolute, out var u) && u.Scheme is "http" or "https")
+        {
+            path = IpFilterCache;
+            var stale = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - Settings.IpFilterAt > 7 * 24 * 3600;
+            if (download || stale || !File.Exists(path))
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(TimeSpan.FromMinutes(2));
+                using var res = await Http.Client.GetAsync(u, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+                res.EnsureSuccessStatusCode();
+                if (res.Content.Headers.ContentLength > 100 * 1024 * 1024) throw new InvalidDataException("too large");
+                var temp = path + ".part";
+                await using (var file = File.Create(temp))
+                    await (await res.Content.ReadAsStreamAsync(cts.Token)).CopyToAsync(file, cts.Token);
+                File.Move(temp, path, overwrite: true);
+                Settings.IpFilterAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                await SaveSettingsAsync(Settings);
+            }
+        }
+        var filter = await Task.Run(() => IpFilter.Load(path), ct);
+        Blocker.Filter = filter;
+        return filter.RangeCount;
+    }
+
+    /// Fetches the subscribed tracker list; returns how many addresses it gave.
+    public async Task<int> RefreshTrackerListAsync(CancellationToken ct = default)
+    {
+        if (Settings.TrackerListUrl is not { Length: > 0 } url) return 0;
+        var list = await TrackerList.FetchAsync(Http.Client, url, ct);
+        Settings.TrackerListCache = list;
+        Settings.TrackerListAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        await SaveSettingsAsync(Settings);
+        return list.Count;
+    }
 
     private readonly HashSet<long> _counted = [];
 
@@ -78,6 +128,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         Http.GlobalBucket.BytesPerSecond = s.HttpLimit;
         if (proxyChanged) Http.SetProxy(s.Proxy);
         YtDlp.Proxy = s.Proxy;
+        Blocker.SetBanned(s.BannedPeers);
         if (_torrent.IsValueCreated) await _torrent.Value.ApplyAsync(s);
         Queue.Schedule();
     }

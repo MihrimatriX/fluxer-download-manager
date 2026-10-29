@@ -83,6 +83,7 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(dl, Strings.NewDownload, "Ctrl+N", "IcPlus", main.AddUrlCommand);
         Cmd(dl, Strings.AddTorrent, "Ctrl+O", "IcTorrent", main.AddTorrentCommand);
         Cmd(dl, Strings.PasteLinks, "Ctrl+V", "IcLink", main.PasteCommand);
+        Cmd(dl, Strings.SearchTorrents, null, "IcSearch", main.SearchTorrentsCommand);
         Cmd(dl, Strings.ResumeAll, "Ctrl+Shift+R", "IcPlay", main.ResumeAllCommand);
         Cmd(dl, Strings.PauseAll, "Ctrl+Shift+P", "IcPause", main.PauseAllCommand);
         Cmd(dl, Strings.ClearCompleted, null, "IcBroom", main.ClearCompletedCommand);
@@ -93,6 +94,11 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(sel, Strings.OpenFile, "Enter", "IcFile", main.OpenFileCommand);
         Cmd(sel, Strings.OpenFolder, null, "IcFolder", main.OpenFolderCommand);
         if (main.SelectedIsArchive) Cmd(sel, Strings.ExtractHere, null, "IcArchive", main.ExtractCommand);
+        if (main.SelectedIsTorrent)
+        {
+            Cmd(sel, Strings.RecheckTorrent, null, "IcRefresh", main.RecheckTorrentCommand);
+            Cmd(sel, Strings.RelocateTorrent, null, "IcFolder", main.RelocateTorrentCommand);
+        }
         Cmd(sel, Strings.ProgressWindow, null, "IcExternal", main.OpenDetailsCommand);
         Cmd(sel, Strings.CopyUrl, null, "IcLink", main.CopyUrlCommand);
         Cmd(sel, Strings.RefreshLink, null, "IcRefresh", main.RefreshLinkCommand);

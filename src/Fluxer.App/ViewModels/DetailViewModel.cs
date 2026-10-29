@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Fluxer.App.Views;
 using Fluxer.App.Services;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Http;
@@ -11,7 +13,7 @@ using Fluxer.Core.Torrent;
 namespace Fluxer.App.ViewModels;
 
 public sealed record InfoRow(string Label, string Value);
-public sealed record PeerRow(string Address, string Client, string Down, string Up, string Progress, double Have);
+public sealed record PeerRow(string Address, string Client, string Down, string Up, string Progress, double Have, string Ip);
 public sealed record TrackerRow(string Url, string Status, bool Ok);
 /// One HTTP connection (segment): how far it got through its byte range.
 public sealed record ConnRow(string Number, double Percent, string Text, IBrush Brush);
@@ -58,6 +60,11 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
     [ObservableProperty] private bool _seedOverride;
     [ObservableProperty] private decimal? _seedRatio;
     [ObservableProperty] private decimal? _seedMinutes;
+    /// Torrent piece map on the progress strip (have / available from peers), from GetPieceMapAsync.
+    [ObservableProperty] private bool _showPieces;
+    [ObservableProperty] private double[] _pieceHave = [];
+    [ObservableProperty] private double[] _pieceAvailable = [];
+    [ObservableProperty] private string _pieceTip = "";
     /// Folder tree of the selected torrent; built when the Files tab first shows, null otherwise.
     [ObservableProperty] private TorrentTree? _fileTree;
 
@@ -251,10 +258,12 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
             var (i, n) = md.Fragments;
             MediaProgress = n > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.FragmentFormat, i, n) : "";
         }
+        if (d is not TorrentDownload) ShowPieces = false;
         if (d is TorrentDownload td && ++_slowTick % 4 == 0)
         {
             if (TabKey == "files") SyncFiles(td);
             _ = RefreshPeersAsync(td);
+            _ = RefreshPiecesAsync(td);
         }
 
         static void Push(Queue<double> q, double v)
@@ -278,13 +287,34 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         foreach (var r in rows) Connections.Add(r);
     }
 
+    private async Task RefreshPiecesAsync(TorrentDownload td)
+    {
+        var map = await td.GetPieceMapAsync(240);
+        if (!ReferenceEquals(Item?.Download, td)) return;
+        ShowPieces = map is not null && !Item!.IsDone;
+        if (map is null) return;
+        PieceHave = map.Have;
+        PieceAvailable = map.Available;
+        PieceTip = string.Format(CultureInfo.CurrentCulture, Strings.PieceTip, map.Pieces, map.Availability);
+    }
+
+    /// The peer can no longer connect (Settings → Torrent lists the bans); a connection it already has stays until it ends.
+    [RelayCommand]
+    private async Task BanPeer(PeerRow row)
+    {
+        if (row.Ip.Length == 0 || !await Dialogs.ConfirmAsync(host.Owner, Strings.BanPeer, string.Format(CultureInfo.CurrentCulture, Strings.BanPeerConfirm, row.Ip))) return;
+        var s = host.Engine.Settings;
+        if (!s.BannedPeers.Contains(row.Ip)) s.BannedPeers.Add(row.Ip);
+        await host.Engine.SaveSettingsAsync(s);
+    }
+
     private async Task RefreshPeersAsync(TorrentDownload td)
     {
         var peers = await td.GetPeersAsync();
         Peers.Clear();
         foreach (var peer in peers.OrderByDescending(p => p.Monitor.DownloadRate).Take(200))
             Peers.Add(new PeerRow(peer.Uri.ToString(), peer.ClientApp.Client.ToString(), Loc.Speed(peer.Monitor.DownloadRate),
-                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100), peer.BitField.PercentComplete));
+                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100), peer.BitField.PercentComplete, peer.Uri.Host.Trim('[', ']')));
         NoPeers = Peers.Count == 0;
 
         Trackers.Clear();

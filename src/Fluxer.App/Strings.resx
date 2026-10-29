@@ -679,4 +679,51 @@
   <data name="PermDownloadsShort" xml:space="preserve"><value>Downloads</value></data>
   <data name="PermHttpShort" xml:space="preserve"><value>Web requests</value></data>
   <data name="PluginNoPermissions" xml:space="preserve"><value>No permissions</value></data>
+  <data name="ExtraTrackers" xml:space="preserve"><value>Extra trackers</value></data>
+  <data name="TrackerListSub" xml:space="preserve"><value>Subscribe to a tracker list</value></data>
+  <data name="TrackerListSubDesc" xml:space="preserve"><value>Public torrents get the trackers of this list too (refreshed daily), so they find more peers. Private torrents never do.</value></data>
+  <data name="TrackerListStatus" xml:space="preserve"><value>{0} trackers · updated {1}</value></data>
+  <data name="TrackerListPending" xml:space="preserve"><value>Fetching…</value></data>
+  <data name="TrackerListFailed" xml:space="preserve"><value>The list could not be fetched; the last copy stays in use.</value></data>
+  <data name="OwnTrackers" xml:space="preserve"><value>Your own trackers</value></data>
+  <data name="OwnTrackersDesc" xml:space="preserve"><value>One announce address per line, added to every public torrent.</value></data>
+  <data name="RefreshNow" xml:space="preserve"><value>Refresh</value></data>
+  <data name="IpFilter" xml:space="preserve"><value>Peer block list</value></data>
+  <data name="IpFilterDesc" xml:space="preserve"><value>Peers in these address ranges cannot connect: ipfilter.dat, PeerGuardian .p2p or CIDR lines, also gzip. A web address is downloaded again weekly.</value></data>
+  <data name="IpFilterHint" xml:space="preserve"><value>File path or https:// address</value></data>
+  <data name="IpFilterLoaded" xml:space="preserve"><value>{0:N0} address ranges blocked</value></data>
+  <data name="IpFilterFailed" xml:space="preserve"><value>Could not read the list: {0}</value></data>
+  <data name="BannedPeers" xml:space="preserve"><value>Banned peers</value></data>
+  <data name="BannedCount" xml:space="preserve"><value>{0} address(es), banned from the Peers tab</value></data>
+  <data name="BannedNone" xml:space="preserve"><value>None. Ban a peer from the Peers tab of a torrent.</value></data>
+  <data name="BannedClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="BanPeer" xml:space="preserve"><value>Ban this peer</value></data>
+  <data name="BanPeerConfirm" xml:space="preserve"><value>{0} will not be able to connect again (a connection it has now stays until it ends).</value></data>
+  <data name="TorznabTitle" xml:space="preserve"><value>Torrent search (Torznab)</value></data>
+  <data name="TorznabDesc" xml:space="preserve"><value>Search through Jackett, Prowlarr or a tracker's own Torznab address. The API key is stored encrypted.</value></data>
+  <data name="TorznabAddIndexer" xml:space="preserve"><value>Add indexer</value></data>
+  <data name="TorznabName" xml:space="preserve"><value>Name</value></data>
+  <data name="TorznabApiKey" xml:space="preserve"><value>API key</value></data>
+  <data name="TorznabRemove" xml:space="preserve"><value>Remove indexer</value></data>
+  <data name="TorznabTestOk" xml:space="preserve"><value>Works: {0} results for "ubuntu".</value></data>
+  <data name="TorznabTestFailed" xml:space="preserve"><value>Did not work: {0}</value></data>
+  <data name="SearchTorrents" xml:space="preserve"><value>Search torrents…</value></data>
+  <data name="TorznabNone" xml:space="preserve"><value>Add a Torznab indexer (Jackett, Prowlarr…) in Settings → Torrent first.</value></data>
+  <data name="OpenSettingsShort" xml:space="preserve"><value>Open settings</value></data>
+  <data name="TorznabQuery" xml:space="preserve"><value>What are you looking for?</value></data>
+  <data name="TorznabSearch" xml:space="preserve"><value>Search</value></data>
+  <data name="TorznabSearching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="TorznabResults" xml:space="preserve"><value>{0} results from {1} of {2} indexers</value></data>
+  <data name="TorznabAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="TorznabCatAll" xml:space="preserve"><value>Everything</value></data>
+  <data name="TorznabCatBooks" xml:space="preserve"><value>Books</value></data>
+  <data name="RecheckTorrent" xml:space="preserve"><value>Check data again</value></data>
+  <data name="RelocateTorrent" xml:space="preserve"><value>Change data folder…</value></data>
+  <data name="RelocateTitle" xml:space="preserve"><value>Change data folder</value></data>
+  <data name="RelocateBody" xml:space="preserve"><value>New folder: {0}. Move the downloaded files there, or are they already there (moved by hand)? Then they are checked again.</value></data>
+  <data name="RelocateMove" xml:space="preserve"><value>Move files</value></data>
+  <data name="RelocateAlreadyThere" xml:space="preserve"><value>Already there</value></data>
+  <data name="PieceTip" xml:space="preserve"><value>{0:N0} pieces · availability {1:0.00}</value></data>
+  <data name="TorrentSearchTitle" xml:space="preserve"><value>Torrent search</value></data>
+  <data name="IpFilterEmpty" xml:space="preserve"><value>The list holds no address ranges (is it the right file?).</value></data>
 </root>
