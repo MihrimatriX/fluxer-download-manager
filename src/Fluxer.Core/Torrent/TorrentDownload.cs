@@ -57,6 +57,7 @@ public sealed class TorrentDownload : IDownload
 
             if (!m.HasMetadata)
             {
+                await AddExtraTrackersAsync(m);     // a magnet needs them most while it looks for the metadata
                 await m.WaitForMetadataAsync(ct);
                 if (m.MetadataPath is { } path && File.Exists(path)) Info.TorrentFile = await File.ReadAllBytesAsync(path, CancellationToken.None);
             }
@@ -179,20 +180,32 @@ public sealed class TorrentDownload : IDownload
         return m;
     }
 
-    private bool _trackersAdded;
+    /// Extra trackers this session added (Settings → Torrent), so they can be taken back.
+    private readonly HashSet<string> _ourTrackers = new(StringComparer.OrdinalIgnoreCase);
 
-    /// The user's extra trackers (Settings → Torrent), for public torrents only and once per session.
+    /// Adds the user's extra trackers that are missing. A magnet gets them before its metadata says whether the
+    /// torrent is private; once it does and it is, they are removed again, so a private swarm is not announced
+    /// to public trackers any further.
     private async Task AddExtraTrackersAsync(TorrentManager m)
     {
-        if (_trackersAdded || m.Torrent is not { IsPrivate: false }) return;
-        _trackersAdded = true;
-        var known = m.TrackerManager.Tiers.SelectMany(t => t.Trackers).Select(t => t.Uri.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var trackers = m.TrackerManager.Tiers.SelectMany(t => t.Trackers).ToList();
+        if (m.Torrent is { IsPrivate: true })
+        {
+            foreach (var t in trackers.Where(t => _ourTrackers.Contains(t.Uri.ToString())))
+                await m.TrackerManager.RemoveTrackerAsync(t);
+            _ourTrackers.Clear();
+            return;
+        }
+        var known = trackers.Select(t => t.Uri.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var added = 0;
-        foreach (var url in _settings().AllExtraTrackers.Where(u => !known.Contains(u)))
+        foreach (var url in _settings().AllExtraTrackers)
         {
             try
             {
-                await m.TrackerManager.AddTrackerAsync(new Uri(url));
+                var uri = new Uri(url);             // compared as MonoTorrent prints them
+                if (known.Contains(uri.ToString())) continue;
+                await m.TrackerManager.AddTrackerAsync(uri);
+                _ourTrackers.Add(uri.ToString());
                 added++;
             }
             catch (Exception e) when (e is ArgumentException or NotSupportedException or UriFormatException or InvalidOperationException) { }
@@ -202,7 +215,8 @@ public sealed class TorrentDownload : IDownload
 
     /// Reads the data back from disk and checks every piece: after files were changed, replaced or moved by hand.
     /// Only while the download is not running (the caller pauses it first).
-    public async Task RecheckAsync()
+    /// `wasCompleted`: it was finished (not just stopped while seeding) and stays so when every piece checks out.
+    public async Task RecheckAsync(bool wasCompleted)
     {
         var m = _manager ??= await AddAsync();
         if (!m.HasMetadata) throw new InvalidOperationException("no-metadata");
@@ -212,13 +226,13 @@ public sealed class TorrentDownload : IDownload
         finally
         {
             Record.DoneBytes = (long)(SelectedSize(m) * m.PartialProgress / 100.0);
-            SetState(DownloadState.Paused, null);
+            SetState(wasCompleted && m.PartialProgress >= 100 ? DownloadState.Completed : DownloadState.Paused, null);
         }
     }
 
     /// Moves the data to `folder` (move), or points the torrent at a copy that is already there and checks it.
     /// Only while the download is not running.
-    public async Task RelocateAsync(string folder, bool move)
+    public async Task RelocateAsync(string folder, bool move, bool wasCompleted)
     {
         if (move)
         {
@@ -232,7 +246,7 @@ public sealed class TorrentDownload : IDownload
         await DetachAsync();      // MonoTorrent fixes the save path when it adds the torrent
         Record.SaveDirectory = folder;
         _db.Update(Record);
-        await RecheckAsync();
+        await RecheckAsync(wasCompleted);
     }
 
     /// The piece map drawn in the detail panel, in `buckets` columns: how much of each column is here, how much
@@ -326,7 +340,7 @@ public sealed class TorrentDownload : IDownload
     {
         if (_manager is not { } m) return;
         _manager = null;
-        _trackersAdded = false;     // the next manager starts with the torrent's own trackers again
+        _ourTrackers.Clear();       // the next manager starts with the torrent's own trackers again
         if (m.State != TorrentState.Stopped) await StopAsync(m);
         await _host.Engine.RemoveAsync(m, RemoveMode.CacheDataOnly);
     }

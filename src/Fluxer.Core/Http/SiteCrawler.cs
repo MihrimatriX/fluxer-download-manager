@@ -58,14 +58,19 @@ public static partial class SiteCrawler
         }
     }
 
-    private static bool SameSite(Uri a, Uri b) =>
+    internal static bool SameSite(Uri a, Uri b) =>
         string.Equals(Root(a.Host), Root(b.Host), StringComparison.OrdinalIgnoreCase);
 
-    /// "cdn.example.org" and "www.example.org" belong to the same site (last two labels; good enough here).
+    /// Second-level labels under country domains ("example.com.tr", "example.co.uk").
+    private static readonly HashSet<string> SecondLevel = ["co", "com", "net", "org", "gov", "edu", "ac", "gen", "web", "bel", "k12", "biz", "info", "ne", "or", "go", "gob", "ltd", "plc"];
+
+    /// "cdn.example.org" and "www.example.org" are one site (the registrable name); an address is only itself.
     private static string Root(string host)
     {
+        if (IPAddress.TryParse(host.Trim('[', ']'), out _)) return host;
         var parts = host.Split('.');
-        return parts.Length <= 2 ? host : string.Join('.', parts[^2..]);
+        var take = parts.Length >= 3 && parts[^1].Length == 2 && SecondLevel.Contains(parts[^2].ToLowerInvariant()) ? 3 : 2;
+        return parts.Length <= take ? host : string.Join('.', parts[^take..]);
     }
 
     public static async Task<Result> CrawlAsync(HttpClient http, Uri start, Options o, RequestContext? ctx, IProgress<(int Pages, int Files)>? progress, CancellationToken ct)

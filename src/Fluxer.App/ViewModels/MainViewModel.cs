@@ -657,7 +657,8 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RecheckTorrent()
     {
         if (SelectedItem?.Download is not TorrentDownload td) return;
-        await RunPausedAsync(td, () => td.RecheckAsync());
+        var completed = td.State == DownloadState.Completed;
+        await RunPausedAsync(td, () => td.RecheckAsync(completed));
     }
 
     /// Move the data elsewhere, or point the torrent at a copy that is already elsewhere.
@@ -669,22 +670,22 @@ public sealed partial class MainViewModel : ObservableObject
         var choice = await Dialogs.ChoiceAsync(w, Strings.RelocateTitle, string.Format(CultureInfo.CurrentCulture, Strings.RelocateBody, folder),
             Strings.Cancel, Strings.RelocateAlreadyThere, Strings.RelocateMove);
         if (choice is not (1 or 2)) return;
-        await RunPausedAsync(td, () => td.RelocateAsync(folder, move: choice == 2));
+        var completed = td.State == DownloadState.Completed;
+        await RunPausedAsync(td, () => td.RelocateAsync(folder, move: choice == 2, completed));
         Detail.Show(SelectedItem);
     }
 
     private async Task RunPausedAsync(TorrentDownload td, Func<Task> work)
     {
         var queue = _host.Engine.Queue;
-        var wasRunning = queue.IsRunning(td.Id) || td.State == DownloadState.Queued;
-        await queue.PauseAsync(td.Id);
+        var again = await queue.SuspendAsync(td.Id);
         try { await work(); }
         catch (Exception e)
         {
             Serilog.Log.Warning(e, "Torrent {Id}: {Action} failed", td.Id, work.Method.Name);
             await Dialogs.MessageAsync(_host.Owner, td.FileName, Loc.Error(e.Message) is { Length: > 0 } m ? m : e.Message);
         }
-        if (wasRunning) queue.Resume(td.Id);
+        if (again) queue.Continue(td.Id);
     }
 
     [RelayCommand]

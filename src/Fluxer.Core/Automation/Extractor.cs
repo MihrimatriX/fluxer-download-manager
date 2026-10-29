@@ -106,10 +106,10 @@ public static partial class Extractor
         if (!set.Complete) return new Result(Outcome.Failed, Error: "missing part");
         var first = set.Parts[0];
         var dir = Path.GetDirectoryName(first)!;
-        var needsPassword = false;
+        var encrypted = false;
         foreach (var password in new string?[] { null }.Concat(passwords.Where(p => p.Length > 0)))
         {
-            if (password is not null && !needsPassword) break;
+            if (password is not null && !encrypted) break;
             var temp = Path.Combine(dir, ".fluxer-extract-" + Guid.NewGuid().ToString("N")[..8]);
             try
             {
@@ -119,23 +119,31 @@ public static partial class Extractor
                 return new Result(Outcome.Done, MoveIntoPlace(temp, dir, ArchiveName(set)), files);
             }
             catch (OperationCanceledException) { TryDelete(temp); throw; }
-            catch (Exception e) when (IsPasswordProblem(e, password))
-            {
-                TryDelete(temp);
-                needsPassword = true;
-            }
             catch (Exception e)
             {
                 TryDelete(temp);
-                return new Result(Outcome.Failed, Error: e.Message);
+                if (password is not null) continue;        // a wrong password fails in many ways; try the next one
+                encrypted = e is SharpCompress.Common.CryptographicException || IsEncrypted(set);
+                if (!encrypted) return new Result(Outcome.Failed, Error: e.Message);
             }
         }
-        return new Result(needsPassword ? Outcome.NeedsPassword : Outcome.Failed);
+        return new Result(encrypted ? Outcome.NeedsPassword : Outcome.Failed);
     }
 
-    /// No password for an encrypted archive, or the wrong one (a 7z with encrypted headers cannot even be opened).
-    private static bool IsPasswordProblem(Exception e, string? password) =>
-        e is SharpCompress.Common.CryptographicException || (password is not null && e is ArchiveOperationException or InvalidFormatException);
+    /// Whether the entries are encrypted (when only the contents are, the file list still opens without a password).
+    private static bool IsEncrypted(ArchiveSet set)
+    {
+        if (IsTar(set.Parts[0])) return false;
+        try
+        {
+            using var archive = set.Parts.Count == 1
+                ? ArchiveFactory.OpenArchive(set.Parts[0], new ReaderOptions())
+                : ArchiveFactory.OpenArchive([.. set.Parts.Select(p => new FileInfo(p))], new ReaderOptions());
+            return archive.IsEncrypted || archive.Entries.Any(e => e.IsEncrypted);
+        }
+        catch (SharpCompress.Common.CryptographicException) { return true; }
+        catch (Exception) { return false; }
+    }
 
     private static int Unpack(ArchiveSet set, string? password, string temp, CancellationToken ct)
     {

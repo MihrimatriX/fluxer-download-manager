@@ -60,12 +60,14 @@ public sealed class RemoteApi : IAsyncDisposable
             return _failures.TryGetValue(ip, out var f) && f.Count >= 10 && DateTime.UtcNow - f.Since < TimeSpan.FromMinutes(1);
     }
 
-    private void Failed(IPAddress ip)
+    private void Failed(IPAddress ip, int count = 1)
     {
         lock (_failures)
         {
             var now = DateTime.UtcNow;
-            _failures[ip] = _failures.TryGetValue(ip, out var f) && now - f.Since < TimeSpan.FromMinutes(1) ? (f.Count + 1, f.Since) : (1, now);
+            // Old entries go, so a stream of addresses on the network cannot grow this for good.
+            foreach (var stale in _failures.Where(p => now - p.Value.Since >= TimeSpan.FromMinutes(1)).Select(p => p.Key).ToList()) _failures.Remove(stale);
+            _failures[ip] = _failures.TryGetValue(ip, out var f) ? (f.Count + count, f.Since) : (count, now);
         }
     }
 
@@ -123,8 +125,8 @@ public sealed class RemoteApi : IAsyncDisposable
         JsonNode? body;
         try { body = JsonNode.Parse(req.Body); }
         catch (JsonException) { return Aria2Json(Aria2Rpc.ErrorReply(null, -32700, "Parse error")); }
-        var (reply, unauthorized) = await _aria2.HandleAsync(body);
-        if (unauthorized) Failed(req.Remote);
+        var (reply, denied) = await _aria2.HandleAsync(body);
+        if (denied > 0) Failed(req.Remote, denied);
         return Aria2Json(reply);
     }
 

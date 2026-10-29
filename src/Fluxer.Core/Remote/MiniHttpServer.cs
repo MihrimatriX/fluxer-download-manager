@@ -75,7 +75,7 @@ public sealed class MiniHttpServer : IAsyncDisposable
                     var request = await ReadAsync(stream, remote, cts.Token);
                     response = request is null ? Response.Text(400, "text/plain", "Bad request") : await _handler(request);
                 }
-                catch (InvalidDataException e) { response = Response.Text(e.Message == "413" ? 413 : 400, "text/plain", "Bad request"); }
+                catch (InvalidDataException e) { response = Response.Text(e.Message switch { "413" => 413, "431" => 431, _ => 400 }, "text/plain", "Bad request"); }
                 await WriteAsync(stream, response, cts.Token);
             }
         }
@@ -151,7 +151,8 @@ public sealed class MiniHttpServer : IAsyncDisposable
     private static string Reason(int status) => status switch
     {
         200 => "OK", 204 => "No Content", 400 => "Bad Request", 401 => "Unauthorized", 403 => "Forbidden", 404 => "Not Found",
-        405 => "Method Not Allowed", 413 => "Payload Too Large", 421 => "Misdirected Request", 429 => "Too Many Requests", _ => "Error",
+        405 => "Method Not Allowed", 413 => "Payload Too Large", 421 => "Misdirected Request", 429 => "Too Many Requests",
+        431 => "Request Header Fields Too Large", _ => "Error",
     };
 
     public async ValueTask DisposeAsync()

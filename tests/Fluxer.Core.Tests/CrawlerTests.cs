@@ -79,6 +79,15 @@ public sealed class CrawlerTests
         Assert.Contains("https://other.example.net/f.zip", wide.Files.Select(f => f.Url));
     }
 
+    [Theory]
+    [InlineData("https://cdn.example.org/a", "https://www.example.org/", true)]
+    [InlineData("https://shop.firma.com.tr/a", "https://www.firma.com.tr/", true)]
+    [InlineData("https://other.com.tr/a", "https://www.firma.com.tr/", false)]
+    [InlineData("https://bbc.co.uk/a", "https://news.bbc.co.uk/", true)]
+    [InlineData("http://10.0.0.5/a", "http://192.168.0.5/", false)]
+    public void SameSite_UnderstandsCountryDomainsAndAddresses(string a, string b, bool same) =>
+        Assert.Equal(same, SiteCrawler.SameSite(new Uri(a), new Uri(b)));
+
     [Fact]
     public async Task MaxPages_IsRespected()
     {

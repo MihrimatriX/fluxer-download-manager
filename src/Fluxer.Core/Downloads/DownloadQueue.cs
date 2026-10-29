@@ -14,6 +14,8 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     private bool _held;
     /// Named queues started (by their time or by hand) whose downloads have not all finished yet.
     private readonly HashSet<string> _startedQueues = [];
+    /// Started queues that ran at least one download since they started.
+    private readonly HashSet<string> _queuesThatRan = [];
 
     public event Action<IDownload>? Added;
     public event Action<IDownload>? Removed;
@@ -50,6 +52,8 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
                 r.State = DownloadState.Queued;
                 db.Update(r);
             }
+            // Waiting to run (not Scheduled) in a named queue: that queue was running when Fluxer closed.
+            if (r is { State: DownloadState.Queued, QueueId: { } q }) lock (_lock) _startedQueues.Add(q);
             Track(factory(r));
         }
         Schedule();
@@ -141,7 +145,7 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     /// A named queue's stop time: what has not finished waits for its next start.
     public async Task StopQueueAsync(string queueId)
     {
-        lock (_lock) _startedQueues.Remove(queueId);
+        lock (_lock) { _startedQueues.Remove(queueId); _queuesThatRan.Remove(queueId); }
         foreach (var d in Items.Where(d => d.Record.QueueId == queueId && (IsRunning(d.Id) || d.State == DownloadState.Queued)))
         {
             await PauseAsync(d.Id);
@@ -163,10 +167,30 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         if (!on) { Schedule(); return; }
         foreach (var d in Items.Where(d => IsRunning(d.Id)))
         {
+            // A torrent stopped while seeding reports Completed; it is to seed again after the hold too.
+            var wasSeeding = d.State == DownloadState.Seeding;
             await PauseAsync(d.Id);
-            if (d.State == DownloadState.Paused) SetIdleState(d, DownloadState.Queued);
+            if (d.State == DownloadState.Paused || (wasSeeding && d.State == DownloadState.Completed)) SetIdleState(d, DownloadState.Queued);
         }
         if (!Held) Schedule();      // released while these were still stopping
+    }
+
+    /// Stops a download for work on its files (torrent recheck or move). True when it should run again afterwards:
+    /// it was running or waiting its turn, seeding included.
+    public async Task<bool> SuspendAsync(long id)
+    {
+        if (Find(id) is not { } d) return false;
+        var again = IsRunning(id) || d.State == DownloadState.Queued;
+        await PauseAsync(id);
+        return again;
+    }
+
+    /// Puts a suspended download back in line, also a torrent that stopped seeding as Completed.
+    public void Continue(long id)
+    {
+        if (Find(id) is not { } d || IsRunning(id)) return;
+        SetIdleState(d, DownloadState.Queued);
+        Schedule();
     }
 
     public void ResumeAll()
@@ -208,15 +232,35 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
                 _ => Math.Min(rest.Count, first + 1),
             };
             rest.InsertRange(at, picked);
-            for (var i = 0; i < rest.Count; i++)
-            {
-                if (rest[i].Record.QueueOrder == i + 1) continue;
-                rest[i].Record.QueueOrder = i + 1;
-                db.Update(rest[i].Record);
-            }
+            Renumber(rest);
         }
         Reordered?.Invoke();
         Schedule();
+    }
+
+    /// Puts a download at `index` of the queue order: before the one there when moving up, after it when moving down.
+    public void MoveTo(long id, int index)
+    {
+        lock (_lock)
+        {
+            var ordered = _items.OrderBy(d => d.Record.QueueOrder).ToList();
+            if (ordered.FirstOrDefault(x => x.Id == id) is not { } d) return;
+            ordered.Remove(d);
+            ordered.Insert(Math.Clamp(index, 0, ordered.Count), d);
+            Renumber(ordered);
+        }
+        Reordered?.Invoke();
+        Schedule();
+    }
+
+    private void Renumber(List<IDownload> ordered)
+    {
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            if (ordered[i].Record.QueueOrder == i + 1) continue;
+            ordered[i].Record.QueueOrder = i + 1;
+            db.Update(ordered[i].Record);
+        }
     }
 
     /// 1-based position among queued downloads (null when not queued).
@@ -284,11 +328,16 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
 
             drained = _hadWork && http == 0 && torrent == 0 && !_items.Any(x => x.State == DownloadState.Queued);
             if (drained) _hadWork = false;
+            // A queue is done when nothing of it waits or runs. Its "when done" action (sleep, shut down) only follows
+            // a run that did something and that the user did not interrupt: not an empty start, not a pause.
             foreach (var q in _startedQueues.ToList())
             {
                 if (_items.Any(x => x.Record.QueueId == q && (x.State == DownloadState.Queued || _running.ContainsKey(x.Id)))) continue;
                 _startedQueues.Remove(q);
-                doneQueues.Add(q);
+                var ran = _queuesThatRan.Remove(q);
+                var interrupted = _items.Any(x => x.Record.QueueId == q
+                    && x.State is DownloadState.Paused or DownloadState.NeedsLinkRefresh or DownloadState.DiskFull);
+                if (ran && !interrupted) doneQueues.Add(q);
             }
         }
         foreach (var q in doneQueues) QueueDrained?.Invoke(q);
@@ -298,6 +347,7 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     private void Start(IDownload d)
     {
         _hadWork = true;
+        if (d.Record.QueueId is { } q && _startedQueues.Contains(q)) _queuesThatRan.Add(q);
         var cts = new CancellationTokenSource();
         var task = Task.Run(async () =>
         {

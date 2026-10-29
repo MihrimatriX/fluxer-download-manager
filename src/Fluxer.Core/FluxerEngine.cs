@@ -34,6 +34,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         _sleep = new SleepBlocker(() => Queue.AnyActive);
         Meter.Restore(Db.GetSetting<TrafficLog>("traffic"), DateTimeOffset.UtcNow);
         Queue.StateChanged += CountFinished;
+        Queue.Added += d => Meter.Baseline(d.Id, d.GetProgress().BytesDone, (d as TorrentDownload)?.UploadedBytes ?? 0);
     }
 
     public string DataDirectory { get; }
@@ -115,10 +116,9 @@ public sealed class FluxerEngine : IAsyncDisposable
     public StatsReport Statistics() =>
         StatsReport.Build(Db.LoadTraffic(), Queue.Items.Select(d => d.Record), DateOnly.FromDateTime(DateTime.Now));
 
-    /// Called every few seconds by the app: what each running download moved since the last call.
+    /// Called every few seconds by the app: what each download moved since the last call.
     public void MeasureTraffic(DateTimeOffset now) =>
-        Meter.Observe(Queue.Items.Where(d => d.State is DownloadState.Downloading or DownloadState.Seeding)
-            .Select(d => (d.Id, d.GetProgress().BytesDone, (d as TorrentDownload)?.UploadedBytes ?? 0)), now);
+        Meter.Observe(Queue.Items.Select(d => (d.Id, d.GetProgress().BytesDone, (d as TorrentDownload)?.UploadedBytes ?? 0)), now);
 
     public async Task SaveSettingsAsync(AppSettings s)
     {

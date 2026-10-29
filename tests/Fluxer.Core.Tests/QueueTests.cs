@@ -18,11 +18,13 @@ public sealed class NamedQueueTests : IDisposable
 
         public void Finish() => _done.TrySetResult();
 
+        /// A name starting with "seed" behaves like a seeding torrent: stopping it reports Completed.
         public async Task RunAsync(CancellationToken ct)
         {
-            Set(DownloadState.Downloading);
+            var seeder = FileName.StartsWith("seed", StringComparison.Ordinal);
+            Set(seeder ? DownloadState.Seeding : DownloadState.Downloading);
             try { await _done.Task.WaitAsync(ct); Set(DownloadState.Completed); }
-            catch (OperationCanceledException) { Set(DownloadState.Paused); }
+            catch (OperationCanceledException) { Set(seeder ? DownloadState.Completed : DownloadState.Paused); }
         }
 
         private void Set(DownloadState s) { Record.State = s; StateChanged?.Invoke(this); }
@@ -94,6 +96,23 @@ public sealed class NamedQueueTests : IDisposable
     }
 
     [Fact]
+    public async Task QueueDrained_NotForAnEmptyStart_NorWhenTheUserPausedWhatRan()
+    {
+        var drained = new List<string>();
+        _queue.QueueDrained += drained.Add;
+        _queue.StartQueue("weekend");                // nothing in it: its "when done" (shutdown…) must not run
+        await Task.Delay(50);
+        Assert.Empty(drained);
+
+        var a = Add("a", "weekend");
+        _queue.StartQueue("weekend");
+        await Until(() => _queue.IsRunning(a.Id));
+        await _queue.PauseAsync(a.Id);
+        await Task.Delay(50);
+        Assert.Empty(drained);
+    }
+
+    [Fact]
     public async Task StopQueue_SendsUnfinishedOnesBackToWaiting()
     {
         var a = Add("a", "weekend");
@@ -132,6 +151,31 @@ public sealed class NamedQueueTests : IDisposable
 
         await _queue.HoldAsync(false);
         await Until(() => _queue.IsRunning(a.Id) && _queue.IsRunning(b.Id));
+    }
+
+    [Fact]
+    public async Task Hold_ASeedingTorrentSeedsAgainAfterwards()
+    {
+        var seed = Add("seed.iso", null);
+        await Until(() => seed.State == DownloadState.Seeding);
+        await _queue.HoldAsync(true);
+        Assert.Equal(DownloadState.Queued, seed.State);
+        await _queue.HoldAsync(false);
+        await Until(() => seed.State == DownloadState.Seeding);
+    }
+
+    [Fact]
+    public async Task SuspendAndContinue_BringBackWhatRan()
+    {
+        var seed = Add("seed.iso", null);
+        var idle = Add("idle.bin", null);
+        await Until(() => seed.State == DownloadState.Seeding && _queue.IsRunning(idle.Id));
+        await _queue.PauseAsync(idle.Id);
+        Assert.True(await _queue.SuspendAsync(seed.Id));
+        Assert.False(await _queue.SuspendAsync(idle.Id));
+        _queue.Continue(seed.Id);
+        await Until(() => seed.State == DownloadState.Seeding);
+        Assert.Equal(DownloadState.Paused, idle.State);
     }
 
     [Fact]

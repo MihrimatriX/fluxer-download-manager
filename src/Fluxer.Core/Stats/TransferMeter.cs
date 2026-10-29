@@ -12,6 +12,14 @@ public sealed class TransferMeter
     public long PendingDown { get; private set; }
     public long PendingUp { get; private set; }
 
+    /// Where a newly added download starts, so even one that finishes before the next observation is counted.
+    public void Baseline(long id, long down, long up)
+    {
+        lock (_lock) _last.TryAdd(id, (down, up));
+    }
+
+    /// Every download in the list, whatever its state: one that finished since the last call still adds its last
+    /// stretch, and one that is gone is forgotten.
     public void Observe(IEnumerable<(long Id, long Down, long Up)> downloads, DateTimeOffset now)
     {
         long down = 0, up = 0;

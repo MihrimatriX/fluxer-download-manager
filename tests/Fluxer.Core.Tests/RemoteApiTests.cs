@@ -73,6 +73,18 @@ public sealed class RemoteApiTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task WrongTokensInsideAMulticall_CountToo()
+    {
+        var guesses = new JsonArray([.. Enumerable.Range(0, 12).Select(i => (JsonNode)new JsonObject
+        {
+            ["methodName"] = "aria2.tellActive",
+            ["params"] = new JsonArray("token:guess" + i),
+        })]);
+        await Rpc("system.multicall", guesses);
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await Rest(HttpMethod.Get, "/api/v1/version")).Status);
+    }
+
+    [Fact]
     public async Task Rest_AddPauseResumeRemove()
     {
         var (status, added) = await Rest(HttpMethod.Post, "/api/v1/downloads", new JsonObject { ["url"] = "http://127.0.0.1:9/file.bin", ["start"] = false, ["name"] = "../../b.bin" });
@@ -126,6 +138,22 @@ public sealed class RemoteApiTests : IAsyncLifetime
         Assert.Equal("1", stat["numWaiting"]!.GetValue<string>());
         Assert.Contains("aria2.addUri", (await Rpc("system.listMethods"))["result"]!.AsArray().Select(m => m!.GetValue<string>()));
         Assert.Equal(-32601, (await Rpc("aria2.nope", "token:" + Key))["error"]!["code"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task Aria2_ChangePosition_FollowsTheWaitingQueue()
+    {
+        var ids = Enumerable.Range(0, 4).Select(i => _engine.AddHttp($"http://127.0.0.1:9/{i}.bin", $"{i}.bin", start: false).Id).ToList();
+        string Gid(long id) => id.ToString("x16", System.Globalization.CultureInfo.InvariantCulture);
+        string Order() => string.Concat(_engine.Queue.Items.OrderBy(d => d.Record.QueueOrder).Select(d => d.FileName[0]));
+        var token = "token:" + Key;
+
+        Assert.Equal(2, (await Rpc("aria2.changePosition", token, Gid(ids[0]), 2, "POS_SET"))["result"]!.GetValue<int>());
+        Assert.Equal("1203", Order());
+        Assert.Equal(1, (await Rpc("aria2.changePosition", token, Gid(ids[0]), -1, "POS_CUR"))["result"]!.GetValue<int>());
+        Assert.Equal("1023", Order());
+        Assert.Equal(3, (await Rpc("aria2.changePosition", token, Gid(ids[1]), 0, "POS_END"))["result"]!.GetValue<int>());
+        Assert.Equal("0231", Order());
     }
 
     [Fact]

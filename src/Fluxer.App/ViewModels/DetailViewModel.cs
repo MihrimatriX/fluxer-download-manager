@@ -238,6 +238,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
     {
         if (Item is null) return;
         var d = Item.Download;
+        var slow = ++_slowTick % 4 == 0;     // once a second: graphs over longer periods, torrent peers and pieces
         Item.Refresh();
         var p = d.GetProgress();
         Push(_history, d.State == DownloadState.Downloading ? p.BytesPerSecond : 0);
@@ -248,7 +249,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
             SpeedHistory = [.. _history];
             UpHistoryValues = [.. _upHistory];
         }
-        else if (_slowTick % 4 == 0 || SpeedHistory.Length == 0)
+        else if (slow || SpeedHistory.Length == 0)
         {
             // 300 points either way: 2 s each over 10 minutes, 12 s each over an hour.
             var (seconds, perPoint) = SpeedPeriod == 1 ? (600, 1) : (3600, 6);
@@ -276,7 +277,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
             MediaProgress = n > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.FragmentFormat, i, n) : "";
         }
         if (d is not TorrentDownload) ShowPieces = false;
-        if (d is TorrentDownload td && ++_slowTick % 4 == 0)
+        if (d is TorrentDownload td && slow)
         {
             if (TabKey == "files") SyncFiles(td);
             _ = RefreshPeersAsync(td);

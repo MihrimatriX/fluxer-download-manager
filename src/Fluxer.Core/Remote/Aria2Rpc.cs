@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Torrent;
@@ -28,10 +29,11 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
         public int Code { get; } = code;
     }
 
-    /// One request or a batch. Unauthorized: some call carried a wrong token (counts towards blocking the caller).
-    public async Task<(JsonNode? Reply, bool Unauthorized)> HandleAsync(JsonNode? body)
+    /// One request or a batch. Denied: how many calls, multicall ones included, carried a wrong token (each counts
+    /// towards blocking the caller).
+    public async Task<(JsonNode? Reply, int Denied)> HandleAsync(JsonNode? body)
     {
-        var unauthorized = false;
+        var denied = new StrongBox<int>();
         async Task<JsonNode> One(JsonNode? call)
         {
             var id = call?["id"]?.DeepClone();
@@ -39,12 +41,12 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
                 return ErrorReply(id, -32600, "Invalid Request");
             try
             {
-                var result = await CallAsync(o["method"]!.GetValue<string>(), o["params"] as JsonArray ?? [], top: true);
+                var result = await CallAsync(o["method"]!.GetValue<string>(), o["params"] as JsonArray ?? [], denied);
                 return new JsonObject { ["id"] = id, ["jsonrpc"] = "2.0", ["result"] = result };
             }
             catch (RpcError e)
             {
-                if (e.Message == "Unauthorized") unauthorized = true;
+                if (e.Message == "Unauthorized") denied.Value++;
                 return ErrorReply(id, e.Code, e.Message);
             }
             catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException or OverflowException)
@@ -61,15 +63,16 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
         {
             var replies = new JsonArray();
             foreach (var call in batch.Take(100)) replies.Add(await One(call));
-            return (replies, unauthorized);
+            return (replies, denied.Value);
         }
-        return (await One(body), unauthorized);
+        return (await One(body), denied.Value);
     }
 
     public static JsonObject ErrorReply(JsonNode? id, int code, string message) =>
         new() { ["id"] = id, ["jsonrpc"] = "2.0", ["error"] = new JsonObject { ["code"] = code, ["message"] = message } };
 
-    private async Task<JsonNode?> CallAsync(string method, JsonArray ps, bool top)
+    /// `denied` counts wrong tokens; null inside a multicall (which cannot nest).
+    private async Task<JsonNode?> CallAsync(string method, JsonArray ps, StrongBox<int>? denied)
     {
         var args = ps.Select(p => p?.DeepClone()).ToList();
         if (method.StartsWith("system.", StringComparison.Ordinal))
@@ -78,7 +81,7 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
             {
                 "system.listMethods" => Strings(Methods),
                 "system.listNotifications" => new JsonArray(),
-                "system.multicall" when top => await MulticallAsync(args.FirstOrDefault() as JsonArray ?? []),
+                "system.multicall" when denied is not null => await MulticallAsync(args.FirstOrDefault() as JsonArray ?? [], denied),
                 _ => throw new RpcError(-32601, "Method not found"),
             };
         }
@@ -137,10 +140,22 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
                 return Page(queue.Items.Where(d => AriaStatus(d.State) is "complete" or "error"), args);
             case "aria2.changePosition":
             {
+                // Positions count in the waiting queue, as in aria2.
                 var d = Find(Arg(0));
-                var how = Arg(2);
-                queue.Reorder([d.Id], how == "POS_END" ? DownloadQueue.Move.Bottom : DownloadQueue.Move.Top);
-                return how == "POS_END" ? queue.Items.Count - 1 : 0;
+                var pos = args.ElementAtOrDefault(1)?.GetValue<int>() ?? throw new RpcError(Failure, "Invalid parameters");
+                var ordered = queue.Items.OrderBy(x => x.Record.QueueOrder).ToList();
+                var waiting = ordered.Where(x => AriaStatus(x.State) is "waiting" or "paused").ToList();
+                var current = waiting.IndexOf(d);
+                if (current < 0) throw new RpcError(Failure, $"GID {GidOf(d)} is not in the waiting queue");
+                var target = Math.Clamp(Arg(2) switch
+                {
+                    "POS_SET" => pos,
+                    "POS_CUR" => current + pos,
+                    "POS_END" => waiting.Count - 1 + pos,
+                    _ => throw new RpcError(Failure, "Invalid how"),
+                }, 0, waiting.Count - 1);
+                queue.MoveTo(d.Id, ordered.IndexOf(waiting[target]));
+                return target;
             }
             case "aria2.changeOption" or "aria2.changeGlobalOption" or "aria2.saveSession":
                 return "OK";
@@ -195,7 +210,7 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
         }
     }
 
-    private async Task<JsonArray> MulticallAsync(JsonArray calls)
+    private async Task<JsonArray> MulticallAsync(JsonArray calls, StrongBox<int> denied)
     {
         var results = new JsonArray();
         foreach (var c in calls.Take(100))
@@ -204,9 +219,13 @@ internal sealed class Aria2Rpc(FluxerEngine engine, Func<string?, bool> tokenOk,
             {
                 var name = c?["methodName"]?.GetValue<string>() ?? throw new RpcError(-32600, "Invalid Request");
                 // (JsonNode): JsonArray.Add<T> would pick the reflection-based overload, which trimming breaks.
-                results.Add((JsonNode)new JsonArray(await CallAsync(name, c["params"] as JsonArray ?? [], top: false)));
+                results.Add((JsonNode)new JsonArray(await CallAsync(name, c["params"] as JsonArray ?? [], null)));
             }
-            catch (RpcError e) { results.Add((JsonNode)new JsonObject { ["code"] = e.Code, ["message"] = e.Message }); }
+            catch (RpcError e)
+            {
+                if (e.Message == "Unauthorized") denied.Value++;
+                results.Add((JsonNode)new JsonObject { ["code"] = e.Code, ["message"] = e.Message });
+            }
             catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException or OverflowException)
             {
                 results.Add((JsonNode)new JsonObject { ["code"] = Failure, ["message"] = "Invalid parameters" });

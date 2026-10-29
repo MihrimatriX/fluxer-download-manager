@@ -215,13 +215,8 @@ public sealed class RemoteSettings
     [System.Text.Json.Serialization.JsonIgnore]
     public string? Key
     {
-        get
-        {
-            if (KeyProtected is not { Length: > 0 } p) return null;
-            try { return Platform.Windows.Dpapi.Unprotect(Convert.FromBase64String(p)); }
-            catch (FormatException) { return null; }
-        }
-        set => KeyProtected = Platform.Windows.Dpapi.Protect(value) is { } blob ? Convert.ToBase64String(blob) : null;
+        get => Platform.Windows.Dpapi.UnprotectBase64(KeyProtected);
+        set => KeyProtected = Platform.Windows.Dpapi.ProtectToBase64(value);
     }
 }
 
@@ -237,13 +232,8 @@ public sealed class ExtractSettings
     [System.Text.Json.Serialization.JsonIgnore]
     public List<string> Passwords
     {
-        get
-        {
-            if (PasswordsProtected is not { Length: > 0 } p) return [];
-            try { return [.. (Platform.Windows.Dpapi.Unprotect(Convert.FromBase64String(p)) ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries)]; }
-            catch (FormatException) { return []; }
-        }
-        set => PasswordsProtected = Platform.Windows.Dpapi.Protect(string.Join('\n', value.Where(x => x.Length > 0))) is { } blob ? Convert.ToBase64String(blob) : null;
+        get => [.. (Platform.Windows.Dpapi.UnprotectBase64(PasswordsProtected) ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries)];
+        set => PasswordsProtected = Platform.Windows.Dpapi.ProtectToBase64(string.Join('\n', value.Where(x => x.Length > 0)));
     }
 }
 

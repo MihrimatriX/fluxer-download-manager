@@ -60,15 +60,16 @@ public sealed partial class SettingsViewModel
     [RelayCommand]
     private async Task AddCategory()
     {
-        var name = (await Dialogs.InputAsync(_host.Owner, Strings.CategoryAdd, Strings.CategoryName))?.Trim();
-        if (string.IsNullOrEmpty(name)) return;
-        if (name.StartsWith('#') || CategoryRows.Any(r => string.Equals(r.Key, name, StringComparison.CurrentCultureIgnoreCase)) || name == "all")
+        var typed = await Dialogs.InputAsync(_host.Owner, Strings.CategoryAdd, Strings.CategoryName);
+        // It is also a folder name; cleaned first, so the checks below see the name that will be kept.
+        var name = string.Concat((typed ?? "").Split(Path.GetInvalidFileNameChars())).Trim();
+        if (name.Length == 0) return;
+        if (name.StartsWith('#') || string.Equals(name, "all", StringComparison.OrdinalIgnoreCase)
+            || CategoryRows.Any(r => string.Equals(r.Key, name, StringComparison.CurrentCultureIgnoreCase)))
         {
             await Dialogs.MessageAsync(_host.Owner, Strings.CategoryAdd, Strings.CategoryExists);
             return;
         }
-        name = string.Concat(name.Split(Path.GetInvalidFileNameChars()));   // it is also a folder name
-        if (name.Length == 0) return;
         CategoryRows.Insert(Math.Max(0, CategoryRows.Count - 1), CategoryRow.From(new Category { Key = name }, QueueSave));
         QueueSave();
     }

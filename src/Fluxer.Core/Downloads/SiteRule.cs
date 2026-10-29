@@ -20,13 +20,8 @@ public sealed class SiteRule
     [JsonIgnore]
     public string? Password
     {
-        get
-        {
-            if (PasswordProtected is not { Length: > 0 } p) return null;
-            try { return Dpapi.Unprotect(Convert.FromBase64String(p)); }
-            catch (FormatException) { return null; }    // a hand-edited settings file
-        }
-        set => PasswordProtected = Dpapi.Protect(value) is { } blob ? Convert.ToBase64String(blob) : null;
+        get => Dpapi.UnprotectBase64(PasswordProtected);
+        set => PasswordProtected = Dpapi.ProtectToBase64(value);
     }
 
     public bool Matches(string host) => Category.HostMatches(host, Host);

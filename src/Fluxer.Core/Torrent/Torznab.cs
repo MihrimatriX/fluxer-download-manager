@@ -17,13 +17,8 @@ public sealed class TorznabIndexer
     [JsonIgnore]
     public string? ApiKey
     {
-        get
-        {
-            if (ApiKeyProtected is not { Length: > 0 } p) return null;
-            try { return Dpapi.Unprotect(Convert.FromBase64String(p)); }
-            catch (FormatException) { return null; }
-        }
-        set => ApiKeyProtected = Dpapi.Protect(value) is { } blob ? Convert.ToBase64String(blob) : null;
+        get => Dpapi.UnprotectBase64(ApiKeyProtected);
+        set => ApiKeyProtected = Dpapi.ProtectToBase64(value);
     }
 }
 

@@ -13,6 +13,9 @@ public sealed class ExtractorTests : IDisposable
     private const string TarGz = "H4sICFBh42oC/2RhdGEudGFyAO3VPQrCMAAF4MyeIidIkzRJ6yA4OnqFaAMKLYE2Yo9vq4MgtE4N2rxv6S9keu+xjGX7o+0PzlauJYvgL1NXznP1vh/fCy6FJLQnEdy6YNvheJImWdImXBu3E8U2l6VRJWe5VEZLtSGwepU/d9nCZ4yhLrSezv9wL7QsuDFcy2f+tSoI1THz33of5v779v1PMfQ/+h/9n3b/Wxb6BcttDLVRaqb/zUf/D0+KUB4z/4n2/8XVtUfSk4X9x/5j/xPf/9MP7r/G/sdw921dIekAAAAAAAAAAACr9ABom6zVACgAAA==";
     private const string Small7z = "N3q8ryccAATMlBAhwwAAAAAAAAAVAAAAAAAAAETXHTjgIPoARF0AOZhK9Uws0YSxRLMiMLpZQxRioRv6mWQx7AArTtC8XTFnoJr3RP7mssKmqR0zM+zaqo43WvVwRjgRxfKZy085n/ZRWAAA4ACMAG9dAACBMweuD9KN0v1Au5RkHH7rYmP2uZeSKuQg6aUJAdwRjpArSIxkVUH80GhVmPb6EcoP1dS+GW9LKc4NJ1vJ7WHzI/+/4EmK42dk/Vqu6pycIMEFxEmZqWohXfx41kJWRxaZU2ij3I0Pn42y/aAAAAAXBkwBCXcABwsBAAEhIQEYDICNAAA=";
 
+    // Encrypted contents, plain header (the file list is readable without the password).
+    private const string EncData7z = "N3q8ryccAARrLwNTmgAAAAAAAAAWAAAAAAAAAJr6c4qCjLGEyPIMDD6yN1hUaUzS4ACYAIJdAACBMweuD87zck4rkUO8Epb6xc54XV/iaUD94H8vuuDbJ6cWVc0SnB5YKgI6i5ZfiVFBgyzbCz+Qm/msZLpBM7s9UdW9ehdsS+hm4tLWrZsJJBgN9oVDCbWcbDDKG+hweEaKGBW9+PTVnA8XKiz4WRWzN/x+mPvqj0cq+U4O3NwAAAAAFwYQAQmAigAHCwEAASEhARgMgJkAAA==";
+
     private readonly string _dir = Path.Combine(Path.GetTempPath(), "fluxer-extract-" + Guid.NewGuid().ToString("N"));
 
     public ExtractorTests() => Directory.CreateDirectory(_dir);
@@ -93,6 +96,7 @@ public sealed class ExtractorTests : IDisposable
     [Theory]
     [InlineData("enc.zip", nameof(EncZip))]
     [InlineData("enc.7z", nameof(Enc7z))]
+    [InlineData("encdata.7z", nameof(EncData7z))]
     public void Encrypted_TriesThePasswords_AndLeavesNothingBehindWithoutOne(string name, string fixture)
     {
         var path = Put(name, (string)typeof(ExtractorTests).GetField(fixture, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!.GetValue(null)!);

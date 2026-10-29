@@ -91,6 +91,17 @@ public sealed class TransferMeterTests
     }
 
     [Fact]
+    public void ADownloadFinishedBetweenTwoLooks_IsCounted()
+    {
+        var m = new TransferMeter();
+        m.Baseline(7, 0, 0);                                   // added
+        m.Observe([(7, 5000, 0)], T0);                         // first look: already done
+        m.Baseline(8, 100, 0);                                 // a resumed one keeps its earlier bytes out
+        m.Observe([(7, 5000, 0), (8, 300, 0)], T0.AddSeconds(2));
+        Assert.Equal(5200, m.DownWithin(TimeSpan.FromHours(1), T0.AddSeconds(2)));
+    }
+
+    [Fact]
     public void PerMinute_LinesUpWithTheClock()
     {
         var m = new TransferMeter();
