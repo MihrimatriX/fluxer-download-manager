@@ -12,6 +12,8 @@ using Fluxer.Core.Media;
 
 namespace Fluxer.App.Views;
 
+public enum DuplicateChoice { Skip, Show, Update, Again }
+
 public sealed record TorrentChoice(HashSet<int> Deselected, bool Sequential, string Folder);
 public sealed record MediaChoice(List<MediaEntry> Entries, int? MaxHeight, bool AudioOnly, string Folder);
 
@@ -108,6 +110,62 @@ public static partial class Dialogs
             }));
         await ShowAsync(w, owner);
         return result;
+    }
+
+    /// The link is already in the list: show that one, give it the new link (unfinished HTTP), or download again.
+    public static async Task<DuplicateChoice> DuplicateAsync(Window? owner, IDownload existing, bool canUpdate)
+    {
+        var choice = DuplicateChoice.Skip;
+        await ShowAsync(DuplicateWindow(existing, canUpdate, c => choice = c), owner);
+        return choice;
+    }
+
+    public static Window DuplicateWindow(IDownload existing, bool canUpdate, Action<DuplicateChoice> chosen)
+    {
+        var r = existing.Record;
+        var when = r.CompletedAt is { } at ? Loc.When(DateTimeOffset.FromUnixTimeMilliseconds(at).LocalDateTime)
+            : Loc.When(DateTimeOffset.FromUnixTimeMilliseconds(r.CreatedAt).LocalDateTime);
+        var file = new Border
+        {
+            Classes = { "card" }, Padding = new Thickness(12, 10),
+            Child = new StackPanel
+            {
+                Spacing = 2,
+                Children =
+                {
+                    new TextBlock { Text = existing.FileName.Length > 0 ? existing.FileName : r.Http?.Url ?? "", FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Classes = { "subtle" }, TextWrapping = TextWrapping.Wrap,
+                        Text = string.Join(" · ", new[] { Loc.Bytes(r.TotalBytes), Loc.State(existing.State), when, r.SaveDirectory }.Where(t => t is { Length: > 0 } && t != "—")) },
+                },
+            },
+        };
+        RadioButton Option(string title, string note, bool on) => new()
+        {
+            GroupName = "duplicate", IsChecked = on, Margin = new Thickness(0, 4, 0, 0),
+            Content = new StackPanel
+            {
+                Children =
+                {
+                    new TextBlock { Text = title },
+                    new TextBlock { Text = note, Classes = { "subtle" }, FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxWidth = 420 },
+                },
+            },
+        };
+        var show = Option(Strings.DupShow, Strings.DupShowNote, !canUpdate);
+        var update = Option(Strings.DupUpdate, Strings.DupUpdateNote, canUpdate);
+        var again = Option(Strings.DupAgain, Strings.DupAgainNote, false);
+        var body = new StackPanel { Spacing = 8, Children = { file, Paragraph(Strings.DupBody) } };
+        body.Children.Add(show);
+        if (canUpdate) body.Children.Add(update);
+        body.Children.Add(again);
+        return Shell(Strings.DupTitle, body, 520,
+            new Button(Strings.Skip, false, () => true),
+            new Button(Strings.Continue, true, () =>
+            {
+                chosen(update.IsChecked == true && canUpdate ? DuplicateChoice.Update
+                    : again.IsChecked == true ? DuplicateChoice.Again : DuplicateChoice.Show);
+                return true;
+            }));
     }
 
     /// Indeterminate "working…" window that closes when the task ends.

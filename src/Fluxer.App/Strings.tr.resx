@@ -534,4 +534,18 @@
   <data name="BackupRestoreEllipsis" xml:space="preserve"><value>Geri yükle…</value></data>
   <data name="BackupRestore" xml:space="preserve"><value>Yedekten geri yükle</value></data>
   <data name="BackupRestoreConfirm" xml:space="preserve"><value>İndirme listesi ve ayarlar {0} yedeğine döner. Fluxer yeniden başlar; şimdiki veritabanı fluxer.db.before-restore olarak saklanır.</value></data>
+  <data name="FromPattern" xml:space="preserve"><value>Desenden</value></data>
+  <data name="AlreadyListed" xml:space="preserve"><value>Zaten listede: {0}</value></data>
+  <data name="PatternExpanded" xml:space="preserve"><value>Desenden {0} bağlantı üretildi. Yalnızca ilk birkaçı ve sonuncusu kontrol edilir.</value></data>
+  <data name="PatternTooMany" xml:space="preserve"><value>Desen {0} bağlantı üretiyor; sınır {1}.</value></data>
+  <data name="DupTitle" xml:space="preserve"><value>Zaten listede</value></data>
+  <data name="DupBody" xml:space="preserve"><value>Bu bağlantı listenizde zaten var.</value></data>
+  <data name="DupShow" xml:space="preserve"><value>Var olanı göster</value></data>
+  <data name="DupShowNote" xml:space="preserve"><value>Listede seçer; yeni indirme eklenmez.</value></data>
+  <data name="DupUpdate" xml:space="preserve"><value>Bağlantısını güncelle</value></data>
+  <data name="DupUpdateNote" xml:space="preserve"><value>Süresi dolmuş ya da takılmış indirme yeni bağlantıyla kaldığı yerden sürer.</value></data>
+  <data name="DupAgain" xml:space="preserve"><value>Yine de indir</value></data>
+  <data name="DupAgainNote" xml:space="preserve"><value>İkinci kopya numaralı bir adla kaydedilir.</value></data>
+  <data name="Skip" xml:space="preserve"><value>Atla</value></data>
+  <data name="Continue" xml:space="preserve"><value>Devam</value></data>
 </root>

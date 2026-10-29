@@ -566,3 +566,17 @@ BackupNow	Back up now	Şimdi yedekle
 BackupRestoreEllipsis	Restore…	Geri yükle…
 BackupRestore	Restore a backup	Yedekten geri yükle
 BackupRestoreConfirm	The download list and settings go back to {0}. Fluxer restarts; the current database is kept as fluxer.db.before-restore.	İndirme listesi ve ayarlar {0} yedeğine döner. Fluxer yeniden başlar; şimdiki veritabanı fluxer.db.before-restore olarak saklanır.
+FromPattern	From the pattern	Desenden
+AlreadyListed	Already in the list: {0}	Zaten listede: {0}
+PatternExpanded	{0} links from the pattern. Only the first few and the last one are checked.	Desenden {0} bağlantı üretildi. Yalnızca ilk birkaçı ve sonuncusu kontrol edilir.
+PatternTooMany	The pattern makes {0} links; the limit is {1}.	Desen {0} bağlantı üretiyor; sınır {1}.
+DupTitle	Already in the list	Zaten listede
+DupBody	This link is already in your list.	Bu bağlantı listenizde zaten var.
+DupShow	Show the existing one	Var olanı göster
+DupShowNote	Selects it in the list; nothing new is added.	Listede seçer; yeni indirme eklenmez.
+DupUpdate	Give it this link	Bağlantısını güncelle
+DupUpdateNote	An expired or stuck download continues from where it stopped with the new link.	Süresi dolmuş ya da takılmış indirme yeni bağlantıyla kaldığı yerden sürer.
+DupAgain	Download again	Yine de indir
+DupAgainNote	A second copy is saved under a numbered name.	İkinci kopya numaralı bir adla kaydedilir.
+Skip	Skip	Atla
+Continue	Continue	Devam

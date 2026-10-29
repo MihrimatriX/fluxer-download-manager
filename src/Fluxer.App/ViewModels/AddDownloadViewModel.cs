@@ -14,13 +14,33 @@ namespace Fluxer.App.ViewModels;
 /// One link in the add window, probed in the background.
 public sealed partial class AddItem : ObservableObject
 {
-    public AddItem(string url, RequestContext? ctx)
+    /// `fromPattern`: made from a batch pattern; only a sample of those is probed, the rest are assumed fine.
+    public AddItem(string url, RequestContext? ctx, bool fromPattern = false)
     {
         Url = url;
         Context = ctx;
+        FromPattern = fromPattern;
         Host = Uri.TryCreate(url, UriKind.Absolute, out var u) ? u.Host : "";
         IsMagnet = url.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase);
         Apply(null);
+        if (fromPattern) (StateText, StateBrush) = (Strings.FromPattern, Theme.Brush("SubtleBrush"));
+    }
+
+    public bool FromPattern { get; }
+    /// "Finished · yesterday 21:14" when the same link is already in the list; such a row starts unticked.
+    public string? Duplicate { get; private set; }
+
+    public void MarkDuplicate(string what)
+    {
+        Duplicate = what;
+        ApplyDuplicate();
+    }
+
+    private void ApplyDuplicate()
+    {
+        if (Duplicate is null) return;
+        (Warning, WarningBrush) = (string.Format(CultureInfo.CurrentCulture, Strings.AlreadyListed, Duplicate), Theme.Brush("WarnTextBrush"));
+        IsIncluded = false;
     }
 
     public string Url { get; }
@@ -53,7 +73,7 @@ public sealed partial class AddItem : ObservableObject
     [ObservableProperty] private IBrush _stateBrush = Brushes.Gray;
     /// Batch: unticked links are left out (failing ones and web pages start unticked).
     [ObservableProperty] private bool _isIncluded = true;
-    public bool Ok => Kind is ProbeKind.File or ProbeKind.Torrent || IsMagnet;
+    public bool Ok => Kind is ProbeKind.File or ProbeKind.Torrent || IsMagnet || (FromPattern && Kind is null && !Probing);
     partial void OnProbingChanged(bool value) { if (value) (StateText, StateBrush) = (Strings.Probing, Theme.Brush("SubtleBrush")); }
 
     public void Apply(ProbeResult? p)
@@ -63,6 +83,12 @@ public sealed partial class AddItem : ObservableObject
     }
 
     private void ApplyCore(ProbeResult? p)
+    {
+        ApplyProbe(p);
+        ApplyDuplicate();
+    }
+
+    private void ApplyProbe(ProbeResult? p)
     {
         Kind = p?.Kind;
         Size = p?.Size;
@@ -154,6 +180,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     private readonly HttpEngine _http;
     private readonly RequestContext? _ctx;
     private readonly Dictionary<string, Captured> _known = [];
+    private readonly HashSet<string> _fromPattern = new(StringComparer.Ordinal);
     private readonly DispatcherTimer _debounce;
     private CancellationTokenSource? _probeCts;
     private bool _folderTouched;
@@ -253,6 +280,10 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [ObservableProperty] private string _detected = "";
     [ObservableProperty] private IBrush _detectedBrush = Brushes.Gray;
     [ObservableProperty] private string _categoryText = "";
+    /// "120 links from the pattern" under the link box.
+    [ObservableProperty] private string _patternText = "";
+    /// The download already using a link, for the duplicate warning (set by Flows).
+    public Func<string, IDownload?>? Existing { get; init; }
 
     public bool IsSingle => Count == 1;
     public bool IsMulti => Count > 1;
@@ -288,8 +319,21 @@ public sealed partial class AddDownloadViewModel : ObservableObject
 
     private void Rebuild()
     {
-        var urls = (UrlsText ?? "").Split(['\r', '\n', ' ', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(Dialogs.IsDownloadable).Distinct().ToList();
+        var urls = new List<string>();
+        _fromPattern.Clear();
+        PatternText = "";
+        foreach (var t in (UrlsText ?? "").Split(['\r', '\n', ' ', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (UrlPattern.Expand(t, out var n) is not { } expanded) { if (Dialogs.IsDownloadable(t)) urls.Add(t); continue; }
+            if (expanded.Count == 0)
+            {
+                PatternText = string.Format(CultureInfo.CurrentCulture, Strings.PatternTooMany, n, UrlPattern.Max);
+                continue;
+            }
+            foreach (var e in expanded.Where(Dialogs.IsDownloadable)) { urls.Add(e); _fromPattern.Add(e); }
+            PatternText = string.Format(CultureInfo.CurrentCulture, Strings.PatternExpanded, _fromPattern.Count);
+        }
+        urls = [.. urls.Distinct()];
         if (urls.SequenceEqual(Items.Select(i => i.Url))) return;
 
         var keep = Items.ToDictionary(i => i.Url);
@@ -302,6 +346,9 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         _probeCts?.Cancel();
         var cts = _probeCts = new CancellationTokenSource();
         var pending = Items.Where(i => !i.IsMagnet && i.Kind is null).ToList();
+        // A pattern can make thousands of links: ask the server about the first few and the last one only.
+        var sample = pending.Where(i => i.FromPattern).ToList();
+        if (sample.Count > 12) pending = [.. pending.Where(i => !i.FromPattern), .. sample.Take(6), sample[^1]];
         _ = ProbeAllAsync(pending, cts.Token);
         UpdateFolder();
     }
@@ -309,10 +356,13 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     /// A captured link starts out already probed and named, so it is not probed a second time.
     private AddItem NewItem(string url)
     {
-        if (!_known.TryGetValue(url, out var c)) return new AddItem(url, _ctx);
-        var item = new AddItem(url, c.Context ?? _ctx);
-        if (c.Probe is { } p) item.Apply(p);
-        if (c.FileName is { Length: > 0 } name) item.Name = name;   // marks it UserNamed
+        var item = _known.TryGetValue(url, out var c) ? new AddItem(url, c.Context ?? _ctx) : new AddItem(url, _ctx, _fromPattern.Contains(url));
+        if (c?.Probe is { } p) item.Apply(p);
+        if (c?.FileName is { Length: > 0 } name) item.Name = name;   // marks it UserNamed
+        if (Existing?.Invoke(url) is { } d)
+            item.MarkDuplicate(d.Record.CompletedAt is { } at
+                ? $"{Loc.State(d.State)} · {Loc.When(DateTimeOffset.FromUnixTimeMilliseconds(at).LocalDateTime)}"
+                : Loc.State(d.State));
         return item;
     }
 

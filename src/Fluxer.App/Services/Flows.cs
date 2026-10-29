@@ -25,10 +25,28 @@ public static class Flows
         var engine = host.Engine;
         var s = engine.Settings;
 
+        // One link that is already in the list: ask before making a second copy.
+        if (links.Count == 1 && !UrlPattern.Has(links[0].Url) && engine.Queue.FindByUrl(links[0].Url) is { } existing)
+        {
+            var canUpdate = existing is HttpDownload && existing.State != DownloadState.Completed;
+            switch (await Dialogs.DuplicateAsync(host.Owner, existing, canUpdate))
+            {
+                case DuplicateChoice.Skip: return;
+                case DuplicateChoice.Show:
+                    host.ShowMainWindow();
+                    host.Main.Reveal(existing);
+                    return;
+                case DuplicateChoice.Update:
+                    await RefreshLinkAsync(host, (HttpDownload)existing, links[0].Url, links[0].Context ?? ctx);
+                    return;
+            }
+        }
+
         // Browser captures can skip the dialog when the user turned it off.
         if (ctx is not null && !s.ShowAddDialog && links.Count > 0)
         {
-            foreach (var l in links)
+            // Without the window there is nobody to ask: a link already listed (several at once) is skipped.
+            foreach (var l in links.Where(l => links.Count == 1 || engine.Queue.FindByUrl(l.Url) is null))
             {
                 var d = engine.AddHttp(l.Url, l.FileName ?? l.Probe?.FileName, l.Context ?? ctx, rejectHtml: true, night: night);
                 if (!night) host.OpenProgressIfEnabled(d, activate: false);
@@ -44,7 +62,7 @@ public static class Flows
             return;
         }
 
-        var vm = new ViewModels.AddDownloadViewModel(s, engine.Http, links, ctx) { QueueIndex = night ? 1 : 0 };
+        var vm = new ViewModels.AddDownloadViewModel(s, engine.Http, links, ctx) { QueueIndex = night ? 1 : 0, Existing = engine.Queue.FindByUrl };
         // Any open window collects them: pasted links that needed a sign-in come back here from "Start in browser".
         if (!night) _browserAdd ??= vm;
         ViewModels.AddResult? r;

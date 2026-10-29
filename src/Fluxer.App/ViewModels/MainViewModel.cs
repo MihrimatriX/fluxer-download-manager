@@ -717,6 +717,16 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedStateFilter = StateFilters.FirstOrDefault(f => f.Key == key) ?? StateFilters[0];
     }
 
+    /// Duplicate dialog "show it": every filter off, the row selected.
+    public void Reveal(IDownload d)
+    {
+        IsSettingsOpen = false;
+        Search = "";
+        SelectedCategory = Categories[0];
+        SelectedStateFilter = StateFilters[0];
+        if (_all.TryGetValue(d.Id, out var vm)) SelectedItem = vm;
+    }
+
     public void ShowCategory(string key)
     {
         IsSettingsOpen = false;

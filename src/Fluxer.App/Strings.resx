@@ -534,4 +534,18 @@
   <data name="BackupRestoreEllipsis" xml:space="preserve"><value>Restore…</value></data>
   <data name="BackupRestore" xml:space="preserve"><value>Restore a backup</value></data>
   <data name="BackupRestoreConfirm" xml:space="preserve"><value>The download list and settings go back to {0}. Fluxer restarts; the current database is kept as fluxer.db.before-restore.</value></data>
+  <data name="FromPattern" xml:space="preserve"><value>From the pattern</value></data>
+  <data name="AlreadyListed" xml:space="preserve"><value>Already in the list: {0}</value></data>
+  <data name="PatternExpanded" xml:space="preserve"><value>{0} links from the pattern. Only the first few and the last one are checked.</value></data>
+  <data name="PatternTooMany" xml:space="preserve"><value>The pattern makes {0} links; the limit is {1}.</value></data>
+  <data name="DupTitle" xml:space="preserve"><value>Already in the list</value></data>
+  <data name="DupBody" xml:space="preserve"><value>This link is already in your list.</value></data>
+  <data name="DupShow" xml:space="preserve"><value>Show the existing one</value></data>
+  <data name="DupShowNote" xml:space="preserve"><value>Selects it in the list; nothing new is added.</value></data>
+  <data name="DupUpdate" xml:space="preserve"><value>Give it this link</value></data>
+  <data name="DupUpdateNote" xml:space="preserve"><value>An expired or stuck download continues from where it stopped with the new link.</value></data>
+  <data name="DupAgain" xml:space="preserve"><value>Download again</value></data>
+  <data name="DupAgainNote" xml:space="preserve"><value>A second copy is saved under a numbered name.</value></data>
+  <data name="Skip" xml:space="preserve"><value>Skip</value></data>
+  <data name="Continue" xml:space="preserve"><value>Continue</value></data>
 </root>

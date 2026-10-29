@@ -168,6 +168,15 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
             return 1 + _items.Count(x => x.State == DownloadState.Queued && x.Record.QueueOrder < d.Record.QueueOrder);
     }
 
+    /// The download that already uses this link (as its address, final address or page), if any.
+    public IDownload? FindByUrl(string url)
+    {
+        url = url.Trim();
+        lock (_lock)
+            return _items.FirstOrDefault(d => d.Record.Http is { } h && (h.Url == url || h.FinalUrl == url)
+                                              || d.Record.Media?.PageUrl == url);
+    }
+
     /// Downloads waiting for a fresh link whose name (and size, when known) match.
     public IEnumerable<IDownload> FindRefreshCandidates(string fileName, long? size)
     {
