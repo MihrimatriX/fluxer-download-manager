@@ -309,6 +309,7 @@ public sealed class Database : IDisposable
                 ("$cookies", Dpapi.Protect(m.Cookies)), ("$audio", m.AudioOnly ? 1 : 0), ("$ref", m.Referrer));
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private static (string, object?)[] CommonParams(DownloadRecord r) =>
     [
         ("$kind", (int)r.Kind), ("$state", (int)r.State), ("$file", r.FileName), ("$dir", r.SaveDirectory),
