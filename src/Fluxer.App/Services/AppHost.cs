@@ -49,6 +49,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         void Mark(string step) { marks.Add($"{step} {sw.ElapsedMilliseconds}"); sw.Restart(); }
         Mark($"runtime+avalonia {(int)(DateTime.Now - Process.GetCurrentProcess().StartTime).TotalMilliseconds}");
         Engine = new FluxerEngine(Program.DataDirectory);
+        CreatePlugins();
         if (Engine.Settings.UpgradeDesign()) Engine.Db.SetSetting("app", Engine.Settings);
         Engine.Settings.UseProfile(Engine.Settings.ActiveProfile); // limits always match the active profile
         _ = Engine.SaveSettingsAsync(Engine.Settings);
@@ -87,6 +88,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         CrashGuard.InstallUiHandler();
         ApplyWatchers();
         _ = ApplyRemoteAsync();
+        StartPlugins();
         Engine.Rss.Start();           // stopped by Engine.DisposeAsync on exit
         if (!args.Contains("--background")) ShowMainWindow();
         Mark("window");
@@ -209,6 +211,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Window?.Close();
         _pipe?.Dispose();
         await StopRemoteAsync();
+        Plugins.Dispose();
         await Engine.DisposeAsync();  // pauses everything → final checkpoints
         _tray?.Dispose();
         if (_pendingUpdate is not null && _updates is not null)

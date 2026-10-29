@@ -663,4 +663,20 @@
   <data name="RemoteListening" xml:space="preserve"><value>Listening on {0}</value></data>
   <data name="RemotePortBusy" xml:space="preserve"><value>Port {0} is in use by another program; pick another one.</value></data>
   <data name="RemoteAria2Note" xml:space="preserve"><value>aria2 clients (AriaNg, "send to aria2" extensions): http://127.0.0.1:{0}/jsonrpc with the API key as the secret token. REST: http://127.0.0.1:{0}/api/v1/downloads</value></data>
+  <data name="SecPlugins" xml:space="preserve"><value>Plugins</value></data>
+  <data name="PluginsDesc" xml:space="preserve"><value>JavaScript files in the plugins folder that react to downloads (added, finished, failed). One runs only after you turn it on, with the permissions it lists; if its file changes, it is off until you approve it again.</value></data>
+  <data name="PluginsEmpty" xml:space="preserve"><value>No plugins yet. Add the example to see what one looks like.</value></data>
+  <data name="PluginsOpenFolder" xml:space="preserve"><value>Open folder</value></data>
+  <data name="PluginsExample" xml:space="preserve"><value>Add example</value></data>
+  <data name="PluginsReload" xml:space="preserve"><value>Reload</value></data>
+  <data name="PluginEnable" xml:space="preserve"><value>Turn on plugin</value></data>
+  <data name="PluginEnableConfirm" xml:space="preserve"><value>"{0}" will be allowed to: {1}. Turn it on?</value></data>
+  <data name="PluginEnableNoPerms" xml:space="preserve"><value>"{0}" asks for no permissions: it can only write to the log and keep its own notes. Turn it on?</value></data>
+  <data name="PermNotify" xml:space="preserve"><value>show notifications</value></data>
+  <data name="PermDownloads" xml:space="preserve"><value>add, list, pause and resume downloads</value></data>
+  <data name="PermHttp" xml:space="preserve"><value>send web requests to any address</value></data>
+  <data name="PermNotifyShort" xml:space="preserve"><value>Notifications</value></data>
+  <data name="PermDownloadsShort" xml:space="preserve"><value>Downloads</value></data>
+  <data name="PermHttpShort" xml:space="preserve"><value>Web requests</value></data>
+  <data name="PluginNoPermissions" xml:space="preserve"><value>No permissions</value></data>
 </root>

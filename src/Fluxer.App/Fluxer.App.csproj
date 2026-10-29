@@ -27,8 +27,15 @@
     <TrimmableAssembly Include="BouncyCastle.Cryptography" />
     <!-- Rarely used (tool signature check, RSS parsing, unpacking archives): left as IL instead of doubling in size
          as precompiled code. -->
-    <PublishReadyToRunExclude Include="BouncyCastle.Cryptography.dll;System.Private.Xml.dll;System.Private.Xml.Linq.dll;System.Linq.Expressions.dll;SharpCompress.dll" />
+    <PublishReadyToRunExclude Include="BouncyCastle.Cryptography.dll;System.Private.Xml.dll;System.Private.Xml.Linq.dll;System.Linq.Expressions.dll;SharpCompress.dll;Jint.dll;Acornima.dll" />
   </ItemGroup>
+
+  <!-- Jint is trimmed, but three of its .NET interop paths warn: importNamespace (Options.Apply), JsonNode values and
+       JS-function-to-delegate conversion. Plugins never get that interop (no AllowClr; data crosses as JSON text), so
+       those three methods carry a suppression; any other warning still fails the build. -->
+  <PropertyGroup>
+    <_ExtraTrimmerArgs>$(_ExtraTrimmerArgs) --link-attributes "$(MSBuildProjectDirectory)/ILLink.Jint.xml"</_ExtraTrimmerArgs>
+  </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />

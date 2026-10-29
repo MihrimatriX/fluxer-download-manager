@@ -26,6 +26,8 @@ public sealed class AppSettings
     public SmartSpeed Smart { get; set; } = new();
     public ExtractSettings Extract { get; set; } = new();
     public RemoteSettings Remote { get; set; } = new();
+    /// Plugins the user turned on, each with the exact content they approved.
+    public List<Plugins.PluginGrant> Plugins { get; set; } = [];
     /// The user's own queues besides the main and night ones.
     public List<NamedQueue> Queues { get; set; } = [];
 

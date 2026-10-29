@@ -61,6 +61,7 @@
       <StreamGeometry x:Key="IcBroom">M14 4l-4 9M6 13h8l2 7H4zM9 17v3M12 17v3</StreamGeometry>
       <StreamGeometry x:Key="IcLock">M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4</StreamGeometry>
       <StreamGeometry x:Key="IcChart">M5 20V11M12 20V5M19 20v-6M3 20h18</StreamGeometry>
+      <StreamGeometry x:Key="IcPlug">M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4</StreamGeometry>
       <StreamGeometry x:Key="IcGear">M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z</StreamGeometry>
 
       <ResourceDictionary.ThemeDictionaries>

@@ -1,0 +1,29 @@
+<!-- See Fluxer.App.csproj: interop paths plugins cannot reach. -->
+<linker>
+  <assembly fullname="Jint">
+    <type fullname="Jint.Options">
+      <method name="Apply">
+        <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+          <argument>Trimming</argument>
+          <argument>IL2026</argument>
+        </attribute>
+      </method>
+    </type>
+    <type fullname="Jint.DefaultObjectConverter">
+      <method name="ConvertSystemTextJsonValue">
+        <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+          <argument>Trimming</argument>
+          <argument>IL2026</argument>
+        </attribute>
+      </method>
+    </type>
+    <type fullname="Jint.Runtime.Interop.DefaultTypeConverter">
+      <method name="BuildDelegate">
+        <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+          <argument>Trimming</argument>
+          <argument>IL2026</argument>
+        </attribute>
+      </method>
+    </type>
+  </assembly>
+</linker>

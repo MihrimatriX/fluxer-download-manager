@@ -28,6 +28,7 @@ public sealed partial class AppHost
             ScanCompleted(d);
             // Before the hooks, so a program run on finish already sees the unpacked files.
             if (Engine.Settings.Extract.Auto && d.Kind == DownloadKind.Http) await ExtractAsync(d, manual: false);
+            Plugins.Raise("completed", record);
             await RunHooksAsync(record, HookEvent.Completed);
         });
     }
@@ -85,10 +86,15 @@ public sealed partial class AppHost
         finally { _extracting.Release(); }
     }
 
-    private void OnFailedEvent(IDownload d) => _ = Task.Run(() => RunHooksAsync(d.Record, HookEvent.Failed));
+    private void OnFailedEvent(IDownload d)
+    {
+        Plugins.Raise("failed", d.Record);
+        _ = Task.Run(() => RunHooksAsync(d.Record, HookEvent.Failed));
+    }
 
     public void OnAddedEvent(IDownload d)
     {
+        Plugins.Raise("added", d.Record);
         if (Engine.Settings.Automation.WebhookOnAdded) _ = Task.Run(() => RunHooksAsync(d.Record, HookEvent.Added));
     }
 

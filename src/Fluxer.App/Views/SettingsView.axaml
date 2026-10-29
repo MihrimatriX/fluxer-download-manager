@@ -808,6 +808,53 @@
             </Border>
           </StackPanel>
 
+          <!-- ===== Plugins ===== -->
+          <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=plugins}">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecPlugins}" VerticalAlignment="Bottom" />
+              <Button Grid.Column="1" Classes="link" FontSize="12" Content="{x:Static app:Strings.PluginsReload}" Command="{Binding ReloadPluginsCommand}" VerticalAlignment="Center" />
+              <Button Grid.Column="2" Content="{x:Static app:Strings.PluginsOpenFolder}" Command="{Binding OpenPluginsFolderCommand}" />
+              <Button Grid.Column="3" Classes="accent" Content="{x:Static app:Strings.PluginsExample}" Command="{Binding AddExamplePluginCommand}" />
+            </Grid>
+            <TextBlock Classes="subtle" Text="{x:Static app:Strings.PluginsDesc}" TextWrapping="Wrap" Margin="2,6,0,10" />
+            <Border Classes="card group" Padding="16,14" IsVisible="{Binding PluginRows.Count, Converter={x:Static vm:Is.Equal}, ConverterParameter=0}">
+              <TextBlock Classes="subtle" Text="{x:Static app:Strings.PluginsEmpty}" TextWrapping="Wrap" />
+            </Border>
+            <ItemsControl ItemsSource="{Binding PluginRows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:PluginRow">
+                  <Border Classes="card group" Padding="14,10" Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                      <c:Icon Data="{StaticResource IcPlug}" Size="16" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                      <StackPanel Grid.Column="1" Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                          <TextBlock Text="{Binding Version}" Classes="faint" FontSize="12" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding File}" Classes="faint" FontSize="11.5" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Description}" Classes="subtle" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding HasDescription}" />
+                        <ItemsControl ItemsSource="{Binding Permissions}" Margin="0,2,0,0">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                              <Border Background="{DynamicResource ChipBrush}" CornerRadius="9" Padding="8,1" Margin="0,0,4,4">
+                                <TextBlock Text="{Binding}" FontSize="11" Classes="subtle" />
+                              </Border>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding Error}" Foreground="{DynamicResource ErrTextBrush}" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding HasError}" />
+                      </StackPanel>
+                      <ToggleSwitch Grid.Column="2" IsChecked="{Binding Enabled}" VerticalAlignment="Top" AutomationProperties.Name="{Binding Name}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
           <!-- ===== Advanced ===== -->
           <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=advanced}">
             <TextBlock Classes="section" Text="{x:Static app:Strings.TabAdvanced}" />

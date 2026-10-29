@@ -35,7 +35,7 @@ public sealed record SettingsSection(string Key, string Label)
 {
     public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
     {
-        "downloads" => "IcLogo", "speed" => "IcGauge", "categories" => "IcTag", "sites" => "IcLock", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
+        "downloads" => "IcLogo", "speed" => "IcGauge", "categories" => "IcTag", "sites" => "IcLock", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt", "plugins" => "IcPlug",
         "advanced" => "IcSliders", _ => "IcGear",
     });
 
@@ -164,7 +164,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         [
             new("general", Strings.SecGeneral), new("downloads", Strings.SecDownloads), new("speed", Strings.SecSpeedSchedule),
             new("categories", Strings.SecCategories), new("sites", Strings.SecSites), new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration),
-            new("automation", Strings.SecAutomation),
+            new("automation", Strings.SecAutomation), new("plugins", Strings.SecPlugins),
             new("advanced", Strings.TabAdvanced),
         ];
         _selectedSection = Sections[0];
@@ -364,6 +364,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         LoadSites(s);
         LoadArchives(s);
         LoadRemote(s);
+        RefreshPlugins();
         SavedText = "";
         _loading = false;
     }

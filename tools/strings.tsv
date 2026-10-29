@@ -694,3 +694,19 @@ RemoteKeyCopied	Key copied. Send it as "Authorization: Bearer KEY"; aria2 client
 RemoteListening	Listening on {0}	{0} dinleniyor
 RemotePortBusy	Port {0} is in use by another program; pick another one.	{0} portunu başka bir program kullanıyor; başka bir port seçin.
 RemoteAria2Note	aria2 clients (AriaNg, "send to aria2" extensions): http://127.0.0.1:{0}/jsonrpc with the API key as the secret token. REST: http://127.0.0.1:{0}/api/v1/downloads	aria2 istemcileri (AriaNg, "aria2'ye gönder" eklentileri): http://127.0.0.1:{0}/jsonrpc, gizli anahtar = API anahtarı. REST: http://127.0.0.1:{0}/api/v1/downloads
+SecPlugins	Plugins	Eklentiler
+PluginsDesc	JavaScript files in the plugins folder that react to downloads (added, finished, failed). One runs only after you turn it on, with the permissions it lists; if its file changes, it is off until you approve it again.	Eklentiler klasöründeki JavaScript dosyaları indirmelere tepki verir (eklenen, biten, hata veren). Bir eklenti ancak siz açınca, listelediği izinlerle çalışır; dosyası değişirse yeniden onaylayana kadar kapalı kalır.
+PluginsEmpty	No plugins yet. Add the example to see what one looks like.	Henüz eklenti yok. Nasıl göründüğünü görmek için örneği ekleyin.
+PluginsOpenFolder	Open folder	Klasörü aç
+PluginsExample	Add example	Örnek ekle
+PluginsReload	Reload	Yeniden yükle
+PluginEnable	Turn on plugin	Eklentiyi aç
+PluginEnableConfirm	"{0}" will be allowed to: {1}. Turn it on?	"{0}" şunlara izin alacak: {1}. Açılsın mı?
+PluginEnableNoPerms	"{0}" asks for no permissions: it can only write to the log and keep its own notes. Turn it on?	"{0}" izin istemiyor: yalnızca günlüğe yazabilir ve kendi notlarını tutabilir. Açılsın mı?
+PermNotify	show notifications	bildirim göstermek
+PermDownloads	add, list, pause and resume downloads	indirme eklemek, listelemek, duraklatmak ve sürdürmek
+PermHttp	send web requests to any address	herhangi bir adrese web isteği göndermek
+PermNotifyShort	Notifications	Bildirim
+PermDownloadsShort	Downloads	İndirmeler
+PermHttpShort	Web requests	Web istekleri
+PluginNoPermissions	No permissions	İzin yok
