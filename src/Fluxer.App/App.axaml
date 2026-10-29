@@ -654,5 +654,31 @@
       <Setter Property="IsEnabled" Value="False" />
       <Setter Property="RenderTransform" Value="translateY(6px)" />
     </Style>
-  </Application.Styles>
+      <!-- segmented choice in a well (theme, speed graph period) -->
+    <Style Selector="ListBox.seg">
+      <Setter Property="Background" Value="{DynamicResource WellBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="ItemsPanel">
+        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem">
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.seg > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+    </Style>
+</Application.Styles>
 </Application>

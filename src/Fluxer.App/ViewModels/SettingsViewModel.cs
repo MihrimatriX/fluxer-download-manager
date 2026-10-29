@@ -198,6 +198,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private double _scalePercent = 100;
     [ObservableProperty] private bool _animations;
     [ObservableProperty] private bool _toolbarLabelsOn;
+    [ObservableProperty] private bool _dropTargetOn;
     public string ScaleText => Loc.Percent(ScalePercent / 100);
     partial void OnScalePercentChanged(double value) => OnPropertyChanged(nameof(ScaleText));
 
@@ -293,6 +294,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         ScalePercent = Math.Round(s.Ui.Scale * 100);
         Animations = s.Ui.Animations;
         ToolbarLabelsOn = s.Ui.ToolbarLabels;
+        DropTargetOn = s.Ui.DropTarget;
         ThemeIndex = s.Theme == "Light" ? 0 : 1;
         Notifications = s.Notifications;
         ShowAddDialog = s.ShowAddDialog;
@@ -441,6 +443,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.Ui.Scale = Math.Clamp(ScalePercent / 100, 0.85, 1.3);
         s.Ui.Animations = Animations;
         s.Ui.ToolbarLabels = ToolbarLabelsOn;
+        var dropChanged = s.Ui.DropTarget != DropTargetOn;
+        s.Ui.DropTarget = DropTargetOn;
         s.Theme = ThemeIndex == 0 ? "Light" : "Dark";
         s.Notifications = Notifications;
         s.ShowAddDialog = ShowAddDialog;
@@ -525,6 +529,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (rssChanged) engine.Rss.Reschedule();
         await _host.ApplyRemoteAsync();
         RefreshRemote();
+        if (dropChanged) { _host.ApplyDropTarget(); _host.RebuildTray(); }
         if (trackersChanged || filterChanged) _ = FetchChangedListsAsync(trackersChanged, filterChanged);
         if (updatesChanged) _host.CheckForAppUpdate();
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);

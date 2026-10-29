@@ -91,6 +91,18 @@ public sealed class TransferMeterTests
     }
 
     [Fact]
+    public void PerMinute_LinesUpWithTheClock()
+    {
+        var m = new TransferMeter();
+        m.Observe([(1, 0, 0)], T0);
+        m.Observe([(1, 100, 0)], T0.AddSeconds(5));
+        m.Observe([(1, 400, 0)], T0.AddMinutes(2));
+        var (down, up) = m.PerMinute(T0.AddMinutes(3), 5);
+        Assert.Equal([0L, 100L, 0L, 300L, 0L], down);
+        Assert.All(up, u => Assert.Equal(0, u));
+    }
+
+    [Fact]
     public void Snapshot_SurvivesARestart()
     {
         var m = new TransferMeter();

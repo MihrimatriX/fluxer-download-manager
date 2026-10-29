@@ -47,6 +47,20 @@ public sealed class TransferMeter
         lock (_lock) return _minutes.Where(m => m.Minute > from).Sum(m => m.Down);
     }
 
+    /// Bytes per minute over the last `minutes` minutes, oldest first, zero where nothing moved.
+    public (long[] Down, long[] Up) PerMinute(DateTimeOffset now, int minutes)
+    {
+        var last = now.ToUnixTimeSeconds() / 60;
+        long[] down = new long[minutes], up = new long[minutes];
+        lock (_lock)
+            foreach (var m in _minutes)
+            {
+                var i = minutes - 1 - (int)(last - m.Minute);
+                if (i >= 0 && i < minutes) (down[i], up[i]) = (m.Down, m.Up);
+            }
+        return (down, up);
+    }
+
     /// When the oldest minute still counted in `window` leaves it (quota: when downloading may resume).
     public DateTimeOffset? WindowFreesAt(TimeSpan window, DateTimeOffset now)
     {

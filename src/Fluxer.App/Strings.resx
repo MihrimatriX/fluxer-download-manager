@@ -338,7 +338,6 @@
   <data name="InfoQueue" xml:space="preserve"><value>Queue</value></data>
   <data name="KindHttpMulti" xml:space="preserve"><value>HTTP · multiple connections</value></data>
   <data name="KindTorrentFiles" xml:space="preserve"><value>Torrent · {0} files</value></data>
-  <data name="Last60s" xml:space="preserve"><value>last 60 s</value></data>
   <data name="ListenPort" xml:space="preserve"><value>Listening port</value></data>
   <data name="ListenPortDesc" xml:space="preserve"><value>Peers connect to this port (TCP and UDP).</value></data>
   <data name="LogAdded" xml:space="preserve"><value>Added</value></data>
@@ -726,4 +725,26 @@
   <data name="PieceTip" xml:space="preserve"><value>{0:N0} pieces · availability {1:0.00}</value></data>
   <data name="TorrentSearchTitle" xml:space="preserve"><value>Torrent search</value></data>
   <data name="IpFilterEmpty" xml:space="preserve"><value>The list holds no address ranges (is it the right file?).</value></data>
+  <data name="DropTarget" xml:space="preserve"><value>Drop target</value></data>
+  <data name="DropTargetDesc" xml:space="preserve"><value>A small square that stays on top: drop links, text or .torrent files on it; double-click opens Fluxer.</value></data>
+  <data name="DropTargetTip" xml:space="preserve"><value>Drop links here · double-click opens Fluxer</value></data>
+  <data name="DropTargetHide" xml:space="preserve"><value>Hide drop target</value></data>
+  <data name="CrawlMenu" xml:space="preserve"><value>Get files from a site…</value></data>
+  <data name="CrawlTitle" xml:space="preserve"><value>Get files from a site</value></data>
+  <data name="CrawlDesc" xml:space="preserve"><value>Reads the page and the pages it links to, and lists the files they link to; you pick which to download.</value></data>
+  <data name="CrawlStart" xml:space="preserve"><value>Start address</value></data>
+  <data name="CrawlLimits" xml:space="preserve"><value>How far</value></data>
+  <data name="CrawlDepth" xml:space="preserve"><value>Levels</value></data>
+  <data name="CrawlMaxPages" xml:space="preserve"><value>Pages at most</value></data>
+  <data name="CrawlSameSite" xml:space="preserve"><value>Stay on the same site</value></data>
+  <data name="CrawlExtensions" xml:space="preserve"><value>Only these file types (optional)</value></data>
+  <data name="CrawlExtensionsHint" xml:space="preserve"><value>zip, pdf, mp3</value></data>
+  <data name="CrawlGo" xml:space="preserve"><value>Start</value></data>
+  <data name="CrawlBadUrl" xml:space="preserve"><value>Enter an http(s) address.</value></data>
+  <data name="CrawlProgress" xml:space="preserve"><value>{0} pages read · {1} files found</value></data>
+  <data name="CrawlNothing" xml:space="preserve"><value>{0} pages read; no files were linked.</value></data>
+  <data name="Period1m" xml:space="preserve"><value>1 min</value></data>
+  <data name="Period10m" xml:space="preserve"><value>10 min</value></data>
+  <data name="Period1h" xml:space="preserve"><value>1 h</value></data>
+  <data name="Last24h" xml:space="preserve"><value>Last 24 hours</value></data>
 </root>

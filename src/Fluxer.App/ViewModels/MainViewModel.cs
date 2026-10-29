@@ -649,6 +649,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public bool SelectedIsTorrent => SelectedItem?.Download is TorrentDownload;
 
+    /// Speeds over the last hour, fed by the host every 2 s (detail panel: 10 minutes, 1 hour).
+    public SpeedRecorder Speeds { get; } = new();
+
     /// Reads the torrent's data back from disk and checks every piece; it continues if it was running.
     [RelayCommand]
     private async Task RecheckTorrent()
@@ -688,10 +691,21 @@ public sealed partial class MainViewModel : ObservableObject
     private Task SearchTorrents() => Dialogs.TorrentSearchAsync(_host);
 
     [RelayCommand]
+    private Task CrawlSite() => Flows.CrawlAsync(_host);
+
+    [RelayCommand]
     private async Task OpenStats()
     {
         var report = await Task.Run(_host.Engine.Statistics);
-        await Dialogs.ShowAsync(Dialogs.StatsWindow(report), _host.Owner);
+        await Dialogs.ShowAsync(Dialogs.StatsWindow(report, LastDay()), _host.Owner);
+    }
+
+    /// The transfer meter's last 24 hours as average speed per 5 minutes.
+    private (double[] Down, double[] Up) LastDay()
+    {
+        var (down, up) = _host.Engine.Meter.PerMinute(DateTimeOffset.UtcNow, 24 * 60);
+        static double[] Fives(long[] perMinute) => [.. perMinute.Chunk(5).Select(c => c.Sum() / 300.0)];
+        return (Fives(down), Fives(up));
     }
 
     [RelayCommand]

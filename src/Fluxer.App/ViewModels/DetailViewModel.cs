@@ -40,6 +40,10 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
     [ObservableProperty] private string _tabKey = "info";
     [ObservableProperty] private double[] _speedHistory = [];
     [ObservableProperty] private double[] _upHistoryValues = [];
+    /// 0: last minute (4 samples a second); 1: 10 minutes; 2: an hour (from the host's 2-second recorder).
+    [ObservableProperty] private int _speedPeriod;
+    [ObservableProperty] private int _speedCapacity = HistoryLength;
+    public string[] SpeedPeriods => [Strings.Period1m, Strings.Period10m, Strings.Period1h];
     [ObservableProperty] private string _mediaProgress = "";
     [ObservableProperty] private bool _filesPending;
     [ObservableProperty] private bool _noPeers;
@@ -205,6 +209,8 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         Item?.Refresh();
     }
 
+    partial void OnSpeedPeriodChanged(int value) => SpeedHistory = [];
+
     partial void OnTorrentDownKbChanged(decimal? value) => _ = ApplyLimitsAsync();
     partial void OnTorrentUpKbChanged(decimal? value) => _ = ApplyLimitsAsync();
     partial void OnSequentialChanged(bool value)
@@ -236,9 +242,20 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         var p = d.GetProgress();
         Push(_history, d.State == DownloadState.Downloading ? p.BytesPerSecond : 0);
         Push(_upHistory, d is TorrentDownload up ? up.UploadRate : 0);
-        SpeedHistory = [.. _history];
-        UpHistoryValues = [.. _upHistory];
-        var moving = _history.Where(v => v > 0).ToList();
+        if (SpeedPeriod == 0)
+        {
+            SpeedCapacity = HistoryLength;
+            SpeedHistory = [.. _history];
+            UpHistoryValues = [.. _upHistory];
+        }
+        else if (_slowTick % 4 == 0 || SpeedHistory.Length == 0)
+        {
+            // 300 points either way: 2 s each over 10 minutes, 12 s each over an hour.
+            var (seconds, perPoint) = SpeedPeriod == 1 ? (600, 1) : (3600, 6);
+            (SpeedHistory, UpHistoryValues) = host.Main.Speeds.Last(d.Id, seconds, perPoint);
+            SpeedCapacity = seconds / 2 / perPoint;
+        }
+        var moving = SpeedHistory.Where(v => v > 0).ToList();
         AvgSpeedText = moving.Count > 0 ? Loc.Speed((long)moving.Average()) : "—";
         PeakSpeedText = moving.Count > 0 ? Loc.Speed((long)moving.Max()) : "—";
         var speed = Item.IsActive && Item.SpeedText != "—" ? Item.SpeedText : "";

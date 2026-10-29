@@ -14,7 +14,8 @@ public static partial class Dialogs
 {
     /// Statistics: downloaded today / this week / this month / ever, the last year day by day, and which sites
     /// and categories the downloads in the list came from.
-    public static Window StatsWindow(StatsReport r)
+    /// `day`: average speed per 5 minutes over the last 24 hours (B/s), oldest first.
+    public static Window StatsWindow(StatsReport r, (double[] Down, double[] Up) day)
     {
         static string Files(int n) => string.Format(CultureInfo.CurrentCulture, Strings.StatsFiles, n);
         var tiles = new UniformGrid { Columns = 4, ColumnSpacing = 10 };
@@ -40,6 +41,12 @@ public static partial class Dialogs
             Children =
             {
                 tiles,
+                Label(Strings.Last24h),
+                new Border
+                {
+                    Classes = { "card" }, Padding = new Thickness(12, 10),
+                    Child = new SpeedGraph { Height = 90, ShowScale = true, Capacity = 288, Values = day.Down, UpValues = day.Up },
+                },
                 Label(Strings.StatsYear),
                 new Border { Classes = { "card" }, Padding = new Thickness(12, 10), Child = new StackPanel { Children = { new Heatmap { Days = r.Year }, legend } } },
                 lists,

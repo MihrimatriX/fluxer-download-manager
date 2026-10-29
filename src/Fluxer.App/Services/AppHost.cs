@@ -92,6 +92,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         _ = RefreshIpFilterAsync(download: false);
         Engine.Rss.Start();           // stopped by Engine.DisposeAsync on exit
         if (!args.Contains("--background")) ShowMainWindow();
+        ApplyDropTarget();
         Mark("window");
         if (CrashGuard.TakeMarker() is { } crash) Dispatcher.UIThread.Post(() => _ = OfferCrashReportAsync(crash), DispatcherPriority.Background);
         Log.Information("Startup (ms): {Marks}", string.Join(", ", marks));
@@ -130,6 +131,13 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         BuildTray();
         _trayWindow?.Close(); // captured strings; rebuilt on the next click
         _trayWindow = null;
+        if (_drop is not null)
+        {
+            SaveDropTargetPosition();
+            _drop.Close();
+            _drop = null;
+            ApplyDropTarget();
+        }
         Main.RefreshTexts();
         if (Window is not { } old) return;
         var wasVisible = old.IsVisible;
@@ -165,6 +173,10 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(Item(Strings.PauseAll, () => _ = Engine.Queue.PauseAllAsync()));
         menu.Add(Item(Strings.ResumeAll, Engine.Queue.ResumeAll));
+        menu.Add(new NativeMenuItemSeparator());
+        var drop = new NativeMenuItem(Strings.DropTarget) { ToggleType = MenuItemToggleType.CheckBox, IsChecked = Engine.Settings.Ui.DropTarget };
+        drop.Click += (_, _) => _ = SetDropTargetAsync(!Engine.Settings.Ui.DropTarget);
+        menu.Add(drop);
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(Item(Strings.TrayExit, () => _ = ExitAsync()));
 
@@ -205,6 +217,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             return;
         if (_exiting) return;
         await RestoreBusyProfileAsync();
+        if (SaveDropTargetPosition()) await Engine.SaveSettingsAsync(Engine.Settings);
         SaveLayout();
         _exiting = true;
         _timer?.Stop();
@@ -230,6 +243,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var speed = active.Sum(d => d.GetProgress().BytesPerSecond);
         if (_tray is not null)
             _tray.ToolTipText = active.Count == 0 ? "Fluxer" : $"Fluxer — {active.Count} · {Loc.Speed(speed)}";
+        UpdateDropTarget(speed);
+        Main.Speeds.Record(items);
         Main.UpdateTotals();
         RunScheduler();
         RunWeekSchedule();

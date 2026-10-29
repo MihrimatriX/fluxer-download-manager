@@ -281,5 +281,8 @@ public sealed class UiSettings
     public Dictionary<string, double> ColumnWidths { get; set; } = [];
     public List<string> ColumnOrder { get; set; } = [];
     public double[]? WindowBounds { get; set; }         // x, y, width, height
+    /// The floating drop target and where it was left (screen pixels).
+    public bool DropTarget { get; set; }
+    public int[]? DropTargetPosition { get; set; }
     public bool WindowMaximized { get; set; }
 }

@@ -83,6 +83,7 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(dl, Strings.NewDownload, "Ctrl+N", "IcPlus", main.AddUrlCommand);
         Cmd(dl, Strings.AddTorrent, "Ctrl+O", "IcTorrent", main.AddTorrentCommand);
         Cmd(dl, Strings.PasteLinks, "Ctrl+V", "IcLink", main.PasteCommand);
+        Cmd(dl, Strings.CrawlMenu, null, "IcGlobe", main.CrawlSiteCommand);
         Cmd(dl, Strings.SearchTorrents, null, "IcSearch", main.SearchTorrentsCommand);
         Cmd(dl, Strings.ResumeAll, "Ctrl+Shift+R", "IcPlay", main.ResumeAllCommand);
         Cmd(dl, Strings.PauseAll, "Ctrl+Shift+P", "IcPause", main.PauseAllCommand);

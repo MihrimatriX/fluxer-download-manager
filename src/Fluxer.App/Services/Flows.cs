@@ -334,6 +334,32 @@ public static class Flows
         return false;
     }
 
+    // ================= site crawler =================
+
+    /// Collects the files a site links to (a few levels deep) and opens them in the page grabber to pick from.
+    public static async Task CrawlAsync(AppHost host)
+    {
+        var clip = await Dialogs.GetClipboardTextAsync(host.Owner);
+        var suggested = Uri.TryCreate(clip?.Trim(), UriKind.Absolute, out var cu) && cu.Scheme is "http" or "https" ? cu.AbsoluteUri : null;
+        if (await Dialogs.CrawlOptionsAsync(host.Owner, suggested) is not { } choice) return;
+        var (start, options) = choice;
+        SiteCrawler.Result? result;
+        try
+        {
+            result = await Dialogs.BusyAsync(host.Owner, Strings.CrawlTitle, start.Host, (report, ct) =>
+                SiteCrawler.CrawlAsync(host.Engine.Http.Client, start, options, null,
+                    new Progress<(int Pages, int Files)>(p => report.Report(string.Format(CultureInfo.CurrentCulture, Strings.CrawlProgress, p.Pages, p.Files))), ct));
+        }
+        catch (OperationCanceledException) { return; }
+        Log.Information("Crawled {Host}: {Pages} pages, {Files} files, {Failed} failed", start.Host, result.Pages, result.Files.Count, result.Failed);
+        if (result.Files.Count == 0)
+        {
+            await Dialogs.MessageAsync(host.Owner, Strings.CrawlTitle, string.Format(CultureInfo.CurrentCulture, Strings.CrawlNothing, result.Pages));
+            return;
+        }
+        await GrabAsync(host, new PageResources(start.AbsoluteUri, [.. result.Files.Select(f => new PageResource(f.Url, f.Kind, null, null))], null, null, null, false));
+    }
+
     // ================= page grabber =================
 
     public static async Task GrabAsync(AppHost host, PageResources page)

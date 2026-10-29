@@ -72,13 +72,16 @@ public sealed class SpeedGraph : Control
     public static readonly StyledProperty<IBrush?> LineBrushProperty = AvaloniaProperty.Register<SpeedGraph, IBrush?>(nameof(LineBrush));
     public IBrush? LineBrush { get => GetValue(LineBrushProperty); set => SetValue(LineBrushProperty, value); }
 
-    static SpeedGraph() => AffectsRender<SpeedGraph>(ValuesProperty, UpValuesProperty, ShowScaleProperty, LineBrushProperty);
+    /// How many samples fill the width (fewer are drawn from the right edge).
+    public static readonly StyledProperty<int> CapacityProperty = AvaloniaProperty.Register<SpeedGraph, int>(nameof(Capacity), 240);
+
+    static SpeedGraph() => AffectsRender<SpeedGraph>(ValuesProperty, UpValuesProperty, ShowScaleProperty, LineBrushProperty, CapacityProperty);
 
     public double[] Values { get => GetValue(ValuesProperty); set => SetValue(ValuesProperty, value); }
     public double[] UpValues { get => GetValue(UpValuesProperty); set => SetValue(UpValuesProperty, value); }
     public bool ShowScale { get => GetValue(ShowScaleProperty); set => SetValue(ShowScaleProperty, value); }
 
-    public int Capacity { get; set; } = 240;
+    public int Capacity { get => GetValue(CapacityProperty); set => SetValue(CapacityProperty, value); }
 
     public override void Render(DrawingContext ctx)
     {

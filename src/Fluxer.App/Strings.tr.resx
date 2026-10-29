@@ -338,7 +338,6 @@
   <data name="InfoQueue" xml:space="preserve"><value>Kuyruk</value></data>
   <data name="KindHttpMulti" xml:space="preserve"><value>HTTP · çoklu bağlantı</value></data>
   <data name="KindTorrentFiles" xml:space="preserve"><value>Torrent · {0} dosya</value></data>
-  <data name="Last60s" xml:space="preserve"><value>son 60 sn</value></data>
   <data name="ListenPort" xml:space="preserve"><value>Dinleme portu</value></data>
   <data name="ListenPortDesc" xml:space="preserve"><value>Eşler bu porta bağlanır (TCP ve UDP).</value></data>
   <data name="LogAdded" xml:space="preserve"><value>Eklendi</value></data>
@@ -726,4 +725,26 @@
   <data name="PieceTip" xml:space="preserve"><value>{0:N0} parça · erişilebilirlik {1:0.00}</value></data>
   <data name="TorrentSearchTitle" xml:space="preserve"><value>Torrent arama</value></data>
   <data name="IpFilterEmpty" xml:space="preserve"><value>Listede adres aralığı yok (doğru dosya mı?).</value></data>
+  <data name="DropTarget" xml:space="preserve"><value>Bırakma hedefi</value></data>
+  <data name="DropTargetDesc" xml:space="preserve"><value>Hep üstte duran küçük bir kare: üzerine bağlantı, metin ya da .torrent dosyası bırakın; çift tıklayınca Fluxer açılır.</value></data>
+  <data name="DropTargetTip" xml:space="preserve"><value>Bağlantıları buraya bırakın · çift tık Fluxer'ı açar</value></data>
+  <data name="DropTargetHide" xml:space="preserve"><value>Bırakma hedefini gizle</value></data>
+  <data name="CrawlMenu" xml:space="preserve"><value>Siteden dosya topla…</value></data>
+  <data name="CrawlTitle" xml:space="preserve"><value>Siteden dosya topla</value></data>
+  <data name="CrawlDesc" xml:space="preserve"><value>Sayfayı ve bağlantı verdiği sayfaları okur, bağlantı verilen dosyaları listeler; hangilerini indireceğinizi siz seçersiniz.</value></data>
+  <data name="CrawlStart" xml:space="preserve"><value>Başlangıç adresi</value></data>
+  <data name="CrawlLimits" xml:space="preserve"><value>Ne kadar</value></data>
+  <data name="CrawlDepth" xml:space="preserve"><value>Seviye</value></data>
+  <data name="CrawlMaxPages" xml:space="preserve"><value>En fazla sayfa</value></data>
+  <data name="CrawlSameSite" xml:space="preserve"><value>Aynı sitede kal</value></data>
+  <data name="CrawlExtensions" xml:space="preserve"><value>Yalnızca bu dosya türleri (isteğe bağlı)</value></data>
+  <data name="CrawlExtensionsHint" xml:space="preserve"><value>zip, pdf, mp3</value></data>
+  <data name="CrawlGo" xml:space="preserve"><value>Başlat</value></data>
+  <data name="CrawlBadUrl" xml:space="preserve"><value>Bir http(s) adresi girin.</value></data>
+  <data name="CrawlProgress" xml:space="preserve"><value>{0} sayfa okundu · {1} dosya bulundu</value></data>
+  <data name="CrawlNothing" xml:space="preserve"><value>{0} sayfa okundu; bağlantı verilen dosya yok.</value></data>
+  <data name="Period1m" xml:space="preserve"><value>1 dk</value></data>
+  <data name="Period10m" xml:space="preserve"><value>10 dk</value></data>
+  <data name="Period1h" xml:space="preserve"><value>1 sa</value></data>
+  <data name="Last24h" xml:space="preserve"><value>Son 24 saat</value></data>
 </root>

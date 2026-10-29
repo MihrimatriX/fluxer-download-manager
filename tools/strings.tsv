@@ -757,3 +757,25 @@ RelocateAlreadyThere	Already there	Zaten orada
 PieceTip	{0:N0} pieces · availability {1:0.00}	{0:N0} parça · erişilebilirlik {1:0.00}
 TorrentSearchTitle	Torrent search	Torrent arama
 IpFilterEmpty	The list holds no address ranges (is it the right file?).	Listede adres aralığı yok (doğru dosya mı?).
+DropTarget	Drop target	Bırakma hedefi
+DropTargetDesc	A small square that stays on top: drop links, text or .torrent files on it; double-click opens Fluxer.	Hep üstte duran küçük bir kare: üzerine bağlantı, metin ya da .torrent dosyası bırakın; çift tıklayınca Fluxer açılır.
+DropTargetTip	Drop links here · double-click opens Fluxer	Bağlantıları buraya bırakın · çift tık Fluxer'ı açar
+DropTargetHide	Hide drop target	Bırakma hedefini gizle
+CrawlMenu	Get files from a site…	Siteden dosya topla…
+CrawlTitle	Get files from a site	Siteden dosya topla
+CrawlDesc	Reads the page and the pages it links to, and lists the files they link to; you pick which to download.	Sayfayı ve bağlantı verdiği sayfaları okur, bağlantı verilen dosyaları listeler; hangilerini indireceğinizi siz seçersiniz.
+CrawlStart	Start address	Başlangıç adresi
+CrawlLimits	How far	Ne kadar
+CrawlDepth	Levels	Seviye
+CrawlMaxPages	Pages at most	En fazla sayfa
+CrawlSameSite	Stay on the same site	Aynı sitede kal
+CrawlExtensions	Only these file types (optional)	Yalnızca bu dosya türleri (isteğe bağlı)
+CrawlExtensionsHint	zip, pdf, mp3	zip, pdf, mp3
+CrawlGo	Start	Başlat
+CrawlBadUrl	Enter an http(s) address.	Bir http(s) adresi girin.
+CrawlProgress	{0} pages read · {1} files found	{0} sayfa okundu · {1} dosya bulundu
+CrawlNothing	{0} pages read; no files were linked.	{0} sayfa okundu; bağlantı verilen dosya yok.
+Period1m	1 min	1 dk
+Period10m	10 min	10 dk
+Period1h	1 h	1 sa
+Last24h	Last 24 hours	Son 24 saat

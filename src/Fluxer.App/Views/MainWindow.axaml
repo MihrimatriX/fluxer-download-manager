@@ -155,6 +155,7 @@
                 <MenuItem Header="{x:Static app:Strings.NewDownload}" Command="{Binding AddUrlCommand}" InputGesture="Ctrl+N" />
                 <MenuItem Header="{x:Static app:Strings.AddTorrent}" Command="{Binding AddTorrentCommand}" InputGesture="Ctrl+O" />
                 <MenuItem Header="{x:Static app:Strings.PasteLinks}" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />
+                <MenuItem Header="{x:Static app:Strings.CrawlMenu}" Command="{Binding CrawlSiteCommand}" />
                 <MenuItem Header="{x:Static app:Strings.SearchTorrents}" Command="{Binding SearchTorrentsCommand}" />
               </MenuFlyout>
             </Button.Flyout>
@@ -497,15 +498,16 @@
                     </ItemsControl>
 
                     <!-- speed: the last minute as a graph, with current / average / peak -->
-                    <Grid ColumnDefinitions="170,*" ColumnSpacing="16" Height="96" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=speed}">
+                    <Grid ColumnDefinitions="170,*" ColumnSpacing="16" Height="116" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=speed}">
                       <StackPanel Spacing="5" VerticalAlignment="Center">
                         <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedNow}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding Item.SpeedText}" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" /></Grid>
                         <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedAverage}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding AvgSpeedText}" /></Grid>
                         <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedPeak}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding PeakSpeedText}" /></Grid>
                         <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsTorrent}"><TextBlock Classes="k" Text="{x:Static app:Strings.ProfileUp}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding Item.UpSpeedText}" Foreground="{DynamicResource InfoTextBrush}" /></Grid>
-                        <TextBlock Classes="faint" FontSize="11" Text="{x:Static app:Strings.Last60s}" />
+                        <ListBox Classes="seg" ItemsSource="{Binding SpeedPeriods}" SelectedIndex="{Binding SpeedPeriod}" HorizontalAlignment="Left" Margin="0,2,0,0"
+                                 AutomationProperties.Name="{x:Static app:Strings.SpeedGraph}" />
                       </StackPanel>
-                      <c:SpeedGraph Grid.Column="1" ShowScale="True" Values="{Binding SpeedHistory}" UpValues="{Binding UpHistoryValues}"
+                      <c:SpeedGraph Grid.Column="1" ShowScale="True" Values="{Binding SpeedHistory}" UpValues="{Binding UpHistoryValues}" Capacity="{Binding SpeedCapacity}"
                                     AutomationProperties.Name="{x:Static app:Strings.SpeedGraph}" />
                     </Grid>
 
