@@ -1,7 +1,7 @@
 import { CATEGORIES, countByCategory, filterLinks, toBatchLinks, type BatchLink, type LinkCategory } from '../batch';
 import {
-  DEFAULT_SETTINGS, countToday, formatBytes, hostOf, isAddable, isHttp, localDay, outcomeOf, parseTypes, toggleSite, versionSkew,
-  type DailyCount, type Outcome, type Settings,
+  DEFAULT_SETTINGS, PAUSE_MS, countToday, formatBytes, hostOf, isAddable, isHttp, isPaused, localDay, outcomeOf, parseTypes, toggleSite,
+  versionSkew, type DailyCount, type Outcome, type Settings,
 } from '../capture';
 import type { MediaHit } from '../media';
 import {
@@ -20,6 +20,7 @@ for (const el of document.querySelectorAll<HTMLElement>('[data-i18n-title]')) el
 for (const el of document.querySelectorAll<HTMLInputElement>('[data-i18n-placeholder]')) el.placeholder = t(el.dataset.i18nPlaceholder!);
 
 const num = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+const clock = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
 const pct = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
 const bytes = (n: number | undefined) => formatBytes(n, num);
 const speed = (bps: number) => `${bytes(bps)}${t('perSecond')}`;
@@ -91,7 +92,6 @@ function selectTab(name: TabName): void {
   for (const n of ['downloads', 'page', 'settings'] as TabName[]) $(`tab-${n}`).hidden = n !== name;
   $('home').hidden = name === 'settings';
   $('openSettings').setAttribute('aria-pressed', String(name === 'settings'));
-  $('paste').hidden = name !== 'downloads';
   $('batchGo').hidden = name !== 'page';
   void chrome.storage.local.set({ popupTab: name });
 }
@@ -109,8 +109,17 @@ async function command(action: CommandAction, id?: number): Promise<void> {
   void refresh();
 }
 $('openApp').addEventListener('click', () => void command('show'));
-$('pauseAll').addEventListener('click', () => void command('pauseAll'));
-$('resumeAll').addEventListener('click', () => void command('resumeAll'));
+
+// Header button: pause everything while something runs or waits, otherwise resume everything.
+let anyRunning = false;
+function renderToggleAll(connected: boolean): void {
+  const b = $<HTMLButtonElement>('toggleAll');
+  b.disabled = !connected;
+  b.title = b.ariaLabel = t(anyRunning ? 'pauseAll' : 'resumeAll');
+  $('toggleAllPause').toggleAttribute('hidden', !anyRunning);
+  $('toggleAllPlay').toggleAttribute('hidden', anyRunning);
+}
+$('toggleAll').addEventListener('click', () => void command(anyRunning ? 'pauseAll' : 'resumeAll'));
 
 // App and extension update separately; say which one is behind (checked once per popup open).
 void native(envelope<Ping>('ping', {})).then((r) => {
@@ -119,6 +128,21 @@ void native(envelope<Ping>('ping', {})).then((r) => {
   if (skew === 'ok') return;
   $('skew').textContent = t(skew === 'extension-old' ? 'skewExtensionOld' : 'skewAppOld');
   $('skew').hidden = false;
+});
+
+async function addUrl(url: string): Promise<boolean> {
+  const r = await chrome.runtime.sendMessage({ type: 'add-url', url }).catch(() => undefined);
+  toastOutcome(r?.outcome ?? 'failed', t('sentOk'));
+  return r?.outcome === 'ok';
+}
+
+// Quick add: a typed or pasted link straight to Fluxer.
+$('quick').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = $<HTMLInputElement>('quickUrl');
+  const url = input.value.trim();
+  if (!isAddable(url)) return toast(t('quickInvalid'), 'bad');
+  if (await addUrl(url)) input.value = '';
 });
 
 // "Paste link": the clipboard's URL as a download. Clipboard access is optional and asked for here,
@@ -132,8 +156,7 @@ $('paste').addEventListener('click', async () => {
     return toast(t('clipboardFailed'), 'bad');
   }
   if (!isAddable(text)) return toast(t('clipboardNoLink'), 'bad');
-  const r = await chrome.runtime.sendMessage({ type: 'add-url', url: text }).catch(() => undefined);
-  toastOutcome(r?.outcome ?? 'failed', t('sentOk'));
+  await addUrl(text);
 });
 
 // ---- downloads tab (polled; rows are reused by id so hover/focus survive the refresh) ----
@@ -219,7 +242,7 @@ async function refresh(): Promise<void> {
   $('statusText').textContent = t(outcome === 'ok' ? 'popupConnected' : outcome === 'update' ? 'popupUpdateRequired' : 'popupUnreachable');
 
   const s = reply?.type === 'status' ? reply.payload : undefined;
-  $('summaryRow').hidden = !s;
+  $('summary').hidden = !s || s.active + s.queued === 0;
   if (s) $('summary').textContent = t('summary', num.format(s.active), num.format(s.queued), speed(s.bytesPerSecond));
   // Apps before 0.7 only send `top`: show those as running rows without actions.
   const items: StatusEntry[] = s?.items ?? s?.top.map((x, i) => ({
@@ -231,7 +254,8 @@ async function refresh(): Promise<void> {
   // Not reachable: say how to get going instead of showing an empty list.
   $('empty').textContent = t(s ? 'emptyDownloads' : outcome === 'update' ? 'updateRequired' : 'appNotRunning');
   $('empty').hidden = !!s && items.length > 0;
-  for (const b of [$('pauseAll'), $('resumeAll')] as HTMLButtonElement[]) b.disabled = !s;
+  anyRunning = items.some((e) => e.state === 'downloading' || e.state === 'queued' || e.state === 'seeding');
+  renderToggleAll(!!s);
 }
 
 (async function poll() {
@@ -396,10 +420,18 @@ function renderSite(): void {
 
 function renderSettings(): void {
   const host = hostOf(currentTab?.url);
+  const paused = isPaused(settings, Date.now());
   $<HTMLInputElement>('captureEnabled').checked = settings.captureEnabled;
   $('captureHint').textContent = !settings.captureEnabled ? t('captureHintOff')
+    : paused ? t('captureHintPaused', clock.format(settings.pausedUntil))
     : host && settings.disabledSites.includes(host) ? t('captureHintSite')
     : settings.minSizeMiB > 0 ? t('captureHintOn', num.format(settings.minSizeMiB)) : t('captureHintAll');
+  // Pause for an hour without touching the switch (or end the pause early).
+  const pause = $<HTMLButtonElement>('capturePause');
+  pause.textContent = t(paused ? 'captureResume' : 'capturePause');
+  pause.title = t(paused ? 'captureResumeTip' : 'capturePauseTip');
+  pause.disabled = !settings.captureEnabled;
+  $('home').querySelector('.capture')!.setAttribute('data-paused', String(paused && settings.captureEnabled));
   renderSite();
   const size = $<HTMLInputElement>('minSizeMiB');
   if (document.activeElement !== size) size.value = String(settings.minSizeMiB);
@@ -440,6 +472,9 @@ $('skipTypes').addEventListener('change', () => {
   const types = parseTypes(input.value);
   input.value = types.join(', ');
   void chrome.storage.local.set({ skipTypes: types });
+});
+$('capturePause').addEventListener('click', () => {
+  void chrome.storage.local.set({ pausedUntil: isPaused(settings, Date.now()) ? 0 : Date.now() + PAUSE_MS });
 });
 $('siteToggle').addEventListener('click', () => {
   const host = hostOf(currentTab?.url);

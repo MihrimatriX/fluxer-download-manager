@@ -340,5 +340,35 @@
   },
   "skewAppOld": {
     "message": "Bu eklenti Fluxer'dan yeni. Fluxer'ı Ayarlar → Gelişmiş'ten güncelleyin."
+  },
+  "quickPlaceholder": {
+    "message": "Bir bağlantı yapıştırın ya da yazın"
+  },
+  "quickAdd": {
+    "message": "İndir"
+  },
+  "quickInvalid": {
+    "message": "http, https ya da magnet ile başlayan bir bağlantı girin."
+  },
+  "capturePause": {
+    "message": "1 sa duraklat"
+  },
+  "capturePauseTip": {
+    "message": "İndirmeleri bir saatliğine tarayıcıda bırak"
+  },
+  "captureResume": {
+    "message": "Sürdür"
+  },
+  "captureResumeTip": {
+    "message": "İndirmeleri şimdi yeniden Fluxer'a ver"
+  },
+  "captureHintPaused": {
+    "message": "Duraklatıldı, bitiş: $1 · tarayıcı kendisi indirir"
+  },
+  "toastHold": {
+    "message": "Bekle: geri sayımı durdur"
+  },
+  "toastHeld": {
+    "message": "Geri sayım durdu. Nereden ineceğini seçin."
   }
 }

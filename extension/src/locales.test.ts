@@ -22,6 +22,7 @@ const used = new Set<string>([
   'emptyDownloads', 'appNotRunning', 'updateRequired', 'sendUnreachable', 'sendFailed',
   'popupConnected', 'popupUpdateRequired', 'popupUnreachable', 'videoButtonSent', 'videoButtonFailed', 'videoButtonUnreachable',
   'batchEmpty', 'pageNotReady', 'siteOn', 'siteOff', 'skewExtensionOld', 'skewAppOld',
+  'pauseAll', 'resumeAll', 'capturePause', 'capturePauseTip', 'captureResume', 'captureResumeTip',
   // built at runtime: t(`state_${…}`), t(`cat_${…}`)
   ...['downloading', 'seeding', 'queued', 'paused', 'completed', 'failed'].map((s) => `state_${s}`),
   ...['all', ...CATEGORIES].map((c) => `cat_${c}`),
