@@ -31,6 +31,8 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
     public override string ToString() => Name;
 
     [ObservableProperty] private string _name = "";
+    /// "#work  #film" after the name.
+    [ObservableProperty] private string _tagsText = "";
     [ObservableProperty] private Geometry? _icon;
     [ObservableProperty] private IBrush _iconBrush = Brushes.Gray;
     [ObservableProperty] private double _progress;
@@ -72,6 +74,7 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
         var state = d.State;
         Name = d.FileName.Length > 0 ? d.FileName : d.Record.Http?.Url ?? d.Record.Media?.PageUrl ?? "…";
         Icon = Theme.Geometry(IconKey(d));
+        TagsText = d.Record.Tags.Count == 0 ? "" : string.Join("  ", d.Record.Tags.Select(t => "#" + t));
         IconBrush = Theme.Brush(TintKey(d));
         IsActive = IsRunningState;
         Indeterminate = IsActive && p.TotalBytes is null or 0 && state != DownloadState.Seeding;
@@ -164,23 +167,9 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
             : Strings.NightQueueManual;
 
     /// Each file type has its own tint, so a long list scans by colour as well as by name.
-    public static string TintKey(IDownload d) => d.Kind == DownloadKind.Torrent ? "CatTorrentBrush"
-        : d.Record.Category is "Video" or "Music" or "Documents" or "Archives" or "Programs" ? $"Cat{d.Record.Category}Brush"
-        : "CatOtherBrush";
+    public static string TintKey(IDownload d) => Cats.TintKey(d.Kind == DownloadKind.Torrent ? "Torrent" : d.Record.Category);
 
-    private static string IconKey(IDownload d)
-    {
-        if (d.Kind == DownloadKind.Torrent) return "IcTorrent";
-        return (d.Record.Category ?? "") switch
-        {
-            "Video" => "IcVideo",
-            "Music" => "IcMusic",
-            "Documents" => "IcDoc",
-            "Archives" => "IcArchive",
-            "Programs" => "IcApp",
-            _ => "IcFile",
-        };
-    }
+    private static string IconKey(IDownload d) => d.Kind == DownloadKind.Torrent ? "IcTorrent" : Cats.IconKey(d.Record.Category);
 }
 
 /// Theme resources for code that builds brushes and icons (follow the light/dark variant at lookup time).

@@ -96,13 +96,13 @@ public static class Flows
                 continue;
             }
             // Several files with "automatic" category: each goes to its own category folder.
-            var folder = r.FolderIsPerFile && item.Category is { } cat ? Path.Combine(s.DownloadDirectory, cat)
+            var folder = r.FolderIsPerFile && item.Category is { } cat ? s.CategoryFolder(cat)
                 : r.FolderIsPerFile ? s.DownloadDirectory : r.Folder;
             added.Add(engine.AddHttp(item.Url, item.UserNamed ? item.Name : null, item.Context, folder, r.Mode != ViewModels.StartMode.Paused,
                 // Only a link the user kept knowing it is a web page may be saved as one; any other page
                 // (sign-in, expired session) fails with "got-html" instead of finishing as a 1 KB "download.php".
                 r.HashAlgorithm, r.Hash, rejectHtml: item.Kind != ProbeKind.Html, connections: r.Connections,
-                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors));
+                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors, category: r.Category ?? item.Category, tags: r.Tags));
         }
 
         // "Start now" jumps the queue; "Add to queue" waits its turn at the end.

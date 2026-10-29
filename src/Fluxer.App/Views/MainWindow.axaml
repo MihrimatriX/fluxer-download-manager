@@ -253,6 +253,7 @@
                 <DataTemplate x:DataType="vm:CategoryItem">
                   <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="{Binding Tip}" Background="Transparent">
                     <c:Icon Data="{Binding Icon}" Size="15" />
+                    <TextBlock Text="{Binding Title}" FontSize="12.5" VerticalAlignment="Center" IsVisible="{Binding ShowName}" MaxWidth="110" TextTrimming="CharacterEllipsis" />
                     <TextBlock Classes="count" Text="{Binding Count}" IsVisible="{Binding HasItems}" />
                   </StackPanel>
                 </DataTemplate>
@@ -297,6 +298,7 @@
                     <MenuItem Header="{x:Static app:Strings.RefreshLink}" Command="{Binding RefreshLinkCommand}" />
                     <MenuItem Header="{x:Static app:Strings.SpeedLimitTitle}" Command="{Binding SpeedLimitCommand}" />
                     <MenuItem Header="{x:Static app:Strings.CopyUrl}" Command="{Binding CopyUrlCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.TagsEllipsis}" Command="{Binding EditTagsCommand}" />
                     <Separator />
                     <MenuItem Header="{x:Static app:Strings.Delete}" Command="{Binding DeleteCommand}" InputGesture="Delete" />
                     <MenuItem Header="{x:Static app:Strings.DeleteWithFiles}" Command="{Binding DeleteWithFilesCommand}" />
@@ -319,9 +321,11 @@
                     <DataGridTemplateColumn.CellTemplate>
                       <DataTemplate x:DataType="vm:DownloadItemViewModel">
                         <!-- Grid, not StackPanel: the name needs a bounded width for the "…" trimming -->
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9" Margin="0,0,8,0" VerticalAlignment="Center">
                           <c:Icon Data="{Binding Icon}" Size="15" StrokeThickness="1.8" Foreground="{Binding IconBrush}" />
                           <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                          <TextBlock Grid.Column="2" Classes="cell" Text="{Binding TagsText}" FontSize="11.5" Foreground="{DynamicResource CatCustomBrush}"
+                                     IsVisible="{Binding TagsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                         </Grid>
                       </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

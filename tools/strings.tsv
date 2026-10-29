@@ -580,3 +580,19 @@ DupAgain	Download again	Yine de indir
 DupAgainNote	A second copy is saved under a numbered name.	İkinci kopya numaralı bir adla kaydedilir.
 Skip	Skip	Atla
 Continue	Continue	Devam
+Tags	Tags	Etiketler
+TagsPrompt	Comma separated, e.g. work, films	Virgülle ayırın, ör. iş, filmler
+TagsEllipsis	Tags…	Etiketler…
+SecCategories	Categories	Kategoriler
+CategoriesDesc	A download goes to the first category whose sites match its address (and, if given, its extensions), otherwise to the one that lists its extension. Each category can have its own folder.	İndirme, adresi site kuralına uyan (ve uzantı verilmişse uzantısı da tutan) ilk kategoriye, yoksa uzantısını içeren kategoriye girer. Her kategorinin kendi klasörü olabilir.
+CategoryExtensions	Extensions	Uzantılar
+CategorySites	Sites	Siteler
+CategorySitesHint	github.com, *.example.org	github.com, *.example.org
+CategoryFolderDefault	Download folder\{0}	İndirme klasörü\{0}
+CategoryAdd	Add category	Kategori ekle
+CategoryName	Name of the new category	Yeni kategorinin adı
+CategoryExists	A category with that name already exists.	Bu adda bir kategori zaten var.
+CategoriesReset	Back to defaults	Varsayılana dön
+CategoriesResetConfirm	Remove your own categories and restore the built-in ones with their extensions? Downloads keep their files.	Kendi kategorileriniz silinsin ve yerleşik olanlar uzantılarıyla geri gelsin mi? İndirmelerin dosyaları yerinde kalır.
+CategoryRemove	Remove category	Kategoriyi sil
+CategoryTorrentNote	Torrents land here whatever their files are.	Torrentler içindeki dosyalardan bağımsız olarak buraya gelir.

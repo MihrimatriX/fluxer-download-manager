@@ -390,6 +390,55 @@
             </Border>
           </StackPanel>
 
+          <!-- ===== Categories ===== -->
+          <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=categories}">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+              <TextBlock Classes="section" Text="{x:Static app:Strings.SecCategories}" VerticalAlignment="Bottom" />
+              <Button Grid.Column="1" Classes="link" FontSize="12" Content="{x:Static app:Strings.CategoriesReset}" Command="{Binding ResetCategoriesCommand}" VerticalAlignment="Center" />
+              <Button Grid.Column="2" Classes="accent" Content="{x:Static app:Strings.CategoryAdd}" Command="{Binding AddCategoryCommand}" />
+            </Grid>
+            <TextBlock Classes="subtle" Text="{x:Static app:Strings.CategoriesDesc}" TextWrapping="Wrap" Margin="2,6,0,10" />
+            <Border Classes="card group">
+              <ItemsControl ItemsSource="{Binding CategoryRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CategoryRow">
+                    <Border Padding="14,10" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+                      <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                          <c:Icon Data="{Binding Icon}" Size="15" Foreground="{Binding Tint}" />
+                          <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                          <TextBlock Grid.Column="2" Text="{Binding FolderText}" Classes="subtle" FontSize="12" VerticalAlignment="Center" MaxWidth="280"
+                                     TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding FolderText}" />
+                          <Button Grid.Column="3" Classes="tool" Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).BrowseCategoryFolderCommand}" CommandParameter="{Binding}"
+                                  ToolTip.Tip="{x:Static app:Strings.Browse}" AutomationProperties.Name="{x:Static app:Strings.Browse}">
+                            <c:Icon Data="{StaticResource IcFolder}" Size="14" />
+                          </Button>
+                          <Button Grid.Column="4" Classes="tool" IsVisible="{Binding HasOwnFolder}"
+                                  Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).ClearCategoryFolderCommand}" CommandParameter="{Binding}"
+                                  ToolTip.Tip="{Binding Key, StringFormat='…\{0}'}" AutomationProperties.Name="{x:Static app:Strings.Reset}">
+                            <c:Icon Data="{StaticResource IcRefresh}" Size="13" />
+                          </Button>
+                          <Button Grid.Column="5" Classes="tool" IsVisible="{Binding IsCustom}"
+                                  Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RemoveCategoryCommand}" CommandParameter="{Binding}"
+                                  ToolTip.Tip="{x:Static app:Strings.CategoryRemove}" AutomationProperties.Name="{x:Static app:Strings.CategoryRemove}">
+                            <c:Icon Data="{StaticResource IcTrash}" Size="14" />
+                          </Button>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding HasRules}">
+                          <TextBox Text="{Binding ExtensionsText}" PlaceholderText="{x:Static app:Strings.CategoryExtensions}" FontSize="12"
+                                   AutomationProperties.Name="{x:Static app:Strings.CategoryExtensions}" ToolTip.Tip="{x:Static app:Strings.CategoryExtensions}" />
+                          <TextBox Grid.Column="1" Text="{Binding SitesText}" PlaceholderText="{x:Static app:Strings.CategorySitesHint}" FontSize="12"
+                                   AutomationProperties.Name="{x:Static app:Strings.CategorySites}" ToolTip.Tip="{x:Static app:Strings.CategorySites}" />
+                        </Grid>
+                        <TextBlock Text="{x:Static app:Strings.CategoryTorrentNote}" Classes="subtle" FontSize="12" IsVisible="{Binding IsTorrent}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Border>
+          </StackPanel>
+
           <!-- ===== Torrent ===== -->
           <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=torrent}">
             <TextBlock Classes="section" Text="{x:Static app:Strings.TorrentConnection}" />

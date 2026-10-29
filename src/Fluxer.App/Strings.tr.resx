@@ -548,4 +548,20 @@
   <data name="DupAgainNote" xml:space="preserve"><value>İkinci kopya numaralı bir adla kaydedilir.</value></data>
   <data name="Skip" xml:space="preserve"><value>Atla</value></data>
   <data name="Continue" xml:space="preserve"><value>Devam</value></data>
+  <data name="Tags" xml:space="preserve"><value>Etiketler</value></data>
+  <data name="TagsPrompt" xml:space="preserve"><value>Virgülle ayırın, ör. iş, filmler</value></data>
+  <data name="TagsEllipsis" xml:space="preserve"><value>Etiketler…</value></data>
+  <data name="SecCategories" xml:space="preserve"><value>Kategoriler</value></data>
+  <data name="CategoriesDesc" xml:space="preserve"><value>İndirme, adresi site kuralına uyan (ve uzantı verilmişse uzantısı da tutan) ilk kategoriye, yoksa uzantısını içeren kategoriye girer. Her kategorinin kendi klasörü olabilir.</value></data>
+  <data name="CategoryExtensions" xml:space="preserve"><value>Uzantılar</value></data>
+  <data name="CategorySites" xml:space="preserve"><value>Siteler</value></data>
+  <data name="CategorySitesHint" xml:space="preserve"><value>github.com, *.example.org</value></data>
+  <data name="CategoryFolderDefault" xml:space="preserve"><value>İndirme klasörü\{0}</value></data>
+  <data name="CategoryAdd" xml:space="preserve"><value>Kategori ekle</value></data>
+  <data name="CategoryName" xml:space="preserve"><value>Yeni kategorinin adı</value></data>
+  <data name="CategoryExists" xml:space="preserve"><value>Bu adda bir kategori zaten var.</value></data>
+  <data name="CategoriesReset" xml:space="preserve"><value>Varsayılana dön</value></data>
+  <data name="CategoriesResetConfirm" xml:space="preserve"><value>Kendi kategorileriniz silinsin ve yerleşik olanlar uzantılarıyla geri gelsin mi? İndirmelerin dosyaları yerinde kalır.</value></data>
+  <data name="CategoryRemove" xml:space="preserve"><value>Kategoriyi sil</value></data>
+  <data name="CategoryTorrentNote" xml:space="preserve"><value>Torrentler içindeki dosyalardan bağımsız olarak buraya gelir.</value></data>
 </root>

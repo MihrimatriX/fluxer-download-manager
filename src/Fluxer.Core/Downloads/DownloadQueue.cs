@@ -69,6 +69,9 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         return d;
     }
 
+    /// Persists a record the UI changed (tags).
+    public void Save(IDownload d) => db.Update(d.Record);
+
     public void Resume(long id)
     {
         var d = Find(id);

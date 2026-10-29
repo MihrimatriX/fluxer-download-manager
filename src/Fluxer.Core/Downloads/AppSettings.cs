@@ -102,22 +102,30 @@ public sealed class AppSettings
     public bool ToolsConsentGiven { get; set; }
     public long LastYtDlpCheck { get; set; }
 
-    public Dictionary<string, string[]> Categories { get; set; } = new()
-    {
-        ["Video"] = ["mp4", "mkv", "avi", "mov", "webm", "wmv", "flv", "m4v"],
-        ["Music"] = ["mp3", "flac", "wav", "aac", "ogg", "m4a", "opus", "wma"],
-        ["Documents"] = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "epub", "odt"],
-        ["Archives"] = ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "iso"],
-        ["Programs"] = ["exe", "msi", "msix", "appx", "bat", "apk"],
-    };
+    /// Built-in and user categories, in the order the filter row shows them.
+    public List<Category> CategoryList { get; set; } = Category.Defaults();
 
-    public string? CategoryFor(string fileName)
+    /// The category a file goes to: a site rule first (its extensions, if any, must match too), then extensions.
+    public string? CategoryFor(string fileName, string? url = null)
     {
         var ext = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
-        foreach (var (cat, exts) in Categories)
-            if (exts.Contains(ext)) return cat;
+        var host = Uri.TryCreate(url, UriKind.Absolute, out var u) ? u.Host : null;
+        foreach (var c in CategoryList.Where(c => c.Sites.Count > 0))
+            if (c.MatchesHost(host) && (c.Extensions.Count == 0 || c.Extensions.Contains(ext))) return c.Key;
+        foreach (var c in CategoryList.Where(c => c.Sites.Count == 0))
+            if (ext.Length > 0 && c.Extensions.Contains(ext)) return c.Key;
         return null;
     }
+
+    /// The category's own folder, or "download folder\category".
+    public string CategoryFolder(string category) =>
+        CategoryList.FirstOrDefault(c => c.Key == category)?.Folder is { Length: > 0 } own ? own : Path.Combine(DownloadDirectory, category);
+
+    /// Where a download of this category is saved when nobody picked a folder: the category's folder when category
+    /// folders are on or the category has a folder of its own, else the download folder.
+    public string FolderFor(string? category) =>
+        category is { Length: > 0 } && (UseCategoryFolders || CategoryList.Any(c => c.Key == category && c.Folder is { Length: > 0 }))
+            ? CategoryFolder(category) : DownloadDirectory;
 
     /// Settings saved by an older version get the current design's defaults once. Revision 1 (0.8): dark theme,
     /// compact rows, night queue at 01:00. Revision 2 (the compact redesign): light or dark only ("follow system"

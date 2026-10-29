@@ -193,3 +193,54 @@ public sealed class UrlPatternTests
         Assert.True(m > Http.UrlPattern.Max);
     }
 }
+
+public sealed class CategoryTests
+{
+    private static Downloads.AppSettings Settings()
+    {
+        var s = new Downloads.AppSettings { DownloadDirectory = "D:/dl" };
+        s.CategoryList.Insert(0, new Downloads.Category { Key = "Courses", Sites = ["udemy.com", "*.coursera.org"] });
+        s.CategoryList.Insert(1, new Downloads.Category { Key = "Work PDFs", Sites = ["intranet.example"], Extensions = ["pdf"], Folder = "E:/work" });
+        return s;
+    }
+
+    [Fact]
+    public void SiteRulesWin_ThenExtensions()
+    {
+        var s = Settings();
+        Assert.Equal("Courses", s.CategoryFor("lesson.mp4", "https://www.udemy.com/x/lesson.mp4"));
+        Assert.Equal("Courses", s.CategoryFor("notes.pdf", "https://api.coursera.org/n.pdf"));
+        Assert.Equal("Work PDFs", s.CategoryFor("report.pdf", "https://intranet.example/r.pdf"));
+        Assert.Equal("Documents", s.CategoryFor("report.docx", "https://intranet.example/r.docx"));
+        Assert.Equal("Video", s.CategoryFor("clip.MP4", "https://notudemy.com/clip.mp4"));
+        Assert.Null(s.CategoryFor("readme", null));
+        Assert.Null(s.CategoryFor("x.torrent"));
+    }
+
+    [Fact]
+    public void Folders_FollowTheSwitchUnlessTheCategoryHasItsOwn()
+    {
+        var s = Settings();
+        Assert.Equal(Path.Combine("D:/dl", "Video"), s.FolderFor("Video"));
+        Assert.Equal("E:/work", s.FolderFor("Work PDFs"));
+        s.UseCategoryFolders = false;
+        Assert.Equal("D:/dl", s.FolderFor("Video"));
+        Assert.Equal("E:/work", s.FolderFor("Work PDFs"));
+        Assert.Equal(Path.Combine("D:/dl", "Video"), s.CategoryFolder("Video"));
+        Assert.Equal("D:/dl", s.FolderFor(null));
+    }
+
+    [Fact]
+    public void ParseList_NormalisesExtensionsAndSites()
+    {
+        Assert.Equal(["mp4", "mkv", "webm"], Downloads.Category.ParseList(" .MP4, mkv;*.webm  mkv", extensions: true));
+        Assert.Equal(["github.com", "*.example.org"], Downloads.Category.ParseList("GitHub.com *.example.org", extensions: false));
+    }
+
+    [Fact]
+    public void OldSettings_WithoutCategoryList_GetTheDefaults()
+    {
+        var s = System.Text.Json.JsonSerializer.Deserialize<Downloads.AppSettings>("""{"Categories":{"Video":["mp4"]},"Theme":"Light"}""")!;
+        Assert.Equal(Downloads.Category.BuiltIn, s.CategoryList.Select(c => c.Key));
+    }
+}

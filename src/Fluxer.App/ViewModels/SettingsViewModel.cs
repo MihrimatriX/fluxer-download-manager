@@ -35,7 +35,7 @@ public sealed record SettingsSection(string Key, string Label)
 {
     public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
     {
-        "downloads" => "IcLogo", "speed" => "IcGauge", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
+        "downloads" => "IcLogo", "speed" => "IcGauge", "categories" => "IcTag", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
         "advanced" => "IcSliders", _ => "IcGear",
     });
 
@@ -163,7 +163,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         Sections =
         [
             new("general", Strings.SecGeneral), new("downloads", Strings.SecDownloads), new("speed", Strings.SecSpeedSchedule),
-            new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("automation", Strings.SecAutomation),
+            new("categories", Strings.SecCategories), new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration),
+            new("automation", Strings.SecAutomation),
             new("advanced", Strings.TabAdvanced),
         ];
         _selectedSection = Sections[0];
@@ -357,6 +358,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         WatchFolder = s.WatchFolder ?? "";
         HasPendingUpdate = _host.HasPendingUpdate;
         LoadData(s);
+        LoadCategories(s);
         SavedText = "";
         _loading = false;
     }
@@ -495,6 +497,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.WatchClipboard = WatchClipboard;
         s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
         s.BackupInterval = BackupSetting(BackupIndex);
+        s.CategoryList = [.. CategoryRows.Select(r => r.ToCategory())];
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);

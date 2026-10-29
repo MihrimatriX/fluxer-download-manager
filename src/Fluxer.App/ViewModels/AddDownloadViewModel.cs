@@ -102,17 +102,12 @@ public sealed partial class AddItem : ObservableObject
         if (!UserNamed && p?.FileName is { } fn) Name = fn;
         if (Name.Length == 0) Name = Uri.TryCreate(Url, UriKind.Absolute, out var u) ? Uri.UnescapeDataString(u.Segments[^1].TrimEnd('/')) : Url;
 
-        Category = p?.Kind == ProbeKind.Torrent ? "Torrent" : new AppSettings().CategoryFor(Name);
+        Category = p?.Kind == ProbeKind.Torrent ? "Torrent"
+            : (Services.AppHost.Current?.Engine?.Settings ?? new AppSettings()).CategoryFor(Name, Url);
         (Glyph, Tile) = (p?.Kind) switch
         {
             ProbeKind.Html => ("", Gray),
-            _ => Category switch
-            {
-                "Video" => ("", Theme.Brush("CatVideoBrush")), "Music" => ("", Theme.Brush("CatMusicBrush")),
-                "Documents" => ("", Theme.Brush("CatDocumentsBrush")), "Archives" => ("", Theme.Brush("CatArchivesBrush")),
-                "Programs" => ("", Theme.Brush("CatProgramsBrush")), "Torrent" => ("", Theme.Brush("CatTorrentBrush")),
-                _ => ("", Gray),
-            },
+            _ => (Category switch { "Video" => "", "Music" => "", "Documents" => "", "Archives" => "", "Programs" => "", "Torrent" => "", _ => "" }, Theme.Brush(Cats.TintKey(Category))),
         };
 
         var parts = new List<string>();
@@ -133,12 +128,8 @@ public sealed partial class AddItem : ObservableObject
         SizeText = Loc.Bytes(p?.Size);
         (ResumeText, ResumeBrush) = p?.Kind != ProbeKind.File ? ("—", Theme.Brush("SubtleBrush"))
             : p.Resumable ? (Strings.Supported, Theme.Brush("OkBrush")) : (Strings.NotSupported, Theme.Brush("WarnTextBrush"));
-        TypeText = Category switch
-        {
-            "Video" => Strings.CatVideo, "Music" => Strings.CatMusic, "Documents" => Strings.CatDocuments,
-            "Archives" => Strings.CatArchives, "Programs" => Strings.CatPrograms, "Torrent" => "Torrent",
-            _ => Path.GetExtension(Name) is { Length: > 1 } e ? e[1..].ToUpperInvariant() : "—",
-        };
+        TypeText = Category is { Length: > 0 } ? Cats.Title(Category)
+            : Path.GetExtension(Name) is { Length: > 1 } e ? e[1..].ToUpperInvariant() : "—";
         if (p is null) return;
         (StateText, StateBrush) = p.Kind switch
         {
@@ -172,7 +163,7 @@ public sealed record Captured(string Url, string? FileName = null, RequestContex
 
 /// What the add window returns to Flows.
 public sealed record AddResult(IReadOnlyList<AddItem> Items, string Folder, bool FolderIsPerFile, StartMode Mode, int Connections, string? HashAlgorithm, string? Hash,
-    IReadOnlyList<string> Mirrors);
+    IReadOnlyList<string> Mirrors, string? Category = null, IReadOnlyList<string>? Tags = null);
 
 public sealed partial class AddDownloadViewModel : ObservableObject
 {
@@ -193,9 +184,9 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         _ctx = ctx;
         Categories =
         [
-            new("auto", Strings.CatAuto, ""), new("Video", Strings.CatVideo, ""), new("Music", Strings.CatMusic, ""),
-            new("Documents", Strings.CatDocuments, ""), new("Archives", Strings.CatArchives, ""),
-            new("Programs", Strings.CatPrograms, ""), new("none", Strings.CatNone, ""),
+            new("auto", Strings.CatAuto, ""),
+            .. settings.CategoryList.Where(c => c.Key != "Torrent").Select(c => new CategoryChip(c.Key, Cats.Title(c.Key), "")),
+            new("none", Strings.CatNone, ""),
         ];
         _selectedCategory = settings.UseCategoryFolders ? Categories[0] : Categories[^1];
         RecentFolders = [.. settings.RecentFolders];
@@ -270,6 +261,8 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [ObservableProperty] private double _connections;
     [ObservableProperty] private int _hashIndex;
     [ObservableProperty] private string _hash = "";
+    /// Comma separated; every added download gets them.
+    [ObservableProperty] private string _tagsText = "";
     /// Single link only: other addresses of the same file, one per line.
     [ObservableProperty] private string _mirrorsText = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(CanSubmit))] private string _mirrorError = "";
@@ -403,7 +396,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         {
             var key = SelectedCategory.Key;
             var cat = key == "auto" ? (Items.Count == 1 ? Items[0].Category : null) : key == "none" ? null : key;
-            Folder = cat is null ? _settings.DownloadDirectory : Path.Combine(_settings.DownloadDirectory, cat);
+            Folder = cat is null ? _settings.DownloadDirectory : _settings.CategoryFolder(cat);
             _folderTouched = false;
         }
         UpdateSpace();
@@ -495,7 +488,9 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         (int)Connections,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? HashAlgorithms[HashIndex] : null,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? Hash.Trim() : null,
-        IsSingleHttp ? MirrorLines() : []);
+        IsSingleHttp ? MirrorLines() : [],
+        SelectedCategory.Key is "auto" or "none" ? null : SelectedCategory.Key,
+        MainViewModel.ParseTags(TagsText));
 }
 
 /// Two-way "ModeIndex == n" for radio buttons.

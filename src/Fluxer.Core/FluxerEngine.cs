@@ -64,13 +64,15 @@ public sealed class FluxerEngine : IAsyncDisposable
 
     public IDownload AddHttp(string url, string? fileName = null, RequestContext? ctx = null, string? saveDirectory = null,
         bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null, bool night = false,
-        IEnumerable<string>? mirrors = null)
+        IEnumerable<string>? mirrors = null, string? category = null, IEnumerable<string>? tags = null)
     {
         var r = new DownloadRecord
         {
             Kind = DownloadKind.Http,
             FileName = fileName ?? "",
             SaveDirectory = saveDirectory ?? "",
+            Category = category,
+            Tags = tags is null ? [] : [.. tags],
             Http = new HttpInfo
             {
                 Url = url,
@@ -96,7 +98,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         {
             Kind = DownloadKind.Torrent,
             FileName = FileNameSanitizer.Sanitize(TorrentDownload.NameOf(torrentFile, magnet)),
-            SaveDirectory = saveDirectory ?? (Settings.UseCategoryFolders ? Path.Combine(Settings.DownloadDirectory, "Torrent") : Settings.DownloadDirectory),
+            SaveDirectory = saveDirectory ?? Settings.FolderFor("Torrent"),
             Category = "Torrent",
             Torrent = new TorrentInfo { InfoHash = hash, Magnet = magnet, TorrentFile = torrentFile, Sequential = sequential, DeselectedFiles = deselected is { Count: > 0 } ? deselected : null },
         };
@@ -109,7 +111,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         {
             Kind = DownloadKind.Media,
             FileName = FileNameSanitizer.Sanitize(title),
-            SaveDirectory = saveDirectory ?? (Settings.UseCategoryFolders ? Path.Combine(Settings.DownloadDirectory, audioOnly ? "Music" : "Video") : Settings.DownloadDirectory),
+            SaveDirectory = saveDirectory ?? Settings.FolderFor(audioOnly ? "Music" : "Video"),
             Category = audioOnly ? "Music" : "Video",
             Media = new MediaInfo { PageUrl = pageUrl, Title = title, FormatSpec = formatSpec, AudioOnly = audioOnly, Cookies = netscapeCookies, Referrer = referrer },
         };

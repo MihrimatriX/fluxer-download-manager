@@ -251,13 +251,9 @@ public sealed class HttpDownload : IDownload
             ? FileNameResolver.Resolve(resp.Content.Headers.ContentDisposition, resp.RequestMessage!.RequestUri!, resp.Content.Headers.ContentType?.MediaType)
             : FileNameSanitizer.Sanitize(Record.FileName);
 
-        if (string.IsNullOrWhiteSpace(Record.SaveDirectory))
-        {
-            Record.Category = settings.CategoryFor(name);
-            Record.SaveDirectory = settings.UseCategoryFolders && Record.Category is { } cat
-                ? Path.Combine(settings.DownloadDirectory, cat)
-                : settings.DownloadDirectory;
-        }
+        // Downloads added with a folder already chosen still get their category (filter row, icon, rules).
+        Record.Category ??= settings.CategoryFor(name, Record.Http?.Url);
+        if (string.IsNullOrWhiteSpace(Record.SaveDirectory)) Record.SaveDirectory = settings.FolderFor(Record.Category);
 
         Directory.CreateDirectory(Record.SaveDirectory);
         // Reserve, not just check: the other downloads of a batch are choosing their names right now too.

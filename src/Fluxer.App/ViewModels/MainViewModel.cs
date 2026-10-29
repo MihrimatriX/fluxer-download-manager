@@ -26,17 +26,8 @@ public sealed partial class CategoryItem(string key, string iconKey) : Observabl
     public string Tip => $"{Title} · {Count}";
     public bool HasItems => Count > 0 && Key != "all";
 
-    public string Title => Key switch
-    {
-        "all" => Strings.CatAll,
-        "Video" => Strings.CatVideo,
-        "Music" => Strings.CatMusic,
-        "Documents" => Strings.CatDocuments,
-        "Archives" => Strings.CatArchives,
-        "Programs" => Strings.CatPrograms,
-        "Torrent" => Strings.CatTorrent,
-        _ => Key,
-    };
+    public string Title => Cats.Title(Key);
+    public bool ShowName => Cats.ShowsName(Key);
 
     public override string ToString() => Title;
 }
@@ -82,11 +73,7 @@ public sealed partial class MainViewModel : ObservableObject
     public MainViewModel(AppHost host)
     {
         _host = host;
-        Categories =
-        [
-            new("all", "IcAll"), new("Video", "IcVideo"), new("Music", "IcMusic"), new("Documents", "IcDoc"),
-            new("Archives", "IcArchive"), new("Programs", "IcApp"), new("Torrent", "IcTorrent"),
-        ];
+        Categories = [.. CategoryKeys().Select(k => new CategoryItem(k, Cats.IconKey(k)))];
         StateFilters = [new("all"), new("active"), new("queued"), new("paused"), new("done"), new("error")];
 #pragma warning disable MVVMTK0034 // the setter would also close the settings page (language change rebuilds this)
         _selectedCategory = Categories[0];
@@ -162,6 +149,7 @@ public sealed partial class MainViewModel : ObservableObject
     /// Mirrors Settings.Ui into the bindable properties (startup, after the settings page saved).
     public void LoadUi()
     {
+        RefreshCategories();
         _loadingUi = true;
         var ui = _host.Engine.Settings.Ui;
         ToolbarLabels = ui.ToolbarLabels;
@@ -205,6 +193,7 @@ public sealed partial class MainViewModel : ObservableObject
         _all.Clear();
         _source.Clear();
         foreach (var d in _host.Engine.Queue.Items) _source.Add(Track(d));
+        RefreshCategories();
         Refilter();
         Settings.Load(); // before any view binds to it, so controls never write defaults back
         LoadUi();
@@ -213,7 +202,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void RefreshTexts()
     {
-        Categories = [.. Categories.Select(c => new CategoryItem(c.Key, IconKeyOf(c.Key)))];
+        Categories = [.. CategoryKeys().Select(k => new CategoryItem(k, Cats.IconKey(k)))];
         StateFilters = [.. StateFilters.Select(f => new StateFilter(f.Key))];
 #pragma warning disable MVVMTK0034 // the setter would also close the settings page (language change rebuilds this)
         _selectedCategory = Categories[0];
@@ -226,17 +215,12 @@ public sealed partial class MainViewModel : ObservableObject
         UpdateCounts();
         UpdateTotals();
         Settings.Load();
-
-        static string IconKeyOf(string key) => key switch
-        {
-            "Video" => "IcVideo", "Music" => "IcMusic", "Documents" => "IcDoc", "Archives" => "IcArchive",
-            "Programs" => "IcApp", "Torrent" => "IcTorrent", _ => "IcAll",
-        };
     }
 
     public void OnAdded(IDownload d)
     {
         _source.Add(Track(d));
+        if (d.Record.Tags.Count > 0) RefreshCategories();
         UpdateCounts();
     }
 
@@ -245,7 +229,32 @@ public sealed partial class MainViewModel : ObservableObject
         if (!_all.Remove(d.Id, out var vm)) return;
         _source.Remove(vm);
         if (SelectedItem == vm) SelectedItem = null;
+        if (d.Record.Tags.Count > 0) RefreshCategories();
         UpdateCounts();
+    }
+
+    /// "All", the categories from the settings, then a "#tag" for every tag in the list.
+    private List<string> CategoryKeys() =>
+    [
+        "all",
+        .. _host.Engine.Settings.CategoryList.Select(c => c.Key),
+        .. _all.Values.SelectMany(vm => vm.Download.Record.Tags).Distinct(StringComparer.CurrentCultureIgnoreCase)
+            .Order(StringComparer.CurrentCultureIgnoreCase).Select(t => "#" + t),
+    ];
+
+    /// Categories edited in the settings, tags added or gone: the filter row follows, keeping the selection.
+    public void RefreshCategories()
+    {
+        var keys = CategoryKeys();
+        if (keys.SequenceEqual(Categories.Select(c => c.Key))) return;
+        var selected = SelectedCategory.Key;
+        Categories = [.. keys.Select(k => new CategoryItem(k, Cats.IconKey(k)))];
+#pragma warning disable MVVMTK0034 // the setter would also close the settings page
+        _selectedCategory = Categories.FirstOrDefault(c => c.Key == selected) ?? Categories[0];
+#pragma warning restore MVVMTK0034
+        OnPropertyChanged(nameof(Categories));
+        OnPropertyChanged(nameof(SelectedCategory));
+        Refilter();
     }
 
     public void OnStateChanged(IDownload d)
@@ -405,12 +414,14 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private bool MatchesSearch(DownloadItemViewModel vm) =>
-        Search.Length == 0 || vm.Download.FileName.Contains(Search, StringComparison.CurrentCultureIgnoreCase);
+        Search.Length == 0 || vm.Download.FileName.Contains(Search, StringComparison.CurrentCultureIgnoreCase)
+        || vm.Download.Record.Tags.Any(t => t.Contains(Search.TrimStart('#'), StringComparison.CurrentCultureIgnoreCase));
 
     private static bool InCategory(DownloadItemViewModel vm, string key) => key switch
     {
         "all" => true,
         "Torrent" => vm.Download.Kind == DownloadKind.Torrent,
+        ['#', .. var tag] => vm.Download.Record.Tags.Contains(tag, StringComparer.CurrentCultureIgnoreCase),
         var cat => vm.Download.Record.Category == cat,
     };
 
@@ -716,6 +727,35 @@ public sealed partial class MainViewModel : ObservableObject
         IsSettingsOpen = false;
         SelectedStateFilter = StateFilters.FirstOrDefault(f => f.Key == key) ?? StateFilters[0];
     }
+
+    /// Tags of the selected downloads: the box shows the tags they share; what is typed replaces those, other
+    /// tags each one has stay.
+    [RelayCommand]
+    private async Task EditTags()
+    {
+        var targets = Targets;
+        if (targets.Count == 0) return;
+        var common = targets.Select(d => (IEnumerable<string>)d.Record.Tags)
+            .Aggregate((a, b) => a.Intersect(b, StringComparer.CurrentCultureIgnoreCase)).ToList();
+        var text = await Dialogs.InputAsync(_host.Owner, Strings.Tags, Strings.TagsPrompt, string.Join(", ", common));
+        if (text is null) return;
+        var entered = ParseTags(text);
+        foreach (var d in targets)
+        {
+            d.Record.Tags = [.. d.Record.Tags.Where(t => !common.Contains(t, StringComparer.CurrentCultureIgnoreCase))
+                .Concat(entered).Distinct(StringComparer.CurrentCultureIgnoreCase)];
+            _host.Engine.Queue.Save(d);
+            if (_all.TryGetValue(d.Id, out var vm)) vm.Refresh();
+        }
+        RefreshCategories();
+        UpdateCounts();
+    }
+
+    /// "film, iş  #arşiv" → ["film", "iş", "arşiv"].
+    public static List<string> ParseTags(string? text) =>
+        [.. (text ?? "").Split([',', ';', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .SelectMany(t => t.StartsWith('#') ? t.Split(' ', StringSplitOptions.RemoveEmptyEntries) : [t])
+            .Select(t => t.Trim().TrimStart('#').Trim()).Where(t => t.Length > 0).Distinct(StringComparer.CurrentCultureIgnoreCase)];
 
     /// Duplicate dialog "show it": every filter off, the row selected.
     public void Reveal(IDownload d)

@@ -108,7 +108,7 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         foreach (var f in main.StateFilters)
             Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, f.Title), null, "IcAll", () => main.ShowState(f.Key));
         foreach (var c in main.Categories.Skip(1))
-            Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, c.Title), null, IconOf(c.Key), () => main.ShowCategory(c.Key));
+            Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, c.Title), null, Cats.IconKey(c.Key), () => main.ShowCategory(c.Key));
         Cmd(view, Strings.ToggleDetail, "Ctrl+I", "IcPanel", main.ToggleDetailCommand);
         Cmd(view, main.IsLight ? Strings.PaletteDarkTheme : Strings.PaletteLightTheme, null, main.IsLight ? "IcMoon" : "IcSun", main.ToggleThemeCommand);
 
@@ -120,11 +120,5 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         foreach (var s in main.Settings.Sections)
             Add(settings, $"{Strings.Settings}: {s.Label}", s.Key == "general" ? "Ctrl+," : null, "IcGear", () => main.OpenSettingsAt(s.Key));
         return list;
-
-        static string IconOf(string key) => key switch
-        {
-            "Video" => "IcVideo", "Music" => "IcMusic", "Documents" => "IcDoc", "Archives" => "IcArchive",
-            "Programs" => "IcApp", "Torrent" => "IcTorrent", _ => "IcAll",
-        };
     }
 }
