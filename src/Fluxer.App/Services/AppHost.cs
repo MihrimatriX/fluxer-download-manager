@@ -86,6 +86,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
         CrashGuard.InstallUiHandler();
         ApplyWatchers();
+        _ = ApplyRemoteAsync();
         Engine.Rss.Start();           // stopped by Engine.DisposeAsync on exit
         if (!args.Contains("--background")) ShowMainWindow();
         Mark("window");
@@ -207,6 +208,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         await Main.CommitPendingRemovalsAsync();
         Window?.Close();
         _pipe?.Dispose();
+        await StopRemoteAsync();
         await Engine.DisposeAsync();  // pauses everything → final checkpoints
         _tray?.Dispose();
         if (_pendingUpdate is not null && _updates is not null)

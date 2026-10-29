@@ -281,6 +281,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
         nameof(WebhookStatus), nameof(BackupText), nameof(DataText), nameof(QuotaUsedText),
+        nameof(RemoteStatus), nameof(RemoteNote),
     ];
 
     public void Load()
@@ -362,6 +363,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         LoadQueues(s);
         LoadSites(s);
         LoadArchives(s);
+        LoadRemote(s);
         SavedText = "";
         _loading = false;
     }
@@ -504,6 +506,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.Queues = [.. QueueRows.Select(r => r.ToQueue())];
         SaveSites(s);
         SaveArchives(s);
+        // The key is not edited here; the copy keeps it.
+        s.Remote.On = RemoteOn;
+        s.Remote.Port = (int)Math.Clamp(RemotePort ?? 6800, 1024, 65535);
+        s.Remote.Lan = RemoteLan;
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);
@@ -514,6 +520,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (assocChanged) _host.RegisterIntegration();
         if (watchChanged) _host.ApplyWatchers();
         if (rssChanged) engine.Rss.Reschedule();
+        await _host.ApplyRemoteAsync();
+        RefreshRemote();
         if (updatesChanged) _host.CheckForAppUpdate();
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
         _host.Main.LoadUi();
@@ -772,6 +780,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
         if (copy.Automation.WebhookUrl is { } hook) copy.Automation.WebhookUrl = Uri.TryCreate(hook, UriKind.Absolute, out var hu) ? hu.Host : "?";
         copy.Extract.PasswordsProtected = null;
+        copy.Remote.KeyProtected = null;
         foreach (var site in copy.Sites)
         {
             if (site.UserName is not null) site.UserName = "***";

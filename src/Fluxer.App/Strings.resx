@@ -650,4 +650,17 @@
   <data name="StatsSites" xml:space="preserve"><value>Sites (downloads in the list)</value></data>
   <data name="StatsCategories" xml:space="preserve"><value>Categories</value></data>
   <data name="StatsNothing" xml:space="preserve"><value>Nothing finished yet.</value></data>
+  <data name="RemoteAccess" xml:space="preserve"><value>Remote access</value></data>
+  <data name="RemoteAccessDesc" xml:space="preserve"><value>A REST API, aria2-compatible JSON-RPC and a web page for the browser or your phone. Every call needs the API key.</value></data>
+  <data name="RemotePort" xml:space="preserve"><value>Port</value></data>
+  <data name="RemoteLan" xml:space="preserve"><value>Allow other devices on the network</value></data>
+  <data name="RemoteLanDesc" xml:space="preserve"><value>Off: only this PC (127.0.0.1). On: anyone on your network who has the key can control downloads.</value></data>
+  <data name="RemoteOpenPage" xml:space="preserve"><value>Open web page</value></data>
+  <data name="RemoteCopyKey" xml:space="preserve"><value>Copy API key</value></data>
+  <data name="RemoteNewKey" xml:space="preserve"><value>New key</value></data>
+  <data name="RemoteNewKeyConfirm" xml:space="preserve"><value>Programs and pages using the current key will need the new one.</value></data>
+  <data name="RemoteKeyCopied" xml:space="preserve"><value>Key copied. Send it as "Authorization: Bearer KEY"; aria2 clients use it as the secret token.</value></data>
+  <data name="RemoteListening" xml:space="preserve"><value>Listening on {0}</value></data>
+  <data name="RemotePortBusy" xml:space="preserve"><value>Port {0} is in use by another program; pick another one.</value></data>
+  <data name="RemoteAria2Note" xml:space="preserve"><value>aria2 clients (AriaNg, "send to aria2" extensions): http://127.0.0.1:{0}/jsonrpc with the API key as the secret token. REST: http://127.0.0.1:{0}/api/v1/downloads</value></data>
 </root>

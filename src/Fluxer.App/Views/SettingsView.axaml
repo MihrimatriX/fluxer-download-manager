@@ -783,6 +783,29 @@
                 </StackPanel>
               </StackPanel>
             </Border>
+            <TextBlock Classes="section" Text="{x:Static app:Strings.RemoteAccess}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.RemoteAccess}" Description="{x:Static app:Strings.RemoteAccessDesc}">
+                  <ToggleSwitch IsChecked="{Binding RemoteOn}" />
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.RemotePort}" Description="{Binding RemoteStatus}" IsEnabled="{Binding RemoteOn}">
+                  <NumericUpDown Value="{Binding RemotePort}" Minimum="1024" Maximum="65535" Increment="1" FormatString="0" Width="130" />
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.RemoteLan}" Description="{x:Static app:Strings.RemoteLanDesc}" IsEnabled="{Binding RemoteOn}">
+                  <ToggleSwitch IsChecked="{Binding RemoteLan}" />
+                </c:SettingRow>
+                <StackPanel Margin="16,10,16,12" Spacing="8" IsVisible="{Binding RemoteOn}">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Classes="accent" Content="{x:Static app:Strings.RemoteOpenPage}" Command="{Binding OpenRemotePageCommand}" />
+                    <Button Content="{x:Static app:Strings.RemoteCopyKey}" Command="{Binding CopyRemoteKeyCommand}" />
+                    <Button Classes="link" Content="{x:Static app:Strings.RemoteNewKey}" Command="{Binding NewRemoteKeyCommand}" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding RemoteNote}" Classes="subtle" FontSize="11.5" TextWrapping="Wrap"
+                             IsVisible="{Binding RemoteNote, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
           </StackPanel>
 
           <!-- ===== Advanced ===== -->

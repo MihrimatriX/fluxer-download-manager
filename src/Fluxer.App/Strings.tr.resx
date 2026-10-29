@@ -650,4 +650,17 @@
   <data name="StatsSites" xml:space="preserve"><value>Siteler (listedeki indirmeler)</value></data>
   <data name="StatsCategories" xml:space="preserve"><value>Kategoriler</value></data>
   <data name="StatsNothing" xml:space="preserve"><value>Henüz biten bir şey yok.</value></data>
+  <data name="RemoteAccess" xml:space="preserve"><value>Uzaktan erişim</value></data>
+  <data name="RemoteAccessDesc" xml:space="preserve"><value>REST API, aria2 uyumlu JSON-RPC ve tarayıcı ya da telefon için bir web sayfası. Her çağrı API anahtarı ister.</value></data>
+  <data name="RemotePort" xml:space="preserve"><value>Port</value></data>
+  <data name="RemoteLan" xml:space="preserve"><value>Ağdaki diğer cihazlar da bağlanabilsin</value></data>
+  <data name="RemoteLanDesc" xml:space="preserve"><value>Kapalı: yalnızca bu bilgisayar (127.0.0.1). Açık: ağınızda anahtarı bilen herkes indirmeleri yönetebilir.</value></data>
+  <data name="RemoteOpenPage" xml:space="preserve"><value>Web sayfasını aç</value></data>
+  <data name="RemoteCopyKey" xml:space="preserve"><value>API anahtarını kopyala</value></data>
+  <data name="RemoteNewKey" xml:space="preserve"><value>Yeni anahtar</value></data>
+  <data name="RemoteNewKeyConfirm" xml:space="preserve"><value>Mevcut anahtarı kullanan programlar ve sayfalar yenisini isteyecek.</value></data>
+  <data name="RemoteKeyCopied" xml:space="preserve"><value>Anahtar kopyalandı. "Authorization: Bearer ANAHTAR" olarak gönderin; aria2 istemcileri gizli anahtar (secret token) olarak kullanır.</value></data>
+  <data name="RemoteListening" xml:space="preserve"><value>{0} dinleniyor</value></data>
+  <data name="RemotePortBusy" xml:space="preserve"><value>{0} portunu başka bir program kullanıyor; başka bir port seçin.</value></data>
+  <data name="RemoteAria2Note" xml:space="preserve"><value>aria2 istemcileri (AriaNg, "aria2'ye gönder" eklentileri): http://127.0.0.1:{0}/jsonrpc, gizli anahtar = API anahtarı. REST: http://127.0.0.1:{0}/api/v1/downloads</value></data>
 </root>

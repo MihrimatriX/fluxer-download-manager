@@ -25,6 +25,7 @@ public sealed class AppSettings
     public string? ScheduleStop { get; set; }
     public SmartSpeed Smart { get; set; } = new();
     public ExtractSettings Extract { get; set; } = new();
+    public RemoteSettings Remote { get; set; } = new();
     /// The user's own queues besides the main and night ones.
     public List<NamedQueue> Queues { get; set; } = [];
 
@@ -182,6 +183,29 @@ public sealed class SmartSpeed
     /// No more than QuotaMb in any QuotaHours (0 = off); downloads pause until the window frees up.
     public long QuotaMb { get; set; }
     public int QuotaHours { get; set; } = 24;
+}
+
+/// Remote control: REST API, aria2 JSON-RPC and the web page (Settings → Automation → Remote access).
+public sealed class RemoteSettings
+{
+    public bool On { get; set; }
+    /// aria2's default, so its front-ends find Fluxer without changes.
+    public int Port { get; set; } = 6800;
+    /// Listen on every network interface instead of 127.0.0.1 only.
+    public bool Lan { get; set; }
+    public string? KeyProtected { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? Key
+    {
+        get
+        {
+            if (KeyProtected is not { Length: > 0 } p) return null;
+            try { return Platform.Windows.Dpapi.Unprotect(Convert.FromBase64String(p)); }
+            catch (FormatException) { return null; }
+        }
+        set => KeyProtected = Platform.Windows.Dpapi.Protect(value) is { } blob ? Convert.ToBase64String(blob) : null;
+    }
 }
 
 /// Unpacking finished archives (Settings → Downloads → Archives).

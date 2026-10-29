@@ -12,6 +12,9 @@
     <PackageReference Include="SharpCompress" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Remote\webui.html" LogicalName="Fluxer.Core.Remote.webui.html" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="Fluxer.Core.Tests" />
     <InternalsVisibleTo Include="Fluxer.Integration.Tests" />
   </ItemGroup>

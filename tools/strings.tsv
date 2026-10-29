@@ -681,3 +681,16 @@ StatsMore	More	Çok
 StatsSites	Sites (downloads in the list)	Siteler (listedeki indirmeler)
 StatsCategories	Categories	Kategoriler
 StatsNothing	Nothing finished yet.	Henüz biten bir şey yok.
+RemoteAccess	Remote access	Uzaktan erişim
+RemoteAccessDesc	A REST API, aria2-compatible JSON-RPC and a web page for the browser or your phone. Every call needs the API key.	REST API, aria2 uyumlu JSON-RPC ve tarayıcı ya da telefon için bir web sayfası. Her çağrı API anahtarı ister.
+RemotePort	Port	Port
+RemoteLan	Allow other devices on the network	Ağdaki diğer cihazlar da bağlanabilsin
+RemoteLanDesc	Off: only this PC (127.0.0.1). On: anyone on your network who has the key can control downloads.	Kapalı: yalnızca bu bilgisayar (127.0.0.1). Açık: ağınızda anahtarı bilen herkes indirmeleri yönetebilir.
+RemoteOpenPage	Open web page	Web sayfasını aç
+RemoteCopyKey	Copy API key	API anahtarını kopyala
+RemoteNewKey	New key	Yeni anahtar
+RemoteNewKeyConfirm	Programs and pages using the current key will need the new one.	Mevcut anahtarı kullanan programlar ve sayfalar yenisini isteyecek.
+RemoteKeyCopied	Key copied. Send it as "Authorization: Bearer KEY"; aria2 clients use it as the secret token.	Anahtar kopyalandı. "Authorization: Bearer ANAHTAR" olarak gönderin; aria2 istemcileri gizli anahtar (secret token) olarak kullanır.
+RemoteListening	Listening on {0}	{0} dinleniyor
+RemotePortBusy	Port {0} is in use by another program; pick another one.	{0} portunu başka bir program kullanıyor; başka bir port seçin.
+RemoteAria2Note	aria2 clients (AriaNg, "send to aria2" extensions): http://127.0.0.1:{0}/jsonrpc with the API key as the secret token. REST: http://127.0.0.1:{0}/api/v1/downloads	aria2 istemcileri (AriaNg, "aria2'ye gönder" eklentileri): http://127.0.0.1:{0}/jsonrpc, gizli anahtar = API anahtarı. REST: http://127.0.0.1:{0}/api/v1/downloads
