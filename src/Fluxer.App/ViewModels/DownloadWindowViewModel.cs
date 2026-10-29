@@ -48,11 +48,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         Download = download;
         IsCard = card;
         _lastState = download.State;
-        Icon = Theme.Geometry((download.Kind == DownloadKind.Torrent ? "Torrent" : download.Record.Category) switch
-        {
-            "Video" => "IcVideo", "Music" => "IcMusic", "Documents" => "IcDoc", "Archives" => "IcArchive",
-            "Programs" => "IcApp", "Torrent" => "IcTorrent", _ => "IcFile",
-        });
+        Icon = Theme.Geometry(Cats.IconKey(download.Kind == DownloadKind.Torrent ? "Torrent" : download.Record.Category));
         IconBrush = Theme.Brush(DownloadItemViewModel.TintKey(download));
         Host = download.Record.Http?.Url is { } u && Uri.TryCreate(u, UriKind.Absolute, out var uri) ? uri.Host
             : download.Record.Media?.PageUrl is { } p && Uri.TryCreate(p, UriKind.Absolute, out var puri) ? puri.Host
@@ -242,7 +238,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         Peers.Clear();
         foreach (var peer in peers.OrderByDescending(p => p.Monitor.DownloadRate).Take(100))
             Peers.Add(new PeerRow(peer.Uri.ToString(), peer.ClientApp.Client.ToString(), Loc.Speed(peer.Monitor.DownloadRate),
-                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100), peer.BitField.PercentComplete));
+                Loc.Speed(peer.Monitor.UploadRate), Loc.Percent(peer.BitField.PercentComplete / 100), peer.BitField.PercentComplete, peer.Uri.Host.Trim('[', ']')));
     }
 
     // ================= commands =================

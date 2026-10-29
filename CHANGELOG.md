@@ -16,6 +16,50 @@
 - Ayrıntı panelinde **Hız** sekmesi: son dakikanın grafiği, anlık, ortalama ve tepe hız.
 - İndirme penceresinde **üstte tut** (raptiye) düğmesi.
 
+### Rakip indirme yöneticilerinden gelen özellikler
+**Otomasyon ve bildirimler**
+- **Windows ile başlat** (arka planda, `--background`) ve indirme sürerken **çıkış onayı** (Ayarlar → Genel).
+- **Olay başına bildirim ve ses:** biten, hata veren, kuyruk biten için ayrı ayrı; Windows sesi ya da seçilen `.wav`.
+- **Bitince program çalıştır:** virüs taramasından sonra; `%F %N %D %K %Z %U %E %I` yer tutucuları ve `FLUXER_*` ortam değişkenleri. Program asla `cmd.exe` üzerinden çalışmıyor; toplu iş dosyalarına cmd özel karakteri içeren argüman verilmiyor.
+- **Webhook:** biten / hata veren / eklenen indirmeler için JSON POST, "Dene" düğmesiyle (Home Assistant, n8n, Discord köprüleri).
+
+**Veri**
+- **Taşınabilir mod:** `%LOCALAPPDATA%` dışındaki bir kopya verisini yanındaki `data` klasörüne taşıyabiliyor (ve geri); Velopack'in `current\` klasörünün dışında.
+- **Liste ve ayar dışa/içe aktarma:** liste `.json` (yeniden eklemek için gereken her şey, çerezsiz) ya da `.txt` (satır başına bağlantı); ayarlar pencere konumu hariç.
+- **Otomatik yedek:** veritabanının günlük ya da haftalık kopyası (son 5), "Şimdi yedekle" ve "Geri yükle" (bir sonraki açılışta uygulanıyor, eski veritabanı saklanıyor).
+
+**İndirme ekleme**
+- **Toplu bağlantı deseni:** `foto_[001-120].jpg`, `[a-z]`, `[0-100:5]`, birden çok aralık; her dosya bir satır, 5000'den fazlası reddediliyor.
+- **Mükerrer uyarısı:** listede olan bir bağlantı "Zaten listede" penceresini açıyor: var olanı göster, ona bu bağlantıyı ver (bitmemiş HTTP indirmesi onunla sürer) ya da ikinci kopyayı indir.
+- **Siteden dosya topla:** sayfayı ve bağlantı verdiği sayfaları (seviye, aynı site, sayfa sınırı, dosya türü) okuyup bağlantı verilen dosyaları indirmeden listeliyor, sayfa yakalayıcıda seçtiriyor.
+- **Bırakma hedefi:** hep üstte duran küçük kare; bağlantı, metin ya da `.torrent` üzerine bırakılınca ekleniyor, toplam hızı gösteriyor, yeri hatırlanıyor (Ayarlar → Genel, tepsi menüsü).
+
+**Düzen**
+- **Düzenlenebilir kategoriler:** yerleşiklerin uzantıları, siteleri ve klasörü değiştirilebiliyor, kullanıcı kendi kategorilerini ekleyebiliyor; site kuralı uzantıdan önce geliyor.
+- **Etiketler:** satır menüsünde "Etiketler…", yeni indirme penceresinde etiket kutusu; filtre satırında `#etiket`, arama etiketleri de buluyor.
+- **Adlandırılmış kuyruklar:** ana ve gece kuyruğunun yanında kendi kuyruklarınız; başlangıç/bitiş saati, günler, kendi eşzamanlılık sınırı ve "bitince" eylemi (uyku / kapat, başka bir şey çalışmıyorsa). Satır menüsünde "Kuyruğa taşı"; bekleyen satır hangi kuyrukta ve ne zaman başlayacağını söylüyor.
+- **Paket:** birden çok bağlantı tek paket olarak (o adla klasör ve etiket) eklenebiliyor; sayfa yakalayıcıda da.
+
+**Hız**
+- **Site ayarları (Ayarlar → Siteler):** site başına giriş (HTTP Basic, yönlendirmeden sonra gelen sorgu da yanıtlanıyor), en fazla bağlantı, User-Agent, Referer ve indirme başına hız sınırı. Parola DPAPI ile şifreli, tanılama dışa aktarımına girmiyor.
+- **Akıllı hız:** başka bir programla çalışırken seçilen profile geçip boşta kalınca geri dönme; pil seviyesi düşünce bekletme (prize takılınca sürüyor); kayan pencereli trafik kotası (ör. 24 saatte 20 GB). Bekletme durum çubuğunda nedeniyle görünüyor, indirmeler kendiliğinden sürüyor.
+- **Hız grafiği dönemleri:** ayrıntı panelinde son 1 dk / 10 dk / 1 sa.
+
+**Arşivler ve istatistik**
+- **Bitince arşiv aç:** zip, rar, 7z, tar(.gz/.bz2/.xz), parçalı setler (`.part1.rar`, `.rar`+`.r00`, `.zip`+`.z01`, `.7z.001`) son parça bitince; şifreliler için parola listesi (şifreli saklanıyor). Önce gizli bir klasöre açılıyor, tamamı çıkınca yerine taşınıyor: yanlış parola ya da eksik parça yarım dosya bırakmıyor, hiçbir şeyin üzerine yazılmıyor. İstenirse sonra arşiv siliniyor; satır menüsünde "Arşivi aç".
+- **İstatistikler (… menüsü, komut paleti):** bugün / bu hafta / bu ay / toplam, son 24 saatin hız grafiği, son 12 ayın ısı haritası, sitelere ve kategorilere göre dağılım. Günlük toplamlar indirmeler listeden silinse de kalıyor.
+
+**Uzaktan erişim ve eklentiler**
+- **REST API, aria2 JSON-RPC ve web sayfası** (Ayarlar → Otomasyon → Uzaktan erişim): varsayılan `127.0.0.1:6800`, istenirse tüm ağ. aria2 istemcileri (AriaNg, "aria2'ye gönder" eklentileri) değiştirmeden çalışıyor; web sayfası telefondan da kullanılıyor. Her çağrı API anahtarı istiyor; başka Host adları (DNS rebinding) reddediliyor, 10 yanlış anahtar çağıranı bir dakika engelliyor.
+- **JavaScript eklentileri (Ayarlar → Eklentiler):** `plugins` klasöründeki `.js` dosyaları indirme olaylarına (eklendi, bitti, hata) tepki veriyor. Kullanıcı açana kadar çalışmıyor, açarken izinleri (bildirim, indirmeler, web istekleri) görüyor; dosya değişirse yeniden onaylanana kadar kapanıyor. .NET erişimi yok; süre, komut, bellek ve özyineleme sınırlı.
+
+**Torrent**
+- **Ek tracker'lar:** abone olunan liste (varsayılan ngosang, günlük) ve kendi tracker'larınız herkese açık torrentlere ekleniyor; özel torrentlere asla.
+- **Eş engelleme listesi:** ipfilter.dat, PeerGuardian `.p2p`, CIDR, IPv4/IPv6, düz ya da gzip; dosyadan ya da haftalık indirilen adresten. Eşler sekmesinden tek tek de engellenebiliyor.
+- **Verileri yeniden denetle** ve **veri klasörünü değiştir** (dosyaları taşı ya da zaten oradaki kopyayı göster ve denetle).
+- **Parça haritası:** ayrıntı panelinin ilerleme şeridinde neyin indiği ve bağlı eşlerin neyi verebildiği, erişilebilirlik değeriyle.
+- **Torrent arama (Torznab):** Jackett, Prowlarr ya da tracker'ın kendi adresi; tüm dizinlerde birden, Yeni menüsünden ve komut paletinden.
+
 ### Tarayıcı eklentisi
 - **Duraklatma düğmeleri:** açılır pencerenin başlığında Fluxer'daki her şeyi duraklatan/sürdüren düğme; yakalamayı bir saatliğine durduran "1 sa duraklat" (indirmeler bu sürede tarayıcıda kalır, "Sürdür" erken bitirir).
 - **Yakalama kartında geri sayımı durdurma:** kartın üzerine gelince geri sayım bekliyor, duraklat düğmesi onu tamamen durduruyor; kart seçim yapılana kadar (en fazla 4 dk) açık kalıyor.
@@ -23,7 +67,7 @@
 - Yeni görünüm: uygulamayla aynı renkler, açık/koyu tema sistem ayarını izliyor; 360 × 520.
 
 ### Boyut
-- **Kurulum ve taşınabilir paket ~%58 küçüldü** (açılmış 190 MB → 74 MB, zip 80 MB → 33 MB):
+- **Kurulum ve taşınabilir paket ~%58 küçüldü** (açılmış 190 MB → 74 MB, zip 80 MB → 33 MB; yeni özelliklerle 80 MB — arşiv açma için SharpCompress ve eklentiler için Jint, ikisi de IL olarak tutuluyor):
   - Bildirimler WinRT'yi doğrudan çağırıyor; yalnızca bunun için taşınan 55 MB'lık Windows SDK projeksiyonu (`Microsoft.Windows.SDK.NET.dll`) çıktı. Hedef çerçeve `net10.0-windows`.
   - Yalnızca Windows arka ucu (`Avalonia.Win32`, `Avalonia.Skia`, `Avalonia.HarfBuzz`): X11, macOS, Linux erişilebilirlik kitaplıkları ve gömülü Inter yazı tipi pakete girmiyor (arayüz Segoe UI kullanıyor).
   - Yayın derlemesi kırpılıyor (`PublishTrimmed`, `TrimMode=partial`): .NET ve BouncyCastle kullanılan kısma iniyor, Fluxer'ın kendi derlemeleri bütün kalıyor. Seyrek kullanılan derlemeler ReadyToRun dışında; hata ayıklayıcı/dump DLL'leri, ayrı GC'ler ve msquic pakete girmiyor.

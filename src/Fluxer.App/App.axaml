@@ -50,6 +50,8 @@
       <StreamGeometry x:Key="IcLink">M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1</StreamGeometry>
       <StreamGeometry x:Key="IcExternal">M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5</StreamGeometry>
       <StreamGeometry x:Key="IcRefresh">M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7</StreamGeometry>
+      <StreamGeometry x:Key="IcTag">M3 12V4h8l10 10-8 8zM7.5 8a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0</StreamGeometry>
+      <StreamGeometry x:Key="IcHash">M5 9h15M4 15h15M10 3L8 21M16 3l-2 18</StreamGeometry>
       <StreamGeometry x:Key="IcBolt">M13 3L5 14h6l-1 7 8-11h-6z</StreamGeometry>
       <StreamGeometry x:Key="IcVolume">M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12</StreamGeometry>
       <StreamGeometry x:Key="IcSun">M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4</StreamGeometry>
@@ -57,6 +59,10 @@
       <StreamGeometry x:Key="IcCheck">M5 12l5 5 9-10</StreamGeometry>
       <StreamGeometry x:Key="IcAlert">M12 8v5M12 16.5v.01M10.3 4.2L2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z</StreamGeometry>
       <StreamGeometry x:Key="IcBroom">M14 4l-4 9M6 13h8l2 7H4zM9 17v3M12 17v3</StreamGeometry>
+      <StreamGeometry x:Key="IcLock">M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4</StreamGeometry>
+      <StreamGeometry x:Key="IcChart">M5 20V11M12 20V5M19 20v-6M3 20h18</StreamGeometry>
+      <StreamGeometry x:Key="IcPlug">M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4</StreamGeometry>
+      <StreamGeometry x:Key="IcBan">M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M5.6 5.6l12.8 12.8</StreamGeometry>
       <StreamGeometry x:Key="IcGear">M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z</StreamGeometry>
 
       <ResourceDictionary.ThemeDictionaries>
@@ -101,6 +107,7 @@
           <SolidColorBrush x:Key="CatProgramsBrush" Color="#34D399" />
           <SolidColorBrush x:Key="CatTorrentBrush" Color="#22D3EE" />
           <SolidColorBrush x:Key="CatOtherBrush" Color="#A3AAB6" />
+          <SolidColorBrush x:Key="CatCustomBrush" Color="#F59E9E" />
           <Color x:Key="ShadowColor">#66000000</Color>
 
           <!-- Fluent controls -->
@@ -194,6 +201,7 @@
           <SolidColorBrush x:Key="CatProgramsBrush" Color="#059669" />
           <SolidColorBrush x:Key="CatTorrentBrush" Color="#0891B2" />
           <SolidColorBrush x:Key="CatOtherBrush" Color="#5E6570" />
+          <SolidColorBrush x:Key="CatCustomBrush" Color="#D9485F" />
           <Color x:Key="ShadowColor">#26000000</Color>
 
           <SolidColorBrush x:Key="TextControlBackground" Color="#FFFFFF" />
@@ -646,5 +654,31 @@
       <Setter Property="IsEnabled" Value="False" />
       <Setter Property="RenderTransform" Value="translateY(6px)" />
     </Style>
-  </Application.Styles>
+      <!-- segmented choice in a well (theme, speed graph period) -->
+    <Style Selector="ListBox.seg">
+      <Setter Property="Background" Value="{DynamicResource WellBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="ItemsPanel">
+        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem">
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.seg > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+    </Style>
+</Application.Styles>
 </Application>

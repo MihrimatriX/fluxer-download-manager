@@ -125,7 +125,11 @@ public sealed class HttpDownload : IDownload
         try
         {
             var first = await PrepareAsync(stop.Token);
-            _connectionLimit = Http.Resumable ? Math.Clamp(Http.MaxConnections, 1, 32) : 1;
+            // A site that tolerates only a few connections gets no more, whatever the download asked for.
+            var site = _settings().SiteRuleFor(Uri.TryCreate(Http.FinalUrl ?? Http.Url, UriKind.Absolute, out var su) ? su.Host : null);
+            var connections = site is { MaxConnections: > 0 } ? Math.Min(Http.MaxConnections, site.MaxConnections) : Http.MaxConnections;
+            _connectionLimit = Http.Resumable ? Math.Clamp(connections, 1, 32) : 1;
+            _bucket.BytesPerSecond = Record.SpeedLimit > 0 ? Record.SpeedLimit : site?.SpeedLimit ?? 0;
             _mirrorProbes = ProbeMirrorsAsync(stop.Token);
             SetState(DownloadState.Downloading, null);
 
@@ -251,13 +255,9 @@ public sealed class HttpDownload : IDownload
             ? FileNameResolver.Resolve(resp.Content.Headers.ContentDisposition, resp.RequestMessage!.RequestUri!, resp.Content.Headers.ContentType?.MediaType)
             : FileNameSanitizer.Sanitize(Record.FileName);
 
-        if (string.IsNullOrWhiteSpace(Record.SaveDirectory))
-        {
-            Record.Category = settings.CategoryFor(name);
-            Record.SaveDirectory = settings.UseCategoryFolders && Record.Category is { } cat
-                ? Path.Combine(settings.DownloadDirectory, cat)
-                : settings.DownloadDirectory;
-        }
+        // Downloads added with a folder already chosen still get their category (filter row, icon, rules).
+        Record.Category ??= settings.CategoryFor(name, Record.Http?.Url);
+        if (string.IsNullOrWhiteSpace(Record.SaveDirectory)) Record.SaveDirectory = settings.FolderFor(Record.Category);
 
         Directory.CreateDirectory(Record.SaveDirectory);
         // Reserve, not just check: the other downloads of a batch are choosing their names right now too.

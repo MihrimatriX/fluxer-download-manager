@@ -49,6 +49,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         void Mark(string step) { marks.Add($"{step} {sw.ElapsedMilliseconds}"); sw.Restart(); }
         Mark($"runtime+avalonia {(int)(DateTime.Now - Process.GetCurrentProcess().StartTime).TotalMilliseconds}");
         Engine = new FluxerEngine(Program.DataDirectory);
+        CreatePlugins();
         if (Engine.Settings.UpgradeDesign()) Engine.Db.SetSetting("app", Engine.Settings);
         Engine.Settings.UseProfile(Engine.Settings.ActiveProfile); // limits always match the active profile
         _ = Engine.SaveSettingsAsync(Engine.Settings);
@@ -67,6 +68,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Engine.Queue.StateChanged += OnStateChanged;
         Engine.Queue.Reordered += () => Dispatcher.UIThread.Post(Main.OnReordered);
         Engine.Queue.Drained += () => Dispatcher.UIThread.Post(OnDrained);
+        Engine.Queue.QueueDrained += id => Dispatcher.UIThread.Post(() => OnQueueDrained(id));
         Engine.Queue.Load();
         Mark("queue");
         Main.Reload();
@@ -85,8 +87,12 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
         CrashGuard.InstallUiHandler();
         ApplyWatchers();
+        _ = ApplyRemoteAsync();
+        StartPlugins();
+        _ = RefreshIpFilterAsync(download: false);
         Engine.Rss.Start();           // stopped by Engine.DisposeAsync on exit
         if (!args.Contains("--background")) ShowMainWindow();
+        ApplyDropTarget();
         Mark("window");
         if (CrashGuard.TakeMarker() is { } crash) Dispatcher.UIThread.Post(() => _ = OfferCrashReportAsync(crash), DispatcherPriority.Background);
         Log.Information("Startup (ms): {Marks}", string.Join(", ", marks));
@@ -125,6 +131,13 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         BuildTray();
         _trayWindow?.Close(); // captured strings; rebuilt on the next click
         _trayWindow = null;
+        if (_drop is not null)
+        {
+            SaveDropTargetPosition();
+            _drop.Close();
+            _drop = null;
+            ApplyDropTarget();
+        }
         Main.RefreshTexts();
         if (Window is not { } old) return;
         var wasVisible = old.IsVisible;
@@ -160,6 +173,10 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(Item(Strings.PauseAll, () => _ = Engine.Queue.PauseAllAsync()));
         menu.Add(Item(Strings.ResumeAll, Engine.Queue.ResumeAll));
+        menu.Add(new NativeMenuItemSeparator());
+        var drop = new NativeMenuItem(Strings.DropTarget) { ToggleType = MenuItemToggleType.CheckBox, IsChecked = Engine.Settings.Ui.DropTarget };
+        drop.Click += (_, _) => _ = SetDropTargetAsync(!Engine.Settings.Ui.DropTarget);
+        menu.Add(drop);
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(Item(Strings.TrayExit, () => _ = ExitAsync()));
 
@@ -199,12 +216,16 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             && !await Dialogs.ConfirmAsync(Owner, Strings.ExitTitle, string.Format(CultureInfo.CurrentCulture, Strings.ExitBody, busy), Strings.TrayExit, Strings.Cancel))
             return;
         if (_exiting) return;
+        await RestoreBusyProfileAsync();
+        if (SaveDropTargetPosition()) await Engine.SaveSettingsAsync(Engine.Settings);
         SaveLayout();
         _exiting = true;
         _timer?.Stop();
         await Main.CommitPendingRemovalsAsync();
         Window?.Close();
         _pipe?.Dispose();
+        await StopRemoteAsync();
+        Plugins.Dispose();
         await Engine.DisposeAsync();  // pauses everything → final checkpoints
         _tray?.Dispose();
         if (_pendingUpdate is not null && _updates is not null)
@@ -222,9 +243,13 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var speed = active.Sum(d => d.GetProgress().BytesPerSecond);
         if (_tray is not null)
             _tray.ToolTipText = active.Count == 0 ? "Fluxer" : $"Fluxer — {active.Count} · {Loc.Speed(speed)}";
+        UpdateDropTarget(speed);
+        Main.Speeds.Record(items);
         Main.UpdateTotals();
         RunScheduler();
         RunWeekSchedule();
+        RunSmartSpeed();
+        RunTorrentLists();
         RunBackup();
         PollClipboard();
         if (DateTime.UtcNow - _lastUpdateCheck > UpdateInterval) _ = CheckAppUpdateAsync();
@@ -236,8 +261,14 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var now = DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
         var key = DateTime.Now.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture);
         if (key == _lastScheduleFire) return;
-        if (s.ScheduleStart == now) { _lastScheduleFire = key; Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
-        else if (s.ScheduleStop == now) { _lastScheduleFire = key; _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+        _lastScheduleFire = key;
+        if (s.ScheduleStart == now) { Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
+        else if (s.ScheduleStop == now) { _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+        foreach (var q in s.Queues.Where(q => q.RunsOn(DateTime.Today)))
+        {
+            if (q.Start == now) { Engine.Queue.StartQueue(q.Id); Log.Information("Scheduler: queue {Queue} start", q.Name); }
+            else if (q.Stop == now) { _ = Engine.Queue.StopQueueAsync(q.Id); Log.Information("Scheduler: queue {Queue} stop", q.Name); }
+        }
     }
 
     private DateTime _lastBackupCheck;
@@ -304,6 +335,22 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Main.Settings.ProfileApplied();
     }
 
+    /// A named queue finished: its own "when done" action, and the queue-finished notification and sound.
+    private void OnQueueDrained(string id)
+    {
+        if (Engine.Settings.Queues.FirstOrDefault(q => q.Id == id) is not { } q) return;
+        Log.Information("Queue {Queue} done → {Action}", q.Name, q.AfterDone);
+        Feedback(Engine.Settings.OnQueueDone, "queue", Strings.NotifyQueueDone, q.Name);
+        if (Engine.Queue.AnyActive) return;   // never shut down under someone else's downloads
+        PowerAction(q.AfterDone);
+    }
+
+    private static void PowerAction(string action)
+    {
+        if (action == "Shutdown") Process.Start(new ProcessStartInfo("shutdown", "/s /t 60") { CreateNoWindow = true })?.Dispose();
+        else if (action == "Sleep") Process.Start(new ProcessStartInfo("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0") { CreateNoWindow = true })?.Dispose();
+    }
+
     private void OnDrained()
     {
         var s = Engine.Settings;
@@ -313,8 +360,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         s.AfterQueue = "None"; // one-shot: never surprise the user twice
         _ = Engine.SaveSettingsAsync(s);
         Log.Information("Queue drained → {Action}", action);
-        if (action == "Shutdown") Process.Start(new ProcessStartInfo("shutdown", "/s /t 60") { CreateNoWindow = true });
-        else if (action == "Sleep") Process.Start(new ProcessStartInfo("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0") { CreateNoWindow = true });
+        PowerAction(action);
     }
 
     // ================= per-download windows =================

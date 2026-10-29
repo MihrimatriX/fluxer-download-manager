@@ -155,6 +155,8 @@
                 <MenuItem Header="{x:Static app:Strings.NewDownload}" Command="{Binding AddUrlCommand}" InputGesture="Ctrl+N" />
                 <MenuItem Header="{x:Static app:Strings.AddTorrent}" Command="{Binding AddTorrentCommand}" InputGesture="Ctrl+O" />
                 <MenuItem Header="{x:Static app:Strings.PasteLinks}" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />
+                <MenuItem Header="{x:Static app:Strings.CrawlMenu}" Command="{Binding CrawlSiteCommand}" />
+                <MenuItem Header="{x:Static app:Strings.SearchTorrents}" Command="{Binding SearchTorrentsCommand}" />
               </MenuFlyout>
             </Button.Flyout>
           </Button>
@@ -188,6 +190,7 @@
                 <Separator />
                 <MenuItem Header="{x:Static app:Strings.ClearCompleted}" Command="{Binding ClearCompletedCommand}" />
                 <MenuItem Header="{x:Static app:Strings.Scheduler}" Command="{Binding OpenScheduleCommand}" />
+                <MenuItem Header="{x:Static app:Strings.Statistics}" Command="{Binding OpenStatsCommand}" />
               </MenuFlyout>
             </Button.Flyout>
           </Button>
@@ -253,6 +256,7 @@
                 <DataTemplate x:DataType="vm:CategoryItem">
                   <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="{Binding Tip}" Background="Transparent">
                     <c:Icon Data="{Binding Icon}" Size="15" />
+                    <TextBlock Text="{Binding Title}" FontSize="12.5" VerticalAlignment="Center" IsVisible="{Binding ShowName}" MaxWidth="110" TextTrimming="CharacterEllipsis" />
                     <TextBlock Classes="count" Text="{Binding Count}" IsVisible="{Binding HasItems}" />
                   </StackPanel>
                 </DataTemplate>
@@ -283,6 +287,9 @@
                     <MenuItem Header="{x:Static app:Strings.ProgressWindow}" Command="{Binding OpenDetailsCommand}" FontWeight="SemiBold" />
                     <MenuItem Header="{x:Static app:Strings.OpenFile}" Command="{Binding OpenFileCommand}" InputGesture="Enter" />
                     <MenuItem Header="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFolderCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.ExtractHere}" Command="{Binding ExtractCommand}" IsVisible="{Binding SelectedIsArchive}" />
+                    <MenuItem Header="{x:Static app:Strings.RecheckTorrent}" Command="{Binding RecheckTorrentCommand}" IsVisible="{Binding SelectedIsTorrent}" />
+                    <MenuItem Header="{x:Static app:Strings.RelocateTorrent}" Command="{Binding RelocateTorrentCommand}" IsVisible="{Binding SelectedIsTorrent}" />
                     <Separator />
                     <MenuItem Header="{x:Static app:Strings.Resume}" Command="{Binding ResumeCommand}" />
                     <MenuItem Header="{x:Static app:Strings.Pause}" Command="{Binding PauseCommand}" InputGesture="Space" />
@@ -294,9 +301,18 @@
                       <Separator />
                       <MenuItem Header="{x:Static app:Strings.MoveToNight}" Command="{Binding MoveToNightCommand}" />
                     </MenuItem>
+                    <MenuItem Header="{x:Static app:Strings.MoveToQueue}" ItemsSource="{Binding QueueTargets}">
+                      <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="vm:QueueTarget">
+                          <Setter Property="Header" Value="{Binding Label}" />
+                          <Setter Property="Command" Value="{Binding Command}" />
+                        </ControlTheme>
+                      </MenuItem.ItemContainerTheme>
+                    </MenuItem>
                     <MenuItem Header="{x:Static app:Strings.RefreshLink}" Command="{Binding RefreshLinkCommand}" />
                     <MenuItem Header="{x:Static app:Strings.SpeedLimitTitle}" Command="{Binding SpeedLimitCommand}" />
                     <MenuItem Header="{x:Static app:Strings.CopyUrl}" Command="{Binding CopyUrlCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.TagsEllipsis}" Command="{Binding EditTagsCommand}" />
                     <Separator />
                     <MenuItem Header="{x:Static app:Strings.Delete}" Command="{Binding DeleteCommand}" InputGesture="Delete" />
                     <MenuItem Header="{x:Static app:Strings.DeleteWithFiles}" Command="{Binding DeleteWithFilesCommand}" />
@@ -319,9 +335,11 @@
                     <DataGridTemplateColumn.CellTemplate>
                       <DataTemplate x:DataType="vm:DownloadItemViewModel">
                         <!-- Grid, not StackPanel: the name needs a bounded width for the "…" trimming -->
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9" Margin="0,0,8,0" VerticalAlignment="Center">
                           <c:Icon Data="{Binding Icon}" Size="15" StrokeThickness="1.8" Foreground="{Binding IconBrush}" />
                           <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                          <TextBlock Grid.Column="2" Classes="cell" Text="{Binding TagsText}" FontSize="11.5" Foreground="{DynamicResource CatCustomBrush}"
+                                     IsVisible="{Binding TagsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                         </Grid>
                       </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -426,11 +444,19 @@
                   </StackPanel>
                 </Grid>
 
-                <!-- progress: the HTTP segment map, or a plain bar -->
-                <Panel DockPanel.Dock="Top" Height="5" Margin="0,4,0,6">
-                  <c:SegmentMap IsVisible="{Binding ShowSegments}" Segments="{Binding Segments}" Total="{Binding TotalBytes}" />
-                  <c:Bar IsVisible="{Binding !ShowSegments}" Height="5" Value="{Binding Item.Progress}" Indeterminate="{Binding Item.Indeterminate}"
-                         Classes.error="{Binding Item.IsError}" Classes.done="{Binding Item.IsDone}" Classes.seed="{Binding Item.IsSeeding}" Classes.idle="{Binding Item.IsIdle}" />
+                <!-- progress: the HTTP segment map, the torrent piece map, or a plain bar -->
+                <Panel DockPanel.Dock="Top" Margin="0,4,0,6">
+                  <c:SegmentMap IsVisible="{Binding ShowSegments}" Height="5" Segments="{Binding Segments}" Total="{Binding TotalBytes}" />
+                  <c:PieceBar IsVisible="{Binding ShowPieces}" Height="8" Have="{Binding PieceHave}" Available="{Binding PieceAvailable}" ToolTip.Tip="{Binding PieceTip}" />
+                  <c:Bar Height="5" Value="{Binding Item.Progress}" Indeterminate="{Binding Item.Indeterminate}"
+                         Classes.error="{Binding Item.IsError}" Classes.done="{Binding Item.IsDone}" Classes.seed="{Binding Item.IsSeeding}" Classes.idle="{Binding Item.IsIdle}">
+                    <c:Bar.IsVisible>
+                      <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!ShowSegments" />
+                        <Binding Path="!ShowPieces" />
+                      </MultiBinding>
+                    </c:Bar.IsVisible>
+                  </c:Bar>
                 </Panel>
 
                 <!-- error -->
@@ -472,15 +498,16 @@
                     </ItemsControl>
 
                     <!-- speed: the last minute as a graph, with current / average / peak -->
-                    <Grid ColumnDefinitions="170,*" ColumnSpacing="16" Height="96" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=speed}">
+                    <Grid ColumnDefinitions="170,*" ColumnSpacing="16" Height="116" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=speed}">
                       <StackPanel Spacing="5" VerticalAlignment="Center">
                         <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedNow}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding Item.SpeedText}" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" /></Grid>
                         <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedAverage}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding AvgSpeedText}" /></Grid>
                         <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedPeak}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding PeakSpeedText}" /></Grid>
                         <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsTorrent}"><TextBlock Classes="k" Text="{x:Static app:Strings.ProfileUp}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding Item.UpSpeedText}" Foreground="{DynamicResource InfoTextBrush}" /></Grid>
-                        <TextBlock Classes="faint" FontSize="11" Text="{x:Static app:Strings.Last60s}" />
+                        <ListBox Classes="seg" ItemsSource="{Binding SpeedPeriods}" SelectedIndex="{Binding SpeedPeriod}" HorizontalAlignment="Left" Margin="0,2,0,0"
+                                 AutomationProperties.Name="{x:Static app:Strings.SpeedGraph}" />
                       </StackPanel>
-                      <c:SpeedGraph Grid.Column="1" ShowScale="True" Values="{Binding SpeedHistory}" UpValues="{Binding UpHistoryValues}"
+                      <c:SpeedGraph Grid.Column="1" ShowScale="True" Values="{Binding SpeedHistory}" UpValues="{Binding UpHistoryValues}" Capacity="{Binding SpeedCapacity}"
                                     AutomationProperties.Name="{x:Static app:Strings.SpeedGraph}" />
                     </Grid>
 
@@ -502,11 +529,16 @@
                         <ItemsControl.ItemTemplate>
                           <DataTemplate x:DataType="vm:PeerRow">
                             <Border MinHeight="28" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
-                              <Grid ColumnDefinitions="*,140,120,80" ColumnSpacing="14">
+                              <Grid ColumnDefinitions="*,140,120,80,Auto" ColumnSpacing="14">
                                 <TextBlock Classes="cell" Text="{Binding Address}" FontSize="12" />
                                 <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Client}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
                                 <ProgressBar Grid.Column="2" Value="{Binding Have}" Height="4" Classes="seed" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="3" Classes="cell" Text="{Binding Down}" FontSize="12" HorizontalAlignment="Right" />
+                                <Button Grid.Column="4" Classes="tool" Width="24" Height="24" Padding="0"
+                                        Command="{Binding $parent[ItemsControl].((vm:DetailViewModel)DataContext).BanPeerCommand}" CommandParameter="{Binding}"
+                                        ToolTip.Tip="{x:Static app:Strings.BanPeer}" AutomationProperties.Name="{x:Static app:Strings.BanPeer}">
+                                  <c:Icon Data="{StaticResource IcBan}" Size="12" />
+                                </Button>
                               </Grid>
                             </Border>
                           </DataTemplate>
@@ -607,6 +639,13 @@
           <StackPanel Orientation="Horizontal" Spacing="5">
             <c:Icon Data="{StaticResource IcClock}" Size="12" Foreground="{DynamicResource FaintBrush}" />
             <TextBlock Text="{Binding QueueText}" Foreground="{DynamicResource SubtleBrush}" />
+          </StackPanel>
+        </Button>
+        <Button Grid.Column="3" Classes="tool" IsVisible="{Binding IsHeld}" Command="{Binding OpenScheduleCommand}" HorizontalAlignment="Left"
+                ToolTip.Tip="{x:Static app:Strings.HoldTip}" AutomationProperties.Name="{Binding HoldText}">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <c:Icon Data="{StaticResource IcPause}" Size="12" StrokeThickness="2" Foreground="{DynamicResource WarnBrush}" />
+            <TextBlock Text="{Binding HoldText}" Foreground="{DynamicResource WarnTextBrush}" />
           </StackPanel>
         </Button>
         <TextBlock Grid.Column="4" Text="{Binding DhtText}" Foreground="{DynamicResource FaintBrush}" />

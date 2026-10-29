@@ -9,6 +9,11 @@
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="Serilog" />
+    <PackageReference Include="SharpCompress" />
+    <PackageReference Include="Jint" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Remote\webui.html" LogicalName="Fluxer.Core.Remote.webui.html" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Fluxer.Core.Tests" />

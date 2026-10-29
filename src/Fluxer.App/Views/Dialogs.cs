@@ -85,6 +85,16 @@ public static partial class Dialogs
         return result;
     }
 
+    /// Buttons left to right, the last one the default; null when the window is closed without a choice.
+    public static async Task<int?> ChoiceAsync(Window? owner, string title, string message, params string[] options)
+    {
+        int? result = null;
+        var w = Shell(title, Paragraph(message), 500,
+            [.. options.Select((o, i) => new Button(o, i == options.Length - 1, () => { result = i; return true; }))]);
+        await ShowAsync(w, owner);
+        return result;
+    }
+
     public static async Task MessageAsync(Window? owner, string title, string message)
     {
         var w = Shell(title, Paragraph(message), 460, new Button(Strings.Ok, true, () => true));

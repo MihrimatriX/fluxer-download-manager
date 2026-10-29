@@ -23,6 +23,13 @@ public sealed class AppSettings
     public bool UseCategoryFolders { get; set; } = true;
     public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
+    public SmartSpeed Smart { get; set; } = new();
+    public ExtractSettings Extract { get; set; } = new();
+    public RemoteSettings Remote { get; set; } = new();
+    /// Plugins the user turned on, each with the exact content they approved.
+    public List<Plugins.PluginGrant> Plugins { get; set; } = [];
+    /// The user's own queues besides the main and night ones.
+    public List<NamedQueue> Queues { get; set; } = [];
 
     /// Unlimited, balanced, background. The active one is copied into the limits above (UseProfile).
     public List<SpeedProfile> Profiles { get; set; } =
@@ -44,6 +51,21 @@ public sealed class AppSettings
     public bool PortForwarding { get; set; } = true;
     public string Encryption { get; set; } = "prefer"; // prefer | require | off
     public int MaxPeersPerTorrent { get; set; } = 100;
+    /// Extra trackers for public torrents: the user's own, plus a subscribed list refreshed daily (null = none).
+    public List<string> ExtraTrackers { get; set; } = [];
+    public string? TrackerListUrl { get; set; }
+    public List<string> TrackerListCache { get; set; } = [];
+    public long TrackerListAt { get; set; }
+    /// Peer block list: a file, or an http(s) address downloaded weekly into the data folder (null = none).
+    public string? IpFilterSource { get; set; }
+    public long IpFilterAt { get; set; }
+    /// Peers banned by hand from the Peers tab.
+    public List<string> BannedPeers { get; set; } = [];
+    /// Torrent search (Torznab: Jackett, Prowlarr…).
+    public List<Torrent.TorznabIndexer> Indexers { get; set; } = [];
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public List<string> AllExtraTrackers => Torrent.TrackerList.Merge(ExtraTrackers, TrackerListUrl is null ? [] : TrackerListCache);
 
     private const long KB = 1024, MB = 1024 * 1024;
 
@@ -102,22 +124,37 @@ public sealed class AppSettings
     public bool ToolsConsentGiven { get; set; }
     public long LastYtDlpCheck { get; set; }
 
-    public Dictionary<string, string[]> Categories { get; set; } = new()
-    {
-        ["Video"] = ["mp4", "mkv", "avi", "mov", "webm", "wmv", "flv", "m4v"],
-        ["Music"] = ["mp3", "flac", "wav", "aac", "ogg", "m4a", "opus", "wma"],
-        ["Documents"] = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "epub", "odt"],
-        ["Archives"] = ["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "iso"],
-        ["Programs"] = ["exe", "msi", "msix", "appx", "bat", "apk"],
-    };
+    /// Per-site login, connections, headers and speed limit.
+    public List<SiteRule> Sites { get; set; } = [];
 
-    public string? CategoryFor(string fileName)
+    /// The most specific rule for a host (the longest pattern wins).
+    public SiteRule? SiteRuleFor(string? host) =>
+        host is { Length: > 0 } ? Sites.Where(r => r.Matches(host)).OrderByDescending(r => r.Host.Length).FirstOrDefault() : null;
+
+    /// Built-in and user categories, in the order the filter row shows them.
+    public List<Category> CategoryList { get; set; } = Category.Defaults();
+
+    /// The category a file goes to: a site rule first (its extensions, if any, must match too), then extensions.
+    public string? CategoryFor(string fileName, string? url = null)
     {
         var ext = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
-        foreach (var (cat, exts) in Categories)
-            if (exts.Contains(ext)) return cat;
+        var host = Uri.TryCreate(url, UriKind.Absolute, out var u) ? u.Host : null;
+        foreach (var c in CategoryList.Where(c => c.Sites.Count > 0))
+            if (c.MatchesHost(host) && (c.Extensions.Count == 0 || c.Extensions.Contains(ext))) return c.Key;
+        foreach (var c in CategoryList.Where(c => c.Sites.Count == 0))
+            if (ext.Length > 0 && c.Extensions.Contains(ext)) return c.Key;
         return null;
     }
+
+    /// The category's own folder, or "download folder\category".
+    public string CategoryFolder(string category) =>
+        CategoryList.FirstOrDefault(c => c.Key == category)?.Folder is { Length: > 0 } own ? own : Path.Combine(DownloadDirectory, category);
+
+    /// Where a download of this category is saved when nobody picked a folder: the category's folder when category
+    /// folders are on or the category has a folder of its own, else the download folder.
+    public string FolderFor(string? category) =>
+        category is { Length: > 0 } && (UseCategoryFolders || CategoryList.Any(c => c.Key == category && c.Folder is { Length: > 0 }))
+            ? CategoryFolder(category) : DownloadDirectory;
 
     /// Settings saved by an older version get the current design's defaults once. Revision 1 (0.8): dark theme,
     /// compact rows, night queue at 01:00. Revision 2 (the compact redesign): light or dark only ("follow system"
@@ -149,6 +186,55 @@ public sealed class EventFeedback
     public bool Notify { get; set; } = true;
     public bool Sound { get; set; }
     public string? SoundFile { get; set; }
+}
+
+/// Speed rules that follow the PC instead of the clock.
+public sealed class SmartSpeed
+{
+    /// While someone works in another program, use BusyProfile; back to the usual profile after IdleMinutes.
+    public bool BusyOn { get; set; }
+    public int BusyProfile { get; set; } = 2;
+    public int IdleMinutes { get; set; } = 3;
+    /// On battery below this percentage everything pauses (0 = off); it continues on mains power.
+    public int BatteryPercent { get; set; }
+    /// No more than QuotaMb in any QuotaHours (0 = off); downloads pause until the window frees up.
+    public long QuotaMb { get; set; }
+    public int QuotaHours { get; set; } = 24;
+}
+
+/// Remote control: REST API, aria2 JSON-RPC and the web page (Settings → Automation → Remote access).
+public sealed class RemoteSettings
+{
+    public bool On { get; set; }
+    /// aria2's default, so its front-ends find Fluxer without changes.
+    public int Port { get; set; } = 6800;
+    /// Listen on every network interface instead of 127.0.0.1 only.
+    public bool Lan { get; set; }
+    public string? KeyProtected { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? Key
+    {
+        get => Platform.Windows.Dpapi.UnprotectBase64(KeyProtected);
+        set => KeyProtected = Platform.Windows.Dpapi.ProtectToBase64(value);
+    }
+}
+
+/// Unpacking finished archives (Settings → Downloads → Archives).
+public sealed class ExtractSettings
+{
+    public bool Auto { get; set; }
+    /// The archive (every part) goes once everything came out.
+    public bool DeleteAfter { get; set; }
+    /// Tried in turn on encrypted archives: one per line, DPAPI-encrypted like site passwords.
+    public string? PasswordsProtected { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public List<string> Passwords
+    {
+        get => [.. (Platform.Windows.Dpapi.UnprotectBase64(PasswordsProtected) ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries)];
+        set => PasswordsProtected = Platform.Windows.Dpapi.ProtectToBase64(string.Join('\n', value.Where(x => x.Length > 0)));
+    }
 }
 
 /// What runs when a download finishes or fails.
@@ -185,5 +271,8 @@ public sealed class UiSettings
     public Dictionary<string, double> ColumnWidths { get; set; } = [];
     public List<string> ColumnOrder { get; set; } = [];
     public double[]? WindowBounds { get; set; }         // x, y, width, height
+    /// The floating drop target and where it was left (screen pixels).
+    public bool DropTarget { get; set; }
+    public int[]? DropTargetPosition { get; set; }
     public bool WindowMaximized { get; set; }
 }

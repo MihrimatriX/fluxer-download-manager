@@ -26,17 +26,8 @@ public sealed partial class CategoryItem(string key, string iconKey) : Observabl
     public string Tip => $"{Title} · {Count}";
     public bool HasItems => Count > 0 && Key != "all";
 
-    public string Title => Key switch
-    {
-        "all" => Strings.CatAll,
-        "Video" => Strings.CatVideo,
-        "Music" => Strings.CatMusic,
-        "Documents" => Strings.CatDocuments,
-        "Archives" => Strings.CatArchives,
-        "Programs" => Strings.CatPrograms,
-        "Torrent" => Strings.CatTorrent,
-        _ => Key,
-    };
+    public string Title => Cats.Title(Key);
+    public bool ShowName => Cats.ShowsName(Key);
 
     public override string ToString() => Title;
 }
@@ -73,6 +64,9 @@ public sealed partial class StateFilter(string key) : ObservableObject
 /// One entry of the status bar's speed menu: a profile to switch to, or the way to the schedule page.
 public sealed record ProfileChoice(string Label, bool IsActive, Avalonia.Controls.MenuItemToggleType ToggleType, System.Windows.Input.ICommand Command);
 
+/// "Move to queue ›" in the row menu: main, night and the user's queues.
+public sealed record QueueTarget(string Label, System.Windows.Input.ICommand Command);
+
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly AppHost _host;
@@ -82,11 +76,7 @@ public sealed partial class MainViewModel : ObservableObject
     public MainViewModel(AppHost host)
     {
         _host = host;
-        Categories =
-        [
-            new("all", "IcAll"), new("Video", "IcVideo"), new("Music", "IcMusic"), new("Documents", "IcDoc"),
-            new("Archives", "IcArchive"), new("Programs", "IcApp"), new("Torrent", "IcTorrent"),
-        ];
+        Categories = [.. CategoryKeys().Select(k => new CategoryItem(k, Cats.IconKey(k)))];
         StateFilters = [new("all"), new("active"), new("queued"), new("paused"), new("done"), new("error")];
 #pragma warning disable MVVMTK0034 // the setter would also close the settings page (language change rebuilds this)
         _selectedCategory = Categories[0];
@@ -142,6 +132,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _totalUp = "";
     [ObservableProperty] private string _dhtText = "";
     [ObservableProperty] private string _profileText = "";
+    /// Smart speed holding every download (low battery, traffic quota); empty otherwise.
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsHeld))] private string _holdText = "";
+    public bool IsHeld => HoldText.Length > 0;
 
     // undo toast
     [ObservableProperty] private string _toastText = "";
@@ -162,6 +155,8 @@ public sealed partial class MainViewModel : ObservableObject
     /// Mirrors Settings.Ui into the bindable properties (startup, after the settings page saved).
     public void LoadUi()
     {
+        RefreshCategories();
+        UpdateQueueTargets();
         _loadingUi = true;
         var ui = _host.Engine.Settings.Ui;
         ToolbarLabels = ui.ToolbarLabels;
@@ -198,13 +193,19 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnSelectedCategoryChanged(CategoryItem value) { IsSettingsOpen = false; Refilter(); }
     partial void OnSelectedStateFilterChanged(StateFilter value) => Refilter();
     partial void OnSearchChanged(string value) => Refilter();
-    partial void OnSelectedItemChanged(DownloadItemViewModel? value) => Detail.Show(value);
+    partial void OnSelectedItemChanged(DownloadItemViewModel? value)
+    {
+        Detail.Show(value);
+        OnPropertyChanged(nameof(SelectedIsArchive));
+        OnPropertyChanged(nameof(SelectedIsTorrent));
+    }
 
     public void Reload()
     {
         _all.Clear();
         _source.Clear();
         foreach (var d in _host.Engine.Queue.Items) _source.Add(Track(d));
+        RefreshCategories();
         Refilter();
         Settings.Load(); // before any view binds to it, so controls never write defaults back
         LoadUi();
@@ -213,7 +214,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void RefreshTexts()
     {
-        Categories = [.. Categories.Select(c => new CategoryItem(c.Key, IconKeyOf(c.Key)))];
+        Categories = [.. CategoryKeys().Select(k => new CategoryItem(k, Cats.IconKey(k)))];
         StateFilters = [.. StateFilters.Select(f => new StateFilter(f.Key))];
 #pragma warning disable MVVMTK0034 // the setter would also close the settings page (language change rebuilds this)
         _selectedCategory = Categories[0];
@@ -226,17 +227,12 @@ public sealed partial class MainViewModel : ObservableObject
         UpdateCounts();
         UpdateTotals();
         Settings.Load();
-
-        static string IconKeyOf(string key) => key switch
-        {
-            "Video" => "IcVideo", "Music" => "IcMusic", "Documents" => "IcDoc", "Archives" => "IcArchive",
-            "Programs" => "IcApp", "Torrent" => "IcTorrent", _ => "IcAll",
-        };
     }
 
     public void OnAdded(IDownload d)
     {
         _source.Add(Track(d));
+        if (d.Record.Tags.Count > 0) RefreshCategories();
         UpdateCounts();
     }
 
@@ -245,7 +241,32 @@ public sealed partial class MainViewModel : ObservableObject
         if (!_all.Remove(d.Id, out var vm)) return;
         _source.Remove(vm);
         if (SelectedItem == vm) SelectedItem = null;
+        if (d.Record.Tags.Count > 0) RefreshCategories();
         UpdateCounts();
+    }
+
+    /// "All", the categories from the settings, then a "#tag" for every tag in the list.
+    private List<string> CategoryKeys() =>
+    [
+        "all",
+        .. _host.Engine.Settings.CategoryList.Select(c => c.Key),
+        .. _all.Values.SelectMany(vm => vm.Download.Record.Tags).Distinct(StringComparer.CurrentCultureIgnoreCase)
+            .Order(StringComparer.CurrentCultureIgnoreCase).Select(t => "#" + t),
+    ];
+
+    /// Categories edited in the settings, tags added or gone: the filter row follows, keeping the selection.
+    public void RefreshCategories()
+    {
+        var keys = CategoryKeys();
+        if (keys.SequenceEqual(Categories.Select(c => c.Key))) return;
+        var selected = SelectedCategory.Key;
+        Categories = [.. keys.Select(k => new CategoryItem(k, Cats.IconKey(k)))];
+#pragma warning disable MVVMTK0034 // the setter would also close the settings page
+        _selectedCategory = Categories.FirstOrDefault(c => c.Key == selected) ?? Categories[0];
+#pragma warning restore MVVMTK0034
+        OnPropertyChanged(nameof(Categories));
+        OnPropertyChanged(nameof(SelectedCategory));
+        Refilter();
     }
 
     public void OnStateChanged(IDownload d)
@@ -254,7 +275,9 @@ public sealed partial class MainViewModel : ObservableObject
         vm.Refresh();
         if (View.Contains(vm) != Matches(vm)) Refilter();
         else UpdateCounts();
-        if (SelectedItem == vm) Detail.Show(vm);
+        if (SelectedItem != vm) return;
+        Detail.Show(vm);
+        OnPropertyChanged(nameof(SelectedIsArchive));
     }
 
     public void OnReordered()
@@ -288,7 +311,7 @@ public sealed partial class MainViewModel : ObservableObject
         TotalUp = "↑ " + (Loc.Speed(up) is { Length: > 0 } b ? b : "0 B/s");
         DhtText = engine.DhtNodes is { } n ? string.Format(CultureInfo.CurrentCulture, Strings.DhtNodes, n) : "";
         MainQueueText = string.Format(CultureInfo.CurrentCulture, Strings.Concurrent, s.HttpSlots);
-        var night = items.Count(d => d.State == DownloadState.Scheduled);
+        var night = items.Count(d => d.State == DownloadState.Scheduled && d.Record.QueueId is null);
         NightQueueOn = s.ScheduleStart is not null;
         NightQueueText = (s.ScheduleStart ?? Strings.Manual) + (night > 0 ? $" · {night}" : "");
         QueueText = string.Format(CultureInfo.CurrentCulture, Strings.QueueStatus, s.HttpSlots, NightQueueText);
@@ -405,12 +428,14 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private bool MatchesSearch(DownloadItemViewModel vm) =>
-        Search.Length == 0 || vm.Download.FileName.Contains(Search, StringComparison.CurrentCultureIgnoreCase);
+        Search.Length == 0 || vm.Download.FileName.Contains(Search, StringComparison.CurrentCultureIgnoreCase)
+        || vm.Download.Record.Tags.Any(t => t.Contains(Search.TrimStart('#'), StringComparison.CurrentCultureIgnoreCase));
 
     private static bool InCategory(DownloadItemViewModel vm, string key) => key switch
     {
         "all" => true,
         "Torrent" => vm.Download.Kind == DownloadKind.Torrent,
+        ['#', .. var tag] => vm.Download.Record.Tags.Contains(tag, StringComparer.CurrentCultureIgnoreCase),
         var cat => vm.Download.Record.Category == cat,
     };
 
@@ -563,13 +588,40 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// Sends the selected waiting downloads to the night queue.
     [RelayCommand]
-    private async Task MoveToNight()
+    private Task MoveToNight() => MoveToQueueAsync(null, night: true);
+
+    /// `queueId` null + night: the night queue; null alone: the main queue; else one of the user's queues.
+    private async Task MoveToQueueAsync(string? queueId, bool night)
     {
         foreach (var d in Targets.Where(d => d.State is not (DownloadState.Completed or DownloadState.Seeding)))
         {
+            if (queueId is null && !night)
+            {
+                _host.Engine.Queue.MoveToMain(d.Id);
+                continue;
+            }
             await _host.Engine.Queue.PauseAsync(d.Id);
-            _host.Engine.Queue.Defer(d.Id);
+            _host.Engine.Queue.Defer(d.Id, queueId);
         }
+    }
+
+    [ObservableProperty] private IReadOnlyList<QueueTarget> _queueTargets = [];
+
+    public IReadOnlyList<NamedQueue> NamedQueues => _host.Engine.Settings.Queues;
+
+    /// Palette and Settings: a queue starts now instead of at its time.
+    public void StartQueue(string? id) => _host.Engine.Queue.StartQueue(id);
+
+    /// Rebuilt when the settings change (queues added, renamed or removed).
+    private void UpdateQueueTargets()
+    {
+        var s = _host.Engine.Settings;
+        QueueTargets =
+        [
+            new(Strings.MainQueue, new RelayCommand(() => _ = MoveToQueueAsync(null, night: false))),
+            new(Strings.NightQueue, MoveToNightCommand),
+            .. s.Queues.Select(q => new QueueTarget(q.Name, new RelayCommand(() => _ = MoveToQueueAsync(q.Id, night: false)))),
+        ];
     }
 
     [RelayCommand]
@@ -590,6 +642,75 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (SelectedItem?.Download is { } d) _host.OpenDownloadWindow(d);
     }
+
+    /// A finished zip/rar/7z/tar in the selection: "Extract" is offered.
+    public bool SelectedIsArchive => SelectedItem?.Download is { State: DownloadState.Completed, Kind: DownloadKind.Http } d
+        && Fluxer.Core.Automation.Extractor.KeyOf(d.FileName) is not null;
+
+    public bool SelectedIsTorrent => SelectedItem?.Download is TorrentDownload;
+
+    /// Speeds over the last hour, fed by the host every 2 s (detail panel: 10 minutes, 1 hour).
+    public SpeedRecorder Speeds { get; } = new();
+
+    /// Reads the torrent's data back from disk and checks every piece; it continues if it was running.
+    [RelayCommand]
+    private async Task RecheckTorrent()
+    {
+        if (SelectedItem?.Download is not TorrentDownload td) return;
+        var completed = td.State == DownloadState.Completed;
+        await RunPausedAsync(td, () => td.RecheckAsync(completed));
+    }
+
+    /// Move the data elsewhere, or point the torrent at a copy that is already elsewhere.
+    [RelayCommand]
+    private async Task RelocateTorrent()
+    {
+        if (SelectedItem?.Download is not TorrentDownload td || _host.Owner is not { } w) return;
+        if (await Dialogs.PickFolderAsync(w, td.Record.SaveDirectory) is not { } folder || folder == td.Record.SaveDirectory) return;
+        var choice = await Dialogs.ChoiceAsync(w, Strings.RelocateTitle, string.Format(CultureInfo.CurrentCulture, Strings.RelocateBody, folder),
+            Strings.Cancel, Strings.RelocateAlreadyThere, Strings.RelocateMove);
+        if (choice is not (1 or 2)) return;
+        var completed = td.State == DownloadState.Completed;
+        await RunPausedAsync(td, () => td.RelocateAsync(folder, move: choice == 2, completed));
+        Detail.Show(SelectedItem);
+    }
+
+    private async Task RunPausedAsync(TorrentDownload td, Func<Task> work)
+    {
+        var queue = _host.Engine.Queue;
+        var again = await queue.SuspendAsync(td.Id);
+        try { await work(); }
+        catch (Exception e)
+        {
+            Serilog.Log.Warning(e, "Torrent {Id}: {Action} failed", td.Id, work.Method.Name);
+            await Dialogs.MessageAsync(_host.Owner, td.FileName, Loc.Error(e.Message) is { Length: > 0 } m ? m : e.Message);
+        }
+        if (again) queue.Continue(td.Id);
+    }
+
+    [RelayCommand]
+    private Task SearchTorrents() => Dialogs.TorrentSearchAsync(_host);
+
+    [RelayCommand]
+    private Task CrawlSite() => Flows.CrawlAsync(_host);
+
+    [RelayCommand]
+    private async Task OpenStats()
+    {
+        var report = await Task.Run(_host.Engine.Statistics);
+        await Dialogs.ShowAsync(Dialogs.StatsWindow(report, LastDay()), _host.Owner);
+    }
+
+    /// The transfer meter's last 24 hours as average speed per 5 minutes.
+    private (double[] Down, double[] Up) LastDay()
+    {
+        var (down, up) = _host.Engine.Meter.PerMinute(DateTimeOffset.UtcNow, 24 * 60);
+        static double[] Fives(long[] perMinute) => [.. perMinute.Chunk(5).Select(c => c.Sum() / 300.0)];
+        return (Fives(down), Fives(up));
+    }
+
+    [RelayCommand]
+    private Task Extract() => SelectedItem?.Download is { } d ? _host.ExtractAsync(d, manual: true) : Task.CompletedTask;
 
     [RelayCommand]
     private void OpenFolder()
@@ -716,6 +837,35 @@ public sealed partial class MainViewModel : ObservableObject
         IsSettingsOpen = false;
         SelectedStateFilter = StateFilters.FirstOrDefault(f => f.Key == key) ?? StateFilters[0];
     }
+
+    /// Tags of the selected downloads: the box shows the tags they share; what is typed replaces those, other
+    /// tags each one has stay.
+    [RelayCommand]
+    private async Task EditTags()
+    {
+        var targets = Targets;
+        if (targets.Count == 0) return;
+        var common = targets.Select(d => (IEnumerable<string>)d.Record.Tags)
+            .Aggregate((a, b) => a.Intersect(b, StringComparer.CurrentCultureIgnoreCase)).ToList();
+        var text = await Dialogs.InputAsync(_host.Owner, Strings.Tags, Strings.TagsPrompt, string.Join(", ", common));
+        if (text is null) return;
+        var entered = ParseTags(text);
+        foreach (var d in targets)
+        {
+            d.Record.Tags = [.. d.Record.Tags.Where(t => !common.Contains(t, StringComparer.CurrentCultureIgnoreCase))
+                .Concat(entered).Distinct(StringComparer.CurrentCultureIgnoreCase)];
+            _host.Engine.Queue.Save(d);
+            if (_all.TryGetValue(d.Id, out var vm)) vm.Refresh();
+        }
+        RefreshCategories();
+        UpdateCounts();
+    }
+
+    /// "film, iş  #arşiv" → ["film", "iş", "arşiv"].
+    public static List<string> ParseTags(string? text) =>
+        [.. (text ?? "").Split([',', ';', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .SelectMany(t => t.StartsWith('#') ? t.Split(' ', StringSplitOptions.RemoveEmptyEntries) : [t])
+            .Select(t => t.Trim().TrimStart('#').Trim()).Where(t => t.Length > 0).Distinct(StringComparer.CurrentCultureIgnoreCase)];
 
     /// Duplicate dialog "show it": every filter off, the row selected.
     public void Reveal(IDownload d)

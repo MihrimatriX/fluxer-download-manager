@@ -35,7 +35,7 @@ public sealed record SettingsSection(string Key, string Label)
 {
     public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
     {
-        "downloads" => "IcLogo", "speed" => "IcGauge", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
+        "downloads" => "IcLogo", "speed" => "IcGauge", "categories" => "IcTag", "sites" => "IcLock", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt", "plugins" => "IcPlug",
         "advanced" => "IcSliders", _ => "IcGear",
     });
 
@@ -163,7 +163,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         Sections =
         [
             new("general", Strings.SecGeneral), new("downloads", Strings.SecDownloads), new("speed", Strings.SecSpeedSchedule),
-            new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("automation", Strings.SecAutomation),
+            new("categories", Strings.SecCategories), new("sites", Strings.SecSites), new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration),
+            new("automation", Strings.SecAutomation), new("plugins", Strings.SecPlugins),
             new("advanced", Strings.TabAdvanced),
         ];
         _selectedSection = Sections[0];
@@ -197,6 +198,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private double _scalePercent = 100;
     [ObservableProperty] private bool _animations;
     [ObservableProperty] private bool _toolbarLabelsOn;
+    [ObservableProperty] private bool _dropTargetOn;
     public string ScaleText => Loc.Percent(ScalePercent / 100);
     partial void OnScalePercentChanged(double value) => OnPropertyChanged(nameof(ScaleText));
 
@@ -279,7 +281,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ScaleText), nameof(SelectedSection), nameof(Section), nameof(BrushIndex), nameof(BrushName),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
-        nameof(WebhookStatus), nameof(BackupText), nameof(DataText),
+        nameof(WebhookStatus), nameof(BackupText), nameof(DataText), nameof(QuotaUsedText),
+        nameof(RemoteStatus), nameof(RemoteNote), nameof(TrackerStatus), nameof(IpFilterStatus), nameof(BannedText),
     ];
 
     public void Load()
@@ -291,6 +294,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         ScalePercent = Math.Round(s.Ui.Scale * 100);
         Animations = s.Ui.Animations;
         ToolbarLabelsOn = s.Ui.ToolbarLabels;
+        DropTargetOn = s.Ui.DropTarget;
         ThemeIndex = s.Theme == "Light" ? 0 : 1;
         Notifications = s.Notifications;
         ShowAddDialog = s.ShowAddDialog;
@@ -357,6 +361,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         WatchFolder = s.WatchFolder ?? "";
         HasPendingUpdate = _host.HasPendingUpdate;
         LoadData(s);
+        LoadCategories(s);
+        LoadQueues(s);
+        LoadSites(s);
+        LoadArchives(s);
+        LoadRemote(s);
+        LoadTorrentExtras(s);
+        RefreshPlugins();
         SavedText = "";
         _loading = false;
     }
@@ -432,6 +443,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.Ui.Scale = Math.Clamp(ScalePercent / 100, 0.85, 1.3);
         s.Ui.Animations = Animations;
         s.Ui.ToolbarLabels = ToolbarLabelsOn;
+        var dropChanged = s.Ui.DropTarget != DropTargetOn;
+        s.Ui.DropTarget = DropTargetOn;
         s.Theme = ThemeIndex == 0 ? "Light" : "Dark";
         s.Notifications = Notifications;
         s.ShowAddDialog = ShowAddDialog;
@@ -495,6 +508,15 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.WatchClipboard = WatchClipboard;
         s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
         s.BackupInterval = BackupSetting(BackupIndex);
+        s.CategoryList = [.. CategoryRows.Select(r => r.ToCategory())];
+        s.Queues = [.. QueueRows.Select(r => r.ToQueue())];
+        SaveSites(s);
+        SaveArchives(s);
+        var (trackersChanged, filterChanged) = SaveTorrentExtras(s, old);
+        // The key is not edited here; the copy keeps it.
+        s.Remote.On = RemoteOn;
+        s.Remote.Port = (int)Math.Clamp(RemotePort ?? 6800, 1024, 65535);
+        s.Remote.Lan = RemoteLan;
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);
@@ -505,6 +527,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (assocChanged) _host.RegisterIntegration();
         if (watchChanged) _host.ApplyWatchers();
         if (rssChanged) engine.Rss.Reschedule();
+        await _host.ApplyRemoteAsync();
+        RefreshRemote();
+        if (dropChanged) { _host.ApplyDropTarget(); _host.RebuildTray(); }
+        if (trackersChanged || filterChanged) _ = FetchChangedListsAsync(trackersChanged, filterChanged);
         if (updatesChanged) _host.CheckForAppUpdate();
         if (Avalonia.Application.Current is { } app) Appearance.Apply(app, s.Ui);
         _host.Main.LoadUi();
@@ -762,6 +788,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         // Feed URLs often carry a tracker passkey; keep only the host.
         foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
         if (copy.Automation.WebhookUrl is { } hook) copy.Automation.WebhookUrl = Uri.TryCreate(hook, UriKind.Absolute, out var hu) ? hu.Host : "?";
+        copy.Extract.PasswordsProtected = null;
+        copy.Remote.KeyProtected = null;
+        foreach (var site in copy.Sites)
+        {
+            if (site.UserName is not null) site.UserName = "***";
+            site.PasswordProtected = null;
+        }
         using (var w = new StreamWriter(zip.CreateEntry("settings.json").Open()))
             w.Write(JsonSerializer.Serialize(copy, new JsonSerializerOptions { WriteIndented = true }));
         using (var w = new StreamWriter(zip.CreateEntry("system.txt").Open()))

@@ -102,17 +102,12 @@ public sealed partial class AddItem : ObservableObject
         if (!UserNamed && p?.FileName is { } fn) Name = fn;
         if (Name.Length == 0) Name = Uri.TryCreate(Url, UriKind.Absolute, out var u) ? Uri.UnescapeDataString(u.Segments[^1].TrimEnd('/')) : Url;
 
-        Category = p?.Kind == ProbeKind.Torrent ? "Torrent" : new AppSettings().CategoryFor(Name);
+        Category = p?.Kind == ProbeKind.Torrent ? "Torrent"
+            : (Services.AppHost.Current?.Engine?.Settings ?? new AppSettings()).CategoryFor(Name, Url);
         (Glyph, Tile) = (p?.Kind) switch
         {
             ProbeKind.Html => ("", Gray),
-            _ => Category switch
-            {
-                "Video" => ("", Theme.Brush("CatVideoBrush")), "Music" => ("", Theme.Brush("CatMusicBrush")),
-                "Documents" => ("", Theme.Brush("CatDocumentsBrush")), "Archives" => ("", Theme.Brush("CatArchivesBrush")),
-                "Programs" => ("", Theme.Brush("CatProgramsBrush")), "Torrent" => ("", Theme.Brush("CatTorrentBrush")),
-                _ => ("", Gray),
-            },
+            _ => (Category switch { "Video" => "", "Music" => "", "Documents" => "", "Archives" => "", "Programs" => "", "Torrent" => "", _ => "" }, Theme.Brush(Cats.TintKey(Category))),
         };
 
         var parts = new List<string>();
@@ -133,12 +128,8 @@ public sealed partial class AddItem : ObservableObject
         SizeText = Loc.Bytes(p?.Size);
         (ResumeText, ResumeBrush) = p?.Kind != ProbeKind.File ? ("—", Theme.Brush("SubtleBrush"))
             : p.Resumable ? (Strings.Supported, Theme.Brush("OkBrush")) : (Strings.NotSupported, Theme.Brush("WarnTextBrush"));
-        TypeText = Category switch
-        {
-            "Video" => Strings.CatVideo, "Music" => Strings.CatMusic, "Documents" => Strings.CatDocuments,
-            "Archives" => Strings.CatArchives, "Programs" => Strings.CatPrograms, "Torrent" => "Torrent",
-            _ => Path.GetExtension(Name) is { Length: > 1 } e ? e[1..].ToUpperInvariant() : "—",
-        };
+        TypeText = Category is { Length: > 0 } ? Cats.Title(Category)
+            : Path.GetExtension(Name) is { Length: > 1 } e ? e[1..].ToUpperInvariant() : "—";
         if (p is null) return;
         (StateText, StateBrush) = p.Kind switch
         {
@@ -163,8 +154,9 @@ public sealed record CategoryChip(string Key, string Title, string Glyph)
     public override string ToString() => Title;
 }
 
-/// Now: jumps to the front of the main queue; Queue: waits its turn; Night: waits for the night queue.
-public enum StartMode { Now, Queue, Paused, Night }
+/// Now: jumps to the front of the main queue; Queue: waits its turn; Night: waits for the night queue;
+/// Named: goes into one of the user's queues (AddResult.QueueId).
+public enum StartMode { Now, Queue, Paused, Night, Named }
 
 /// A link and what is already known about it: a browser capture brings its own cookies and referrer,
 /// the probe run when it was accepted, and the browser's file name.
@@ -172,7 +164,7 @@ public sealed record Captured(string Url, string? FileName = null, RequestContex
 
 /// What the add window returns to Flows.
 public sealed record AddResult(IReadOnlyList<AddItem> Items, string Folder, bool FolderIsPerFile, StartMode Mode, int Connections, string? HashAlgorithm, string? Hash,
-    IReadOnlyList<string> Mirrors);
+    IReadOnlyList<string> Mirrors, string? Category = null, IReadOnlyList<string>? Tags = null, string? QueueId = null);
 
 public sealed partial class AddDownloadViewModel : ObservableObject
 {
@@ -193,9 +185,9 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         _ctx = ctx;
         Categories =
         [
-            new("auto", Strings.CatAuto, ""), new("Video", Strings.CatVideo, ""), new("Music", Strings.CatMusic, ""),
-            new("Documents", Strings.CatDocuments, ""), new("Archives", Strings.CatArchives, ""),
-            new("Programs", Strings.CatPrograms, ""), new("none", Strings.CatNone, ""),
+            new("auto", Strings.CatAuto, ""),
+            .. settings.CategoryList.Where(c => c.Key != "Torrent").Select(c => new CategoryChip(c.Key, Cats.Title(c.Key), "")),
+            new("none", Strings.CatNone, ""),
         ];
         _selectedCategory = settings.UseCategoryFolders ? Categories[0] : Categories[^1];
         RecentFolders = [.. settings.RecentFolders];
@@ -203,6 +195,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         _folder = settings.DownloadDirectory;
         foreach (var l in links) _known[l.Url] = l;
         _urlsText = string.Join(Environment.NewLine, links.Select(l => l.Url));
+        _packageName = PackageNameFor(ctx?.Referrer ?? links.FirstOrDefault()?.Url);
         _debounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _debounce.Tick += (_, _) => { _debounce.Stop(); Rebuild(); };
 
@@ -270,6 +263,14 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [ObservableProperty] private double _connections;
     [ObservableProperty] private int _hashIndex;
     [ObservableProperty] private string _hash = "";
+    /// Comma separated; every added download gets them.
+    [ObservableProperty] private string _tagsText = "";
+    /// Several links as one package: saved together in a folder of that name and tagged with it, so the list
+    /// can show, pause and resume them as one.
+    [ObservableProperty] private bool _packageOn;
+    [ObservableProperty] private string _packageName = "";
+    public string? PackageFolderName =>
+        FileNameSanitizer.Sanitize(PackageName.Trim()) is { Length: > 0 } n && !string.IsNullOrWhiteSpace(PackageName) ? n : null;
     /// Single link only: other addresses of the same file, one per line.
     [ObservableProperty] private string _mirrorsText = "";
     [ObservableProperty, NotifyPropertyChangedFor(nameof(CanSubmit))] private string _mirrorError = "";
@@ -290,12 +291,16 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     public bool IsSingleHttp => Count == 1 && !Items[0].IsMagnet;
     public AddItem? Single => Items.Count == 1 ? Items[0] : null;
     public bool CanSubmit => Count > 0 && (!IsSingleHttp || MirrorError.Length == 0);
+    /// Main (now), night, paused, then the user's queues.
     public string[] Queues => [Strings.MainQueueNow, string.Format(CultureInfo.CurrentCulture, Strings.NightQueueOption,
-        _settings.ScheduleStart ?? Strings.Manual), Strings.AddPaused];
+        _settings.ScheduleStart ?? Strings.Manual), Strings.AddPaused,
+        .. _settings.Queues.Select(q => string.Format(CultureInfo.CurrentCulture, Strings.NamedQueueOption, q.Name, q.Start ?? Strings.Manual))];
+    private NamedQueue? SelectedQueue => QueueIndex >= 3 ? _settings.Queues.ElementAtOrDefault(QueueIndex - 3) : null;
     public string SubmitText => QueueIndex switch
     {
         1 => Strings.AddToNight,
         2 => Strings.AddPaused,
+        >= 3 => string.Format(CultureInfo.CurrentCulture, Strings.AddToNamedQueue, SelectedQueue?.Name),
         _ => Count > 1 ? string.Format(CultureInfo.CurrentCulture, Strings.StartN, Items.Count(i => i.IsIncluded)) : Strings.StartDownload,
     };
     /// Night queue / paused: one button says what will happen.
@@ -403,7 +408,7 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         {
             var key = SelectedCategory.Key;
             var cat = key == "auto" ? (Items.Count == 1 ? Items[0].Category : null) : key == "none" ? null : key;
-            Folder = cat is null ? _settings.DownloadDirectory : Path.Combine(_settings.DownloadDirectory, cat);
+            Folder = cat is null ? _settings.DownloadDirectory : _settings.CategoryFolder(cat);
             _folderTouched = false;
         }
         UpdateSpace();
@@ -468,6 +473,14 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     [RelayCommand]
     private void PickCategory(CategoryChip chip) => SelectedCategory = chip;
 
+    /// "gcc.gnu.org onlinedocs" from the page the links came from.
+    private static string PackageNameFor(string? url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var u)) return "";
+        var path = u.Segments.Select(seg => Uri.UnescapeDataString(seg.Trim('/'))).Where(seg => seg.Length > 0 && !seg.Contains('.')).Take(2);
+        return string.Join(" ", [u.Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? u.Host[4..] : u.Host, .. path]);
+    }
+
     /// Applies a pending URL edit right away (submit before the debounce fired).
     public void Flush()
     {
@@ -489,13 +502,16 @@ public sealed partial class AddDownloadViewModel : ObservableObject
     /// `startNow`: the primary button (front of the queue) rather than "Add to queue".
     public AddResult Result(bool startNow) => new(
         [.. Items.Where(i => i.IsIncluded || Items.Count == 1)],
-        Folder,
-        SelectedCategory.Key == "auto" && Items.Count > 1 && !_folderTouched,
-        QueueIndex switch { 1 => StartMode.Night, 2 => StartMode.Paused, _ => startNow ? StartMode.Now : StartMode.Queue },
+        PackageOn && PackageFolderName is { } pkg ? Path.Combine(Folder, pkg) : Folder,
+        SelectedCategory.Key == "auto" && Items.Count > 1 && !_folderTouched && !PackageOn,
+        QueueIndex switch { 1 => StartMode.Night, 2 => StartMode.Paused, >= 3 => StartMode.Named, _ => startNow ? StartMode.Now : StartMode.Queue },
         (int)Connections,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? HashAlgorithms[HashIndex] : null,
         HashIndex > 0 && !string.IsNullOrWhiteSpace(Hash) ? Hash.Trim() : null,
-        IsSingleHttp ? MirrorLines() : []);
+        IsSingleHttp ? MirrorLines() : [],
+        SelectedCategory.Key is "auto" or "none" ? null : SelectedCategory.Key,
+        [.. MainViewModel.ParseTags(TagsText), .. PackageOn && PackageFolderName is { } p ? [p] : Array.Empty<string>()],
+        SelectedQueue?.Id);
 }
 
 /// Two-way "ModeIndex == n" for radio buttons.

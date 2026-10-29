@@ -55,6 +55,10 @@ public sealed class Database : IDisposable
         "ALTER TABLE http_downloads ADD COLUMN mirrors TEXT;",
         // 5: user tags (JSON array)
         "ALTER TABLE downloads ADD COLUMN tags TEXT;",
+        // 6: named queue
+        "ALTER TABLE downloads ADD COLUMN queue_id TEXT;",
+        // 7: bytes moved and downloads finished per local day; kept when downloads are removed from the list
+        "CREATE TABLE traffic (day TEXT PRIMARY KEY, down INTEGER NOT NULL DEFAULT 0, up INTEGER NOT NULL DEFAULT 0, files INTEGER NOT NULL DEFAULT 0) WITHOUT ROWID;",
     ];
 
     public Database(string path)
@@ -82,8 +86,8 @@ public sealed class Database : IDisposable
             r.QueueOrder = Convert.ToInt64(Scalar("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM downloads", tx), CultureInfo.InvariantCulture);
             r.Id = Convert.ToInt64(Scalar("""
                 INSERT INTO downloads (kind, state, file_name, save_dir, category, total_bytes, done_bytes,
-                  speed_limit, queue_order, error, created_at, completed_at, tags)
-                VALUES ($kind, $state, $file, $dir, $cat, $total, $done, $limit, $order, $err, $created, $completed, $tags);
+                  speed_limit, queue_order, error, created_at, completed_at, tags, queue_id)
+                VALUES ($kind, $state, $file, $dir, $cat, $total, $done, $limit, $order, $err, $created, $completed, $tags, $queue);
                 SELECT last_insert_rowid();
                 """, tx, CommonParams(r)), CultureInfo.InvariantCulture);
             WriteDetails(r, tx);
@@ -99,7 +103,7 @@ public sealed class Database : IDisposable
             Exec("""
                 UPDATE downloads SET kind=$kind, state=$state, file_name=$file, save_dir=$dir, category=$cat,
                   total_bytes=$total, done_bytes=$done, speed_limit=$limit, queue_order=$order, error=$err,
-                  created_at=$created, completed_at=$completed, tags=$tags WHERE id=$id
+                  created_at=$created, completed_at=$completed, tags=$tags, queue_id=$queue WHERE id=$id
                 """, tx, [.. CommonParams(r), ("$id", r.Id)]);
             WriteDetails(r, tx);
             tx.Commit();
@@ -136,6 +140,7 @@ public sealed class Database : IDisposable
                         CreatedAt = rd.GetInt64(rd.GetOrdinal("created_at")),
                         CompletedAt = Long(rd, "completed_at"),
                         Tags = Str(rd, "tags") is { } tg ? JsonSerializer.Deserialize<List<string>>(tg) ?? [] : [],
+                        QueueId = Str(rd, "queue_id"),
                     };
                     list[r.Id] = r;
                 }
@@ -232,6 +237,30 @@ public sealed class Database : IDisposable
         }
     }
 
+    // ---------- traffic ----------
+
+    public void AddTraffic(DateOnly day, long down, long up, int files)
+    {
+        lock (_lock)
+            Exec("""
+                INSERT INTO traffic (day, down, up, files) VALUES ($d, $down, $up, $files)
+                ON CONFLICT(day) DO UPDATE SET down = down + excluded.down, up = up + excluded.up, files = files + excluded.files
+                """, null, ("$d", day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)), ("$down", down), ("$up", up), ("$files", files));
+    }
+
+    public List<Stats.DayTotal> LoadTraffic()
+    {
+        lock (_lock)
+        {
+            var list = new List<Stats.DayTotal>();
+            using var rd = Reader("SELECT day, down, up, files FROM traffic ORDER BY day");
+            while (rd.Read())
+                if (DateOnly.TryParseExact(rd.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+                    list.Add(new Stats.DayTotal(day, rd.GetInt64(1), rd.GetInt64(2), rd.GetInt32(3)));
+            return list;
+        }
+    }
+
     // ---------- settings ----------
 
     [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
@@ -315,7 +344,7 @@ public sealed class Database : IDisposable
         ("$kind", (int)r.Kind), ("$state", (int)r.State), ("$file", r.FileName), ("$dir", r.SaveDirectory),
         ("$cat", r.Category), ("$total", r.TotalBytes), ("$done", r.DoneBytes), ("$limit", r.SpeedLimit),
         ("$order", r.QueueOrder), ("$err", r.Error), ("$created", r.CreatedAt), ("$completed", r.CompletedAt),
-        ("$tags", r.Tags.Count == 0 ? null : JsonSerializer.Serialize(r.Tags)),
+        ("$tags", r.Tags.Count == 0 ? null : JsonSerializer.Serialize(r.Tags)), ("$queue", r.QueueId),
     ];
 
     private SqliteCommand Command(string sql, SqliteTransaction? tx, (string, object?)[] ps)

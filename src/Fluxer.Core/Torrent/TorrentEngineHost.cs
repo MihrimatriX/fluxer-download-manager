@@ -14,11 +14,12 @@ namespace Fluxer.Core.Torrent;
 /// (MonoTorrent's built-in limiter), independent of the HTTP token buckets.
 public sealed class TorrentEngineHost : IAsyncDisposable
 {
-    public TorrentEngineHost(string cacheDirectory, AppSettings settings)
+    public TorrentEngineHost(string cacheDirectory, AppSettings settings, PeerBlocker? blocker = null)
     {
         Directory.CreateDirectory(cacheDirectory);
         if (settings.Dht) SeedDhtCache(Path.Combine(cacheDirectory, "dht_nodes.cache"));
         Engine = new ClientEngine(Build(cacheDirectory, settings));
+        if (blocker is not null) Engine.ConnectionManager.BanPeer += (_, e) => e.BanPeer = blocker.IsBlocked(e.Peer.ConnectionUri);
     }
 
     private static readonly (string Host, int Port)[] DhtRouters =

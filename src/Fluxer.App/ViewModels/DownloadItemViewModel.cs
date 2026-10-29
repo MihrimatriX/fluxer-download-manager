@@ -31,6 +31,8 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
     public override string ToString() => Name;
 
     [ObservableProperty] private string _name = "";
+    /// "#work  #film" after the name.
+    [ObservableProperty] private string _tagsText = "";
     [ObservableProperty] private Geometry? _icon;
     [ObservableProperty] private IBrush _iconBrush = Brushes.Gray;
     [ObservableProperty] private double _progress;
@@ -72,6 +74,7 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
         var state = d.State;
         Name = d.FileName.Length > 0 ? d.FileName : d.Record.Http?.Url ?? d.Record.Media?.PageUrl ?? "…";
         Icon = Theme.Geometry(IconKey(d));
+        TagsText = d.Record.Tags.Count == 0 ? "" : string.Join("  ", d.Record.Tags.Select(t => "#" + t));
         IconBrush = Theme.Brush(TintKey(d));
         IsActive = IsRunningState;
         Indeterminate = IsActive && p.TotalBytes is null or 0 && state != DownloadState.Seeding;
@@ -150,7 +153,7 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
             case DownloadState.Queued when queuePosition(d) is { } pos:
                 return (string.Format(CultureInfo.CurrentCulture, Strings.QueuedAt, pos), Theme.Brush("SubtleBrush"));
             case DownloadState.Scheduled:
-                return (NightQueueLabel(), Theme.Brush("SubtleBrush"));
+                return (WaitLabel(d.Record), Theme.Brush("SubtleBrush"));
             case DownloadState.Completed:
                 return (Loc.State(state), Theme.Brush("OkBrush"));
             default:
@@ -163,24 +166,26 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
             ? string.Format(CultureInfo.CurrentCulture, Strings.NightQueueAt, at)
             : Strings.NightQueueManual;
 
-    /// Each file type has its own tint, so a long list scans by colour as well as by name.
-    public static string TintKey(IDownload d) => d.Kind == DownloadKind.Torrent ? "CatTorrentBrush"
-        : d.Record.Category is "Video" or "Music" or "Documents" or "Archives" or "Programs" ? $"Cat{d.Record.Category}Brush"
-        : "CatOtherBrush";
+    private static NamedQueue? QueueOf(DownloadRecord r) =>
+        r.QueueId is { } id ? Services.AppHost.Current?.Engine?.Settings.Queues.FirstOrDefault(q => q.Id == id) : null;
 
-    private static string IconKey(IDownload d)
+    /// A waiting download: "Night queue · 01:00" or "Weekend · Sat 09:00" / "Weekend · manual start".
+    public static string WaitLabel(DownloadRecord r)
     {
-        if (d.Kind == DownloadKind.Torrent) return "IcTorrent";
-        return (d.Record.Category ?? "") switch
-        {
-            "Video" => "IcVideo",
-            "Music" => "IcMusic",
-            "Documents" => "IcDoc",
-            "Archives" => "IcArchive",
-            "Programs" => "IcApp",
-            _ => "IcFile",
-        };
+        if (QueueOf(r) is not { } q) return NightQueueLabel();
+        if (q.NextStart(DateTime.Now) is not { } at) return string.Format(CultureInfo.CurrentCulture, Strings.QueueManualLabel, q.Name);
+        var when = at.Date == DateTime.Today ? at.ToString("HH:mm", CultureInfo.CurrentCulture) : at.ToString("ddd HH:mm", CultureInfo.CurrentCulture);
+        return $"{q.Name} · {when}";
     }
+
+    /// Detail panel: which queue it is in.
+    public static string QueueName(IDownload d) =>
+        d.State == DownloadState.Scheduled ? WaitLabel(d.Record) : QueueOf(d.Record)?.Name ?? Strings.MainQueue;
+
+    /// Each file type has its own tint, so a long list scans by colour as well as by name.
+    public static string TintKey(IDownload d) => Cats.TintKey(d.Kind == DownloadKind.Torrent ? "Torrent" : d.Record.Category);
+
+    private static string IconKey(IDownload d) => d.Kind == DownloadKind.Torrent ? "IcTorrent" : Cats.IconKey(d.Record.Category);
 }
 
 /// Theme resources for code that builds brushes and icons (follow the light/dark variant at lookup time).

@@ -96,13 +96,14 @@ public static class Flows
                 continue;
             }
             // Several files with "automatic" category: each goes to its own category folder.
-            var folder = r.FolderIsPerFile && item.Category is { } cat ? Path.Combine(s.DownloadDirectory, cat)
+            var folder = r.FolderIsPerFile && item.Category is { } cat ? s.CategoryFolder(cat)
                 : r.FolderIsPerFile ? s.DownloadDirectory : r.Folder;
             added.Add(engine.AddHttp(item.Url, item.UserNamed ? item.Name : null, item.Context, folder, r.Mode != ViewModels.StartMode.Paused,
                 // Only a link the user kept knowing it is a web page may be saved as one; any other page
                 // (sign-in, expired session) fails with "got-html" instead of finishing as a 1 KB "download.php".
                 r.HashAlgorithm, r.Hash, rejectHtml: item.Kind != ProbeKind.Html, connections: r.Connections,
-                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors));
+                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors, category: r.Category ?? item.Category, tags: r.Tags,
+                queueId: r.Mode == ViewModels.StartMode.Named ? r.QueueId : null));
         }
 
         // "Start now" jumps the queue; "Add to queue" waits its turn at the end.
@@ -333,6 +334,32 @@ public static class Flows
         return false;
     }
 
+    // ================= site crawler =================
+
+    /// Collects the files a site links to (a few levels deep) and opens them in the page grabber to pick from.
+    public static async Task CrawlAsync(AppHost host)
+    {
+        var clip = await Dialogs.GetClipboardTextAsync(host.Owner);
+        var suggested = Uri.TryCreate(clip?.Trim(), UriKind.Absolute, out var cu) && cu.Scheme is "http" or "https" ? cu.AbsoluteUri : null;
+        if (await Dialogs.CrawlOptionsAsync(host.Owner, suggested) is not { } choice) return;
+        var (start, options) = choice;
+        SiteCrawler.Result? result;
+        try
+        {
+            result = await Dialogs.BusyAsync(host.Owner, Strings.CrawlTitle, start.Host, (report, ct) =>
+                SiteCrawler.CrawlAsync(host.Engine.Http.Client, start, options, null,
+                    new Progress<(int Pages, int Files)>(p => report.Report(string.Format(CultureInfo.CurrentCulture, Strings.CrawlProgress, p.Pages, p.Files))), ct));
+        }
+        catch (OperationCanceledException) { return; }
+        Log.Information("Crawled {Host}: {Pages} pages, {Files} files, {Failed} failed", start.Host, result.Pages, result.Files.Count, result.Failed);
+        if (result.Files.Count == 0)
+        {
+            await Dialogs.MessageAsync(host.Owner, Strings.CrawlTitle, string.Format(CultureInfo.CurrentCulture, Strings.CrawlNothing, result.Pages));
+            return;
+        }
+        await GrabAsync(host, new PageResources(start.AbsoluteUri, [.. result.Files.Select(f => new PageResource(f.Url, f.Kind, null, null))], null, null, null, false));
+    }
+
     // ================= page grabber =================
 
     public static async Task GrabAsync(AppHost host, PageResources page)
@@ -345,7 +372,8 @@ public static class Flows
         var ctx = new RequestContext(page.PageUrl, page.UserAgent, AppHost.CookieHeader(page.Cookies));
         var result = await Dialogs.GrabAsync(host.Owner, host.Engine.Settings, page, host.Engine.Http, ctx);
         if (result is not { } r) return;
-        foreach (var url in r.Urls) host.Engine.AddHttp(url, null, ctx, r.Folder);
+        string[]? tags = r.Package && Path.GetFileName(r.Folder.TrimEnd('\\', '/')) is { Length: > 0 } name ? [name] : null;
+        foreach (var url in r.Urls) host.Engine.AddHttp(url, null, ctx, r.Folder, tags: tags);
         host.ShowMainWindow();
         Log.Information("Grabbed {Count} resources from {Page}", r.Urls.Count, new Uri(page.PageUrl).Host);
     }

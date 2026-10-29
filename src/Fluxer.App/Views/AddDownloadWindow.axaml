@@ -168,6 +168,15 @@
               <TextBlock Text="{x:Static app:Strings.MirrorsDesc}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" TextWrapping="Wrap" />
             </StackPanel>
           </StackPanel>
+          <StackPanel Spacing="6" IsVisible="{Binding IsMulti}">
+            <CheckBox IsChecked="{Binding PackageOn}" Content="{x:Static app:Strings.PackageOption}" ToolTip.Tip="{x:Static app:Strings.PackageDesc}" />
+            <TextBox Text="{Binding PackageName}" IsVisible="{Binding PackageOn}" PlaceholderText="{x:Static app:Strings.PackageName}"
+                     AutomationProperties.Name="{x:Static app:Strings.PackageName}" />
+          </StackPanel>
+          <StackPanel>
+            <TextBlock Classes="label" Text="{x:Static app:Strings.Tags}" />
+            <TextBox Text="{Binding TagsText}" PlaceholderText="{x:Static app:Strings.TagsPrompt}" AutomationProperties.Name="{x:Static app:Strings.Tags}" />
+          </StackPanel>
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
             <StackPanel>
               <TextBlock Classes="label" Text="{x:Static app:Strings.InfoQueue}" />

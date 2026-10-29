@@ -83,6 +83,8 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(dl, Strings.NewDownload, "Ctrl+N", "IcPlus", main.AddUrlCommand);
         Cmd(dl, Strings.AddTorrent, "Ctrl+O", "IcTorrent", main.AddTorrentCommand);
         Cmd(dl, Strings.PasteLinks, "Ctrl+V", "IcLink", main.PasteCommand);
+        Cmd(dl, Strings.CrawlMenu, null, "IcGlobe", main.CrawlSiteCommand);
+        Cmd(dl, Strings.SearchTorrents, null, "IcSearch", main.SearchTorrentsCommand);
         Cmd(dl, Strings.ResumeAll, "Ctrl+Shift+R", "IcPlay", main.ResumeAllCommand);
         Cmd(dl, Strings.PauseAll, "Ctrl+Shift+P", "IcPause", main.PauseAllCommand);
         Cmd(dl, Strings.ClearCompleted, null, "IcBroom", main.ClearCompletedCommand);
@@ -92,6 +94,12 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(sel, Strings.Pause, "Space", "IcPause", main.PauseCommand);
         Cmd(sel, Strings.OpenFile, "Enter", "IcFile", main.OpenFileCommand);
         Cmd(sel, Strings.OpenFolder, null, "IcFolder", main.OpenFolderCommand);
+        if (main.SelectedIsArchive) Cmd(sel, Strings.ExtractHere, null, "IcArchive", main.ExtractCommand);
+        if (main.SelectedIsTorrent)
+        {
+            Cmd(sel, Strings.RecheckTorrent, null, "IcRefresh", main.RecheckTorrentCommand);
+            Cmd(sel, Strings.RelocateTorrent, null, "IcFolder", main.RelocateTorrentCommand);
+        }
         Cmd(sel, Strings.ProgressWindow, null, "IcExternal", main.OpenDetailsCommand);
         Cmd(sel, Strings.CopyUrl, null, "IcLink", main.CopyUrlCommand);
         Cmd(sel, Strings.RefreshLink, null, "IcRefresh", main.RefreshLinkCommand);
@@ -101,6 +109,8 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(sel, Strings.MoveDown, "Ctrl+Down", "IcDown", main.MoveDownCommand);
         Cmd(sel, Strings.MoveBottom, "Ctrl+End", "IcDown", main.MoveBottomCommand);
         Cmd(sel, Strings.MoveToNight, null, "IcClock", main.MoveToNightCommand);
+        foreach (var t in main.QueueTargets.Skip(2))
+            Add(sel, string.Format(CultureInfo.CurrentCulture, Strings.PaletteMoveToQueue, t.Label), null, "IcClock", () => t.Command.Execute(null));
         Cmd(sel, Strings.Delete, "Del", "IcTrash", main.DeleteCommand);
         Cmd(sel, Strings.DeleteWithFiles, null, "IcTrash", main.DeleteWithFilesCommand);
 
@@ -108,9 +118,15 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         foreach (var f in main.StateFilters)
             Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, f.Title), null, "IcAll", () => main.ShowState(f.Key));
         foreach (var c in main.Categories.Skip(1))
-            Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, c.Title), null, IconOf(c.Key), () => main.ShowCategory(c.Key));
+            Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, c.Title), null, Cats.IconKey(c.Key), () => main.ShowCategory(c.Key));
         Cmd(view, Strings.ToggleDetail, "Ctrl+I", "IcPanel", main.ToggleDetailCommand);
+        Cmd(view, Strings.Statistics, null, "IcChart", main.OpenStatsCommand);
         Cmd(view, main.IsLight ? Strings.PaletteDarkTheme : Strings.PaletteLightTheme, null, main.IsLight ? "IcMoon" : "IcSun", main.ToggleThemeCommand);
+
+        var queues = Strings.PaletteGroupQueues;
+        Add(queues, string.Format(CultureInfo.CurrentCulture, Strings.PaletteStartQueue, Strings.NightQueue), null, "IcPlay", () => main.StartQueue(null));
+        foreach (var q in main.NamedQueues)
+            Add(queues, string.Format(CultureInfo.CurrentCulture, Strings.PaletteStartQueue, q.Name), null, "IcPlay", () => main.StartQueue(q.Id));
 
         var speed = Strings.PaletteGroupSpeed;
         foreach (var p in main.ProfileChoices.Where(p => p.ToggleType == Avalonia.Controls.MenuItemToggleType.Radio))
@@ -120,11 +136,5 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         foreach (var s in main.Settings.Sections)
             Add(settings, $"{Strings.Settings}: {s.Label}", s.Key == "general" ? "Ctrl+," : null, "IcGear", () => main.OpenSettingsAt(s.Key));
         return list;
-
-        static string IconOf(string key) => key switch
-        {
-            "Video" => "IcVideo", "Music" => "IcMusic", "Documents" => "IcDoc", "Archives" => "IcArchive",
-            "Programs" => "IcApp", "Torrent" => "IcTorrent", _ => "IcAll",
-        };
     }
 }

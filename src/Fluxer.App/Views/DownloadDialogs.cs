@@ -36,7 +36,7 @@ public static partial class Dialogs
         void UpdateTotal() => total.Text = $"{Strings.InfoSize}: {Loc.Bytes(tree.SelectedBytes)}";
         UpdateTotal();
         var sequential = new CheckBox { Content = Strings.Sequential, Margin = new Thickness(0, 8, 0, 0) };
-        var defaultDir = s.UseCategoryFolders ? Path.Combine(s.DownloadDirectory, "Torrent") : s.DownloadDirectory;
+        var defaultDir = s.FolderFor("Torrent");
         var (folder, folderValue) = FolderPicker(defaultDir);
 
         var body = new StackPanel { Children = { new TextBlock { Text = name, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap } } };
@@ -80,7 +80,7 @@ public static partial class Dialogs
             Content = e.Duration is { } d ? $"{e.Title}   ({TimeSpan.FromSeconds(d):g})" : e.Title,
             IsChecked = true,
         }).ToList();
-        var (folder, folderValue) = FolderPicker(s.UseCategoryFolders ? Path.Combine(s.DownloadDirectory, "Video") : s.DownloadDirectory);
+        var (folder, folderValue) = FolderPicker(s.FolderFor("Video"));
 
         var body = new StackPanel { Children = { new TextBlock { Text = probe.Title, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap } } };
         if (probe.IsPlaylist)

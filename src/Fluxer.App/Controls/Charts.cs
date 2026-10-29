@@ -72,13 +72,16 @@ public sealed class SpeedGraph : Control
     public static readonly StyledProperty<IBrush?> LineBrushProperty = AvaloniaProperty.Register<SpeedGraph, IBrush?>(nameof(LineBrush));
     public IBrush? LineBrush { get => GetValue(LineBrushProperty); set => SetValue(LineBrushProperty, value); }
 
-    static SpeedGraph() => AffectsRender<SpeedGraph>(ValuesProperty, UpValuesProperty, ShowScaleProperty, LineBrushProperty);
+    /// How many samples fill the width (fewer are drawn from the right edge).
+    public static readonly StyledProperty<int> CapacityProperty = AvaloniaProperty.Register<SpeedGraph, int>(nameof(Capacity), 240);
+
+    static SpeedGraph() => AffectsRender<SpeedGraph>(ValuesProperty, UpValuesProperty, ShowScaleProperty, LineBrushProperty, CapacityProperty);
 
     public double[] Values { get => GetValue(ValuesProperty); set => SetValue(ValuesProperty, value); }
     public double[] UpValues { get => GetValue(UpValuesProperty); set => SetValue(UpValuesProperty, value); }
     public bool ShowScale { get => GetValue(ShowScaleProperty); set => SetValue(ShowScaleProperty, value); }
 
-    public int Capacity { get; set; } = 240;
+    public int Capacity { get => GetValue(CapacityProperty); set => SetValue(CapacityProperty, value); }
 
     public override void Render(DrawingContext ctx)
     {
@@ -195,5 +198,125 @@ public sealed class Bar : Control
         }
         var w = b.Width * Math.Clamp(Value, 0, 100) / 100;
         if (w > 0) ctx.DrawRectangle(fg, null, new Rect(0, 0, Math.Max(w, b.Height), b.Height), r, r);
+    }
+}
+
+/// Calendar heatmap of the last 53 weeks: a column per week, Monday at the top, darker for more downloaded.
+/// The level comes from the day's rank among days with traffic, so one huge day does not wash out the rest.
+public sealed class Heatmap : Control
+{
+    public static readonly StyledProperty<IReadOnlyList<Fluxer.Core.Stats.DayTotal>> DaysProperty =
+        AvaloniaProperty.Register<Heatmap, IReadOnlyList<Fluxer.Core.Stats.DayTotal>>(nameof(Days), []);
+
+    static Heatmap() => AffectsRender<Heatmap>(DaysProperty);
+
+    public IReadOnlyList<Fluxer.Core.Stats.DayTotal> Days { get => GetValue(DaysProperty); set => SetValue(DaysProperty, value); }
+
+    private const double LabelWidth = 30, MonthHeight = 16, Gap = 2.5;
+    public static readonly double[] Levels = [0.10, 0.32, 0.52, 0.76, 1.0];
+
+    public Heatmap() => PointerMoved += (_, e) => ToolTip.SetTip(this, TipAt(e.GetPosition(this)));
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var width = double.IsInfinity(availableSize.Width) ? 700 : availableSize.Width;
+        return new Size(width, MonthHeight + 7 * Cell(width) - Gap);
+    }
+
+    private static double Cell(double width) => (width - LabelWidth) / 53;
+
+    /// Level 0 (nothing) to 4 for each day.
+    public static int[] LevelsOf(IReadOnlyList<Fluxer.Core.Stats.DayTotal> days)
+    {
+        var active = days.Where(d => d.Down > 0).Select(d => d.Down).ToArray();
+        // Rank = how many days moved less; the busiest quarter gets the darkest colour.
+        return [.. days.Select(d => d.Down <= 0 ? 0 : 1 + Math.Min(3, 4 * active.Count(v => v < d.Down) / active.Length))];
+    }
+
+    public override void Render(DrawingContext ctx)
+    {
+        var days = Days;
+        if (days.Count == 0) return;
+        var cell = Cell(Bounds.Width);
+        var size = cell - Gap;
+        var accent = SegmentMap.Accent(this);
+        var faint = this.TryFindResource("FaintBrush", ActualThemeVariant, out var f) && f is IBrush fb ? fb : Brushes.Gray;
+        var levels = LevelsOf(days);
+        var culture = CultureInfo.CurrentCulture;
+        var typeface = new Typeface(FontFamily.Default);
+
+        void Text(string s, double x, double y) =>
+            ctx.DrawText(new FormattedText(s, culture, FlowDirection.LeftToRight, typeface, 10, faint), new Point(x, y));
+
+        for (var row = 0; row < 7; row += 2)
+            Text(culture.DateTimeFormat.AbbreviatedDayNames[(row + 1) % 7], 0, MonthHeight + row * cell - 1);
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        for (var i = 0; i < days.Count && days[i].Day <= today; i++)
+        {
+            int col = i / 7, row = i % 7;
+            var x = LabelWidth + col * cell;
+            // A month is named over its first full week; the partly shown month at the start has no room.
+            if (row == 0 && col > 0 && days[i].Day.Month != days[i - 7].Day.Month && col < 51)
+                Text(culture.DateTimeFormat.GetAbbreviatedMonthName(days[i].Day.Month), x, 0);
+            var rect = new Rect(x, MonthHeight + row * cell, size, size);
+            ctx.DrawRectangle(new SolidColorBrush(accent, Levels[levels[i]]), null, rect, 2, 2);
+        }
+    }
+
+    private string? TipAt(Point p)
+    {
+        var cell = Cell(Bounds.Width);
+        if (p.X < LabelWidth || p.Y < MonthHeight) return null;
+        var i = (int)((p.X - LabelWidth) / cell) * 7 + (int)((p.Y - MonthHeight) / cell);
+        if (i < 0 || i >= Days.Count) return null;
+        var d = Days[i];
+        var date = d.Day.ToString("D", CultureInfo.CurrentCulture);
+        return d.Down > 0 || d.Files > 0
+            ? $"{date}\n↓ {Loc.Bytes(d.Down)}" + (d.Up > 0 ? $"  ↑ {Loc.Bytes(d.Up)}" : "") + (d.Files > 0 ? $"\n{string.Format(CultureInfo.CurrentCulture, Strings.StatsFiles, d.Files)}" : "")
+            : date;
+    }
+}
+
+/// A torrent's pieces in columns: the top band is what is here (accent), the thin band under it what connected
+/// peers can give (faint: nobody has it, so the download cannot finish yet).
+public sealed class PieceBar : Control
+{
+    public static readonly StyledProperty<double[]> HaveProperty = AvaloniaProperty.Register<PieceBar, double[]>(nameof(Have), []);
+    public static readonly StyledProperty<double[]> AvailableProperty = AvaloniaProperty.Register<PieceBar, double[]>(nameof(Available), []);
+
+    static PieceBar() => AffectsRender<PieceBar>(HaveProperty, AvailableProperty);
+
+    public double[] Have { get => GetValue(HaveProperty); set => SetValue(HaveProperty, value); }
+    public double[] Available { get => GetValue(AvailableProperty); set => SetValue(AvailableProperty, value); }
+
+    public override void Render(DrawingContext ctx)
+    {
+        var b = new Rect(Bounds.Size);
+        var accent = SegmentMap.Accent(this);
+        var top = Math.Round(b.Height * 0.62);
+        var band = new Rect(0, 0, b.Width, top);
+        using (ctx.PushClip(new RoundedRect(band, 2)))
+        {
+            ctx.FillRectangle(new SolidColorBrush(accent, 0.12), band);
+            var have = Have;
+            for (var i = 0; i < have.Length; i++)
+                if (have[i] > 0) ctx.FillRectangle(new SolidColorBrush(accent, 0.25 + 0.75 * have[i]), Column(i, have.Length, b.Width, 0, top));
+        }
+        var low = new Rect(0, top + 1, b.Width, Math.Max(1, b.Height - top - 1));
+        using (ctx.PushClip(new RoundedRect(low, 1)))
+        {
+            var avail = Available;
+            var gray = this.TryFindResource("FaintBrush", ActualThemeVariant, out var f) && f is ISolidColorBrush fb ? fb.Color : Colors.Gray;
+            for (var i = 0; i < avail.Length; i++)
+                ctx.FillRectangle(new SolidColorBrush(avail[i] >= 0.999 ? gray : Color.Parse("#E5484D"), avail[i] >= 0.999 ? 0.55 : 0.35 + 0.4 * (1 - avail[i])),
+                    Column(i, avail.Length, b.Width, low.Y, low.Height));
+        }
+    }
+
+    private static Rect Column(int i, int n, double width, double y, double height)
+    {
+        var x0 = Math.Floor(i * width / n);
+        var x1 = Math.Floor((i + 1) * width / n);
+        return new Rect(x0, y, Math.Max(1, x1 - x0), height);
     }
 }
