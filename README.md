@@ -16,6 +16,15 @@ Fluxer is a download manager for Windows. It splits HTTP downloads across severa
 - Optional clipboard monitoring for copied file links and magnets, and a watch folder that adds any `.torrent` saved into it.
 - Torrent RSS feeds: new items in RSS or Atom feeds are added on a timer, with per-feed include/exclude filters (regex). Items already in a feed when you add it are skipped.
 - Finished downloads are handed to your antivirus through Windows Attachment Services, the way browsers do.
+- Editable categories (extensions, sites, folder) and your own ones, tags, and named queues with their own times, days, concurrency and when-done action.
+- Per-site settings (login, connection cap, User-Agent, Referer, speed limit) and smart speed: a slower profile while you work in another program, a hold on low battery, and a rolling traffic quota.
+- Batch link patterns (`file_[001-120].jpg`), a warning for links already in the list, a site crawler that lists the files a site links to, and a floating drop target.
+- Finished archives can be unpacked (zip, rar, 7z, tar, split sets, a password list), and a program or webhook can run when a download finishes.
+- Statistics: today, week, month and all time, the last 24 hours and a 12-month heatmap.
+- Remote access: a REST API, aria2-compatible JSON-RPC (AriaNg and "send to aria2" extensions work) and a web page for the phone, all behind an API key.
+- JavaScript plugins that react to downloads, each with the permissions you approved.
+- Torrent extras: a subscribed tracker list, a peer block list (ipfilter.dat, .p2p, CIDR), recheck and move data, a piece map, and Torznab search (Jackett, Prowlarr).
+- Portable mode, list and settings export/import, and daily or weekly database backups.
 - English and Turkish UI.
 
 ## Install
