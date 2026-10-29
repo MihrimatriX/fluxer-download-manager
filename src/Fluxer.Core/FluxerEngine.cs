@@ -32,6 +32,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         Rss = new RssPoller(() => Http.Client, () => Settings, Db, (file, magnet, dir) => AddTorrent(file, magnet, saveDirectory: dir));
         _sleep = new SleepBlocker(() => Queue.AnyActive);
         Meter.Restore(Db.GetSetting<TrafficLog>("traffic"), DateTimeOffset.UtcNow);
+        Queue.StateChanged += CountFinished;
     }
 
     public string DataDirectory { get; }
@@ -42,6 +43,27 @@ public sealed class FluxerEngine : IAsyncDisposable
     public RssPoller Rss { get; }
     public AppSettings Settings { get; private set; }
     public TransferMeter Meter { get; } = new();
+
+    private readonly HashSet<long> _counted = [];
+
+    /// A download that just finished counts once for the statistics (not one that was already done at start).
+    private void CountFinished(IDownload d)
+    {
+        if (d.State != DownloadState.Completed || d.Record.CompletedAt is not { } at
+            || DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - at > 10 * 60_000) return;
+        lock (_counted) if (!_counted.Add(d.Id)) return;
+        Db.AddTraffic(DateOnly.FromDateTime(DateTime.Now), 0, 0, 1);
+    }
+
+    /// Writes the bytes measured since the last call to today's statistics (every few minutes and on exit).
+    public void FlushTraffic()
+    {
+        var (down, up) = Meter.TakePending();
+        if (down > 0 || up > 0) Db.AddTraffic(DateOnly.FromDateTime(DateTime.Now), down, up, 0);
+    }
+
+    public StatsReport Statistics() =>
+        StatsReport.Build(Db.LoadTraffic(), Queue.Items.Select(d => d.Record), DateOnly.FromDateTime(DateTime.Now));
 
     /// Called every few seconds by the app: what each running download moved since the last call.
     public void MeasureTraffic(DateTimeOffset now) =>
@@ -154,6 +176,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         _sleep.Dispose();
         Http.Dispose();
         Db.SetSetting("traffic", Meter.Snapshot());
+        FlushTraffic();
         Db.Dispose();
     }
 }

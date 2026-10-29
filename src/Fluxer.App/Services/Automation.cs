@@ -26,8 +26,63 @@ public sealed partial class AppHost
         _ = Task.Run(async () =>
         {
             ScanCompleted(d);
+            // Before the hooks, so a program run on finish already sees the unpacked files.
+            if (Engine.Settings.Extract.Auto && d.Kind == DownloadKind.Http) await ExtractAsync(d, manual: false);
             await RunHooksAsync(record, HookEvent.Completed);
         });
+    }
+
+    /// One archive at a time: several at once only make the disk seek.
+    private readonly SemaphoreSlim _extracting = new(1, 1);
+
+    /// Unpacks a finished archive (auto after download, or "Extract" from the list). For a set split into parts,
+    /// the last part to finish does it.
+    public async Task ExtractAsync(IDownload d, bool manual)
+    {
+        var path = d.Record.FullPath;
+        if (Extractor.KeyOf(d.Record.FileName) is not { } key) return;
+        var dir = Path.GetDirectoryName(path);
+        var pending = Engine.Queue.Items.Any(o => o.Id != d.Id && o.State != DownloadState.Completed
+            && string.Equals(Extractor.KeyOf(o.Record.FileName), key, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(o.Record.SaveDirectory.TrimEnd('\\', '/'), dir?.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase));
+        if (pending && !manual) return;
+        var name = Extractor.ArchiveName(new Extractor.ArchiveSet(key, [], false));
+        void Tell(string title, string format, params object?[] args)
+        {
+            if (Engine.Settings.Notifications || manual) Notifier.Show(title, string.Format(CultureInfo.CurrentCulture, format, args));
+        }
+        if (Extractor.Describe(path) is not { Complete: true } set)
+        {
+            if (manual) Tell(Strings.ExtractFailedTitle, Strings.ExtractMissingParts, name);
+            return;
+        }
+        await _extracting.WaitAsync();
+        try
+        {
+            Log.Information("Extracting {Archive} ({Parts} part(s))", key, set.Parts.Count);
+            var r = await Task.Run(() => Extractor.Extract(set, Engine.Settings.Extract.Passwords, CancellationToken.None));
+            switch (r.Outcome)
+            {
+                case Extractor.Outcome.Done:
+                    Log.Information("Extracted {Archive}: {Files} file(s) → {Folder}", key, r.Files, r.Folder);
+                    if (Engine.Settings.Extract.DeleteAfter)
+                        foreach (var part in set.Parts)
+                            try { File.Delete(part); }
+                            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { Log.Warning("Could not delete {Part}: {Error}", part, e.Message); }
+                    Tell(Strings.ExtractDoneTitle, Strings.ExtractDoneBody, name, r.Files);
+                    break;
+                case Extractor.Outcome.NeedsPassword:
+                    Log.Information("Extract {Archive}: no password fits", key);
+                    Tell(Strings.ExtractFailedTitle, Strings.ExtractNeedsPassword, name);
+                    break;
+                default:
+                    Log.Warning("Extract {Archive} failed: {Error}", key, r.Error);
+                    Tell(Strings.ExtractFailedTitle, Strings.ExtractFailedBody, name, r.Error);
+                    break;
+            }
+        }
+        catch (Exception e) { Log.Warning(e, "Extract {Archive} failed", key); }
+        finally { _extracting.Release(); }
     }
 
     private void OnFailedEvent(IDownload d) => _ = Task.Run(() => RunHooksAsync(d.Record, HookEvent.Failed));

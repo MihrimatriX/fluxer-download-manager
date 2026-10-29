@@ -188,6 +188,7 @@
                 <Separator />
                 <MenuItem Header="{x:Static app:Strings.ClearCompleted}" Command="{Binding ClearCompletedCommand}" />
                 <MenuItem Header="{x:Static app:Strings.Scheduler}" Command="{Binding OpenScheduleCommand}" />
+                <MenuItem Header="{x:Static app:Strings.Statistics}" Command="{Binding OpenStatsCommand}" />
               </MenuFlyout>
             </Button.Flyout>
           </Button>
@@ -284,6 +285,7 @@
                     <MenuItem Header="{x:Static app:Strings.ProgressWindow}" Command="{Binding OpenDetailsCommand}" FontWeight="SemiBold" />
                     <MenuItem Header="{x:Static app:Strings.OpenFile}" Command="{Binding OpenFileCommand}" InputGesture="Enter" />
                     <MenuItem Header="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFolderCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.ExtractHere}" Command="{Binding ExtractCommand}" IsVisible="{Binding SelectedIsArchive}" />
                     <Separator />
                     <MenuItem Header="{x:Static app:Strings.Resume}" Command="{Binding ResumeCommand}" />
                     <MenuItem Header="{x:Static app:Strings.Pause}" Command="{Binding PauseCommand}" InputGesture="Space" />

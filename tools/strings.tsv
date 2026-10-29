@@ -655,3 +655,29 @@ HoldQuotaBody	Traffic quota used up; downloads continue around {0}.	Trafik kotas
 HoldBattery	Low battery, on hold	Pil zayıf, bekliyor
 HoldQuota	Quota reached · {0}	Kota doldu · {0}
 HoldTip	Smart speed is holding downloads. Click for its settings.	Akıllı hız indirmeleri bekletiyor. Ayarları için tıklayın.
+SecArchives	Archives	Arşivler
+ExtractAuto	Extract archives when done	Bitince arşivleri aç
+ExtractAutoDesc	zip, rar, 7z and tar, also split into parts; the last part to finish unpacks the set next to it.	zip, rar, 7z ve tar, parçalı olanlar da; son biten parça seti yanına açar.
+ExtractDeleteAfter	Delete the archive afterwards	Sonra arşivi sil
+ExtractDeleteAfterDesc	Every part goes once all files came out.	Tüm dosyalar çıkınca bütün parçalar silinir.
+ExtractPasswords	Archive passwords	Arşiv parolaları
+ExtractPasswordsDesc	One per line, tried in turn on encrypted archives. Stored encrypted for your Windows user.	Her satıra bir tane; şifreli arşivlerde sırayla denenir. Windows kullanıcınız için şifrelenerek saklanır.
+ExtractHere	Extract	Arşivi aç
+ExtractDoneTitle	Archive extracted	Arşiv açıldı
+ExtractDoneBody	{0}: {1} file(s)	{0}: {1} dosya
+ExtractFailedTitle	Archive not extracted	Arşiv açılamadı
+ExtractFailedBody	{0}: {1}	{0}: {1}
+ExtractNeedsPassword	{0} is encrypted and none of the passwords fits. Add it in Settings → Downloads → Archives.	{0} şifreli ve listedeki parolaların hiçbiri uymadı. Ayarlar → İndirmeler → Arşivler'e ekleyin.
+ExtractMissingParts	{0}: some parts are missing.	{0}: bazı parçalar eksik.
+Statistics	Statistics	İstatistikler
+StatsToday	Today	Bugün
+StatsWeek	This week	Bu hafta
+StatsMonth	This month	Bu ay
+StatsAllTime	All time	Toplam
+StatsFiles	{0} file(s)	{0} dosya
+StatsYear	Last 12 months	Son 12 ay
+StatsLess	Less	Az
+StatsMore	More	Çok
+StatsSites	Sites (downloads in the list)	Siteler (listedeki indirmeler)
+StatsCategories	Categories	Kategoriler
+StatsNothing	Nothing finished yet.	Henüz biten bir şey yok.

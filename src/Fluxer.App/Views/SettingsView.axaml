@@ -307,6 +307,25 @@
                 </c:SettingRow>
               </StackPanel>
             </Border>
+            <TextBlock Classes="section" Text="{x:Static app:Strings.SecArchives}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.ExtractAuto}" Description="{x:Static app:Strings.ExtractAutoDesc}">
+                  <ToggleSwitch IsChecked="{Binding ExtractAuto}" />
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.ExtractDeleteAfter}" Description="{x:Static app:Strings.ExtractDeleteAfterDesc}">
+                  <ToggleSwitch IsChecked="{Binding ExtractDeleteAfter}" />
+                </c:SettingRow>
+                <Border Padding="16,10,16,14">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{x:Static app:Strings.ExtractPasswords}" />
+                    <TextBlock Classes="subtle" FontSize="12" Text="{x:Static app:Strings.ExtractPasswordsDesc}" TextWrapping="Wrap" />
+                    <TextBox Text="{Binding ExtractPasswords}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="64" MaxHeight="140" FontSize="12"
+                             AutomationProperties.Name="{x:Static app:Strings.ExtractPasswords}" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
             <TextBlock Classes="section" Text="{x:Static app:Strings.SecVideo}" />
             <Border Classes="card group">
               <c:SettingRow Title="{x:Static app:Strings.MediaTools}" Description="{Binding ToolsText}">

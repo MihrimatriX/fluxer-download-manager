@@ -12,10 +12,17 @@ public sealed partial class AppHost
     private int? _busyBase;
     private readonly HashSet<string> _holds = [];
 
+    private DateTime _lastTrafficFlush = DateTime.UtcNow;
+
     private void RunSmartSpeed()
     {
         var now = DateTimeOffset.UtcNow;
         Engine.MeasureTraffic(now);
+        if (now.UtcDateTime - _lastTrafficFlush > TimeSpan.FromMinutes(5))
+        {
+            _lastTrafficFlush = now.UtcDateTime;
+            _ = Task.Run(Engine.FlushTraffic);       // today's statistics
+        }
         var s = Engine.Settings;
         var smart = s.Smart;
 

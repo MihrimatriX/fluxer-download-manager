@@ -24,6 +24,7 @@ public sealed class AppSettings
     public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
     public SmartSpeed Smart { get; set; } = new();
+    public ExtractSettings Extract { get; set; } = new();
     /// The user's own queues besides the main and night ones.
     public List<NamedQueue> Queues { get; set; } = [];
 
@@ -181,6 +182,28 @@ public sealed class SmartSpeed
     /// No more than QuotaMb in any QuotaHours (0 = off); downloads pause until the window frees up.
     public long QuotaMb { get; set; }
     public int QuotaHours { get; set; } = 24;
+}
+
+/// Unpacking finished archives (Settings → Downloads → Archives).
+public sealed class ExtractSettings
+{
+    public bool Auto { get; set; }
+    /// The archive (every part) goes once everything came out.
+    public bool DeleteAfter { get; set; }
+    /// Tried in turn on encrypted archives: one per line, DPAPI-encrypted like site passwords.
+    public string? PasswordsProtected { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public List<string> Passwords
+    {
+        get
+        {
+            if (PasswordsProtected is not { Length: > 0 } p) return [];
+            try { return [.. (Platform.Windows.Dpapi.Unprotect(Convert.FromBase64String(p)) ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries)]; }
+            catch (FormatException) { return []; }
+        }
+        set => PasswordsProtected = Platform.Windows.Dpapi.Protect(string.Join('\n', value.Where(x => x.Length > 0))) is { } blob ? Convert.ToBase64String(blob) : null;
+    }
 }
 
 /// What runs when a download finishes or fails.

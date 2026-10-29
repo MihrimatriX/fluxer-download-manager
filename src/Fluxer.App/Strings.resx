@@ -624,4 +624,30 @@
   <data name="HoldBattery" xml:space="preserve"><value>Low battery, on hold</value></data>
   <data name="HoldQuota" xml:space="preserve"><value>Quota reached · {0}</value></data>
   <data name="HoldTip" xml:space="preserve"><value>Smart speed is holding downloads. Click for its settings.</value></data>
+  <data name="SecArchives" xml:space="preserve"><value>Archives</value></data>
+  <data name="ExtractAuto" xml:space="preserve"><value>Extract archives when done</value></data>
+  <data name="ExtractAutoDesc" xml:space="preserve"><value>zip, rar, 7z and tar, also split into parts; the last part to finish unpacks the set next to it.</value></data>
+  <data name="ExtractDeleteAfter" xml:space="preserve"><value>Delete the archive afterwards</value></data>
+  <data name="ExtractDeleteAfterDesc" xml:space="preserve"><value>Every part goes once all files came out.</value></data>
+  <data name="ExtractPasswords" xml:space="preserve"><value>Archive passwords</value></data>
+  <data name="ExtractPasswordsDesc" xml:space="preserve"><value>One per line, tried in turn on encrypted archives. Stored encrypted for your Windows user.</value></data>
+  <data name="ExtractHere" xml:space="preserve"><value>Extract</value></data>
+  <data name="ExtractDoneTitle" xml:space="preserve"><value>Archive extracted</value></data>
+  <data name="ExtractDoneBody" xml:space="preserve"><value>{0}: {1} file(s)</value></data>
+  <data name="ExtractFailedTitle" xml:space="preserve"><value>Archive not extracted</value></data>
+  <data name="ExtractFailedBody" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="ExtractNeedsPassword" xml:space="preserve"><value>{0} is encrypted and none of the passwords fits. Add it in Settings → Downloads → Archives.</value></data>
+  <data name="ExtractMissingParts" xml:space="preserve"><value>{0}: some parts are missing.</value></data>
+  <data name="Statistics" xml:space="preserve"><value>Statistics</value></data>
+  <data name="StatsToday" xml:space="preserve"><value>Today</value></data>
+  <data name="StatsWeek" xml:space="preserve"><value>This week</value></data>
+  <data name="StatsMonth" xml:space="preserve"><value>This month</value></data>
+  <data name="StatsAllTime" xml:space="preserve"><value>All time</value></data>
+  <data name="StatsFiles" xml:space="preserve"><value>{0} file(s)</value></data>
+  <data name="StatsYear" xml:space="preserve"><value>Last 12 months</value></data>
+  <data name="StatsLess" xml:space="preserve"><value>Less</value></data>
+  <data name="StatsMore" xml:space="preserve"><value>More</value></data>
+  <data name="StatsSites" xml:space="preserve"><value>Sites (downloads in the list)</value></data>
+  <data name="StatsCategories" xml:space="preserve"><value>Categories</value></data>
+  <data name="StatsNothing" xml:space="preserve"><value>Nothing finished yet.</value></data>
 </root>

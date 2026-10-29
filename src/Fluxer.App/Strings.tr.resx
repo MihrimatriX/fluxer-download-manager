@@ -624,4 +624,30 @@
   <data name="HoldBattery" xml:space="preserve"><value>Pil zayıf, bekliyor</value></data>
   <data name="HoldQuota" xml:space="preserve"><value>Kota doldu · {0}</value></data>
   <data name="HoldTip" xml:space="preserve"><value>Akıllı hız indirmeleri bekletiyor. Ayarları için tıklayın.</value></data>
+  <data name="SecArchives" xml:space="preserve"><value>Arşivler</value></data>
+  <data name="ExtractAuto" xml:space="preserve"><value>Bitince arşivleri aç</value></data>
+  <data name="ExtractAutoDesc" xml:space="preserve"><value>zip, rar, 7z ve tar, parçalı olanlar da; son biten parça seti yanına açar.</value></data>
+  <data name="ExtractDeleteAfter" xml:space="preserve"><value>Sonra arşivi sil</value></data>
+  <data name="ExtractDeleteAfterDesc" xml:space="preserve"><value>Tüm dosyalar çıkınca bütün parçalar silinir.</value></data>
+  <data name="ExtractPasswords" xml:space="preserve"><value>Arşiv parolaları</value></data>
+  <data name="ExtractPasswordsDesc" xml:space="preserve"><value>Her satıra bir tane; şifreli arşivlerde sırayla denenir. Windows kullanıcınız için şifrelenerek saklanır.</value></data>
+  <data name="ExtractHere" xml:space="preserve"><value>Arşivi aç</value></data>
+  <data name="ExtractDoneTitle" xml:space="preserve"><value>Arşiv açıldı</value></data>
+  <data name="ExtractDoneBody" xml:space="preserve"><value>{0}: {1} dosya</value></data>
+  <data name="ExtractFailedTitle" xml:space="preserve"><value>Arşiv açılamadı</value></data>
+  <data name="ExtractFailedBody" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="ExtractNeedsPassword" xml:space="preserve"><value>{0} şifreli ve listedeki parolaların hiçbiri uymadı. Ayarlar → İndirmeler → Arşivler'e ekleyin.</value></data>
+  <data name="ExtractMissingParts" xml:space="preserve"><value>{0}: bazı parçalar eksik.</value></data>
+  <data name="Statistics" xml:space="preserve"><value>İstatistikler</value></data>
+  <data name="StatsToday" xml:space="preserve"><value>Bugün</value></data>
+  <data name="StatsWeek" xml:space="preserve"><value>Bu hafta</value></data>
+  <data name="StatsMonth" xml:space="preserve"><value>Bu ay</value></data>
+  <data name="StatsAllTime" xml:space="preserve"><value>Toplam</value></data>
+  <data name="StatsFiles" xml:space="preserve"><value>{0} dosya</value></data>
+  <data name="StatsYear" xml:space="preserve"><value>Son 12 ay</value></data>
+  <data name="StatsLess" xml:space="preserve"><value>Az</value></data>
+  <data name="StatsMore" xml:space="preserve"><value>Çok</value></data>
+  <data name="StatsSites" xml:space="preserve"><value>Siteler (listedeki indirmeler)</value></data>
+  <data name="StatsCategories" xml:space="preserve"><value>Kategoriler</value></data>
+  <data name="StatsNothing" xml:space="preserve"><value>Henüz biten bir şey yok.</value></data>
 </root>

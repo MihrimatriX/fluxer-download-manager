@@ -193,7 +193,11 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnSelectedCategoryChanged(CategoryItem value) { IsSettingsOpen = false; Refilter(); }
     partial void OnSelectedStateFilterChanged(StateFilter value) => Refilter();
     partial void OnSearchChanged(string value) => Refilter();
-    partial void OnSelectedItemChanged(DownloadItemViewModel? value) => Detail.Show(value);
+    partial void OnSelectedItemChanged(DownloadItemViewModel? value)
+    {
+        Detail.Show(value);
+        OnPropertyChanged(nameof(SelectedIsArchive));
+    }
 
     public void Reload()
     {
@@ -270,7 +274,9 @@ public sealed partial class MainViewModel : ObservableObject
         vm.Refresh();
         if (View.Contains(vm) != Matches(vm)) Refilter();
         else UpdateCounts();
-        if (SelectedItem == vm) Detail.Show(vm);
+        if (SelectedItem != vm) return;
+        Detail.Show(vm);
+        OnPropertyChanged(nameof(SelectedIsArchive));
     }
 
     public void OnReordered()
@@ -635,6 +641,20 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (SelectedItem?.Download is { } d) _host.OpenDownloadWindow(d);
     }
+
+    /// A finished zip/rar/7z/tar in the selection: "Extract" is offered.
+    public bool SelectedIsArchive => SelectedItem?.Download is { State: DownloadState.Completed, Kind: DownloadKind.Http } d
+        && Fluxer.Core.Automation.Extractor.KeyOf(d.FileName) is not null;
+
+    [RelayCommand]
+    private async Task OpenStats()
+    {
+        var report = await Task.Run(_host.Engine.Statistics);
+        await Dialogs.ShowAsync(Dialogs.StatsWindow(report), _host.Owner);
+    }
+
+    [RelayCommand]
+    private Task Extract() => SelectedItem?.Download is { } d ? _host.ExtractAsync(d, manual: true) : Task.CompletedTask;
 
     [RelayCommand]
     private void OpenFolder()

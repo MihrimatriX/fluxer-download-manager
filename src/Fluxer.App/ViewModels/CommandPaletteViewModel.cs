@@ -92,6 +92,7 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(sel, Strings.Pause, "Space", "IcPause", main.PauseCommand);
         Cmd(sel, Strings.OpenFile, "Enter", "IcFile", main.OpenFileCommand);
         Cmd(sel, Strings.OpenFolder, null, "IcFolder", main.OpenFolderCommand);
+        if (main.SelectedIsArchive) Cmd(sel, Strings.ExtractHere, null, "IcArchive", main.ExtractCommand);
         Cmd(sel, Strings.ProgressWindow, null, "IcExternal", main.OpenDetailsCommand);
         Cmd(sel, Strings.CopyUrl, null, "IcLink", main.CopyUrlCommand);
         Cmd(sel, Strings.RefreshLink, null, "IcRefresh", main.RefreshLinkCommand);
@@ -112,6 +113,7 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         foreach (var c in main.Categories.Skip(1))
             Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, c.Title), null, Cats.IconKey(c.Key), () => main.ShowCategory(c.Key));
         Cmd(view, Strings.ToggleDetail, "Ctrl+I", "IcPanel", main.ToggleDetailCommand);
+        Cmd(view, Strings.Statistics, null, "IcChart", main.OpenStatsCommand);
         Cmd(view, main.IsLight ? Strings.PaletteDarkTheme : Strings.PaletteLightTheme, null, main.IsLight ? "IcMoon" : "IcSun", main.ToggleThemeCommand);
 
         var queues = Strings.PaletteGroupQueues;

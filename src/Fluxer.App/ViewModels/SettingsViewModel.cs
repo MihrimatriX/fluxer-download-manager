@@ -361,6 +361,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         LoadCategories(s);
         LoadQueues(s);
         LoadSites(s);
+        LoadArchives(s);
         SavedText = "";
         _loading = false;
     }
@@ -502,6 +503,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.CategoryList = [.. CategoryRows.Select(r => r.ToCategory())];
         s.Queues = [.. QueueRows.Select(r => r.ToQueue())];
         SaveSites(s);
+        SaveArchives(s);
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);
@@ -769,6 +771,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         // Feed URLs often carry a tracker passkey; keep only the host.
         foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
         if (copy.Automation.WebhookUrl is { } hook) copy.Automation.WebhookUrl = Uri.TryCreate(hook, UriKind.Absolute, out var hu) ? hu.Host : "?";
+        copy.Extract.PasswordsProtected = null;
         foreach (var site in copy.Sites)
         {
             if (site.UserName is not null) site.UserName = "***";

@@ -57,6 +57,8 @@ public sealed class Database : IDisposable
         "ALTER TABLE downloads ADD COLUMN tags TEXT;",
         // 6: named queue
         "ALTER TABLE downloads ADD COLUMN queue_id TEXT;",
+        // 7: bytes moved and downloads finished per local day; kept when downloads are removed from the list
+        "CREATE TABLE traffic (day TEXT PRIMARY KEY, down INTEGER NOT NULL DEFAULT 0, up INTEGER NOT NULL DEFAULT 0, files INTEGER NOT NULL DEFAULT 0) WITHOUT ROWID;",
     ];
 
     public Database(string path)
@@ -231,6 +233,30 @@ public sealed class Database : IDisposable
             var list = new List<SegmentRow>();
             using var rd = Reader("""SELECT idx, start, "end", position FROM segments WHERE download_id=$id ORDER BY idx""", ("$id", downloadId));
             while (rd.Read()) list.Add(new SegmentRow(rd.GetInt32(0), rd.GetInt64(1), rd.GetInt64(2), rd.GetInt64(3)));
+            return list;
+        }
+    }
+
+    // ---------- traffic ----------
+
+    public void AddTraffic(DateOnly day, long down, long up, int files)
+    {
+        lock (_lock)
+            Exec("""
+                INSERT INTO traffic (day, down, up, files) VALUES ($d, $down, $up, $files)
+                ON CONFLICT(day) DO UPDATE SET down = down + excluded.down, up = up + excluded.up, files = files + excluded.files
+                """, null, ("$d", day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)), ("$down", down), ("$up", up), ("$files", files));
+    }
+
+    public List<Stats.DayTotal> LoadTraffic()
+    {
+        lock (_lock)
+        {
+            var list = new List<Stats.DayTotal>();
+            using var rd = Reader("SELECT day, down, up, files FROM traffic ORDER BY day");
+            while (rd.Read())
+                if (DateOnly.TryParseExact(rd.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+                    list.Add(new Stats.DayTotal(day, rd.GetInt64(1), rd.GetInt64(2), rd.GetInt32(3)));
             return list;
         }
     }

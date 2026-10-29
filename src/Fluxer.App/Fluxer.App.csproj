@@ -25,8 +25,9 @@
   <ItemGroup>
     <!-- Only the OpenPGP signature check uses it: 5 MB of IL trimmed to ~1 MB. -->
     <TrimmableAssembly Include="BouncyCastle.Cryptography" />
-    <!-- Rarely used (tool signature check, RSS parsing): left as IL instead of doubling in size as precompiled code. -->
-    <PublishReadyToRunExclude Include="BouncyCastle.Cryptography.dll;System.Private.Xml.dll;System.Private.Xml.Linq.dll;System.Linq.Expressions.dll" />
+    <!-- Rarely used (tool signature check, RSS parsing, unpacking archives): left as IL instead of doubling in size
+         as precompiled code. -->
+    <PublishReadyToRunExclude Include="BouncyCastle.Cryptography.dll;System.Private.Xml.dll;System.Private.Xml.Linq.dll;System.Linq.Expressions.dll;SharpCompress.dll" />
   </ItemGroup>
 
   <ItemGroup>
