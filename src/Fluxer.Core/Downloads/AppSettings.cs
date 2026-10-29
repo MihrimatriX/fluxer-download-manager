@@ -19,7 +19,7 @@ public sealed class AppSettings
     public ConflictPolicy Conflict { get; set; } = ConflictPolicy.Rename;
     public string? Proxy { get; set; }             // "http://host:port", null = system
     public string Language { get; set; } = "";     // "" = system, "tr", "en"
-    public string Theme { get; set; } = "Dark";    // System | Light | Dark
+    public string Theme { get; set; } = "Dark";    // Light | Dark
     public bool UseCategoryFolders { get; set; } = true;
     public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
@@ -112,8 +112,8 @@ public sealed class AppSettings
     }
 
     /// Settings saved by an older version get the current design's defaults once. Revision 1 (0.8): dark theme,
-    /// compact rows, night queue at 01:00. Revision 2 (the compact redesign): the logo blue replaces the old orange,
-    /// the neumorphic style is gone, the toolbar shows icons only, and columns and the detail panel start fresh.
+    /// compact rows, night queue at 01:00. Revision 2 (the compact redesign): light or dark only ("follow system"
+    /// becomes dark), the toolbar shows icons only, and columns and the detail panel start fresh.
     /// Returns true when something changed and should be saved.
     public bool UpgradeDesign()
     {
@@ -125,8 +125,7 @@ public sealed class AppSettings
             ScheduleStart ??= "01:00";
         }
         Ui.DesignRevision = 2;
-        if (Ui.Accent == "#F5A623") Ui.Accent = null;
-        if (Ui.Backdrop is not ("mica" or "glass")) Ui.Backdrop = "none";
+        if (Theme != "Light") Theme = "Dark";
         Ui.ToolbarLabels = false;
         Ui.DetailHeight = new UiSettings().DetailHeight;
         Ui.ColumnOrder.Clear();
@@ -147,8 +146,6 @@ public sealed class SpeedProfile
 /// Look and layout the user can change; remembered between sessions.
 public sealed class UiSettings
 {
-    public string? Accent { get; set; }                 // "#RRGGBB", null = the logo blue
-    public string Backdrop { get; set; } = "none";      // "none" (solid), "mica" (Windows 11), "glass" (acrylic blur)
     public bool Compact { get; set; } = true;           // 32 px rows; off = 40 px
     public double Scale { get; set; } = 1.0;            // 0.85 – 1.3
     public bool Animations { get; set; } = true;

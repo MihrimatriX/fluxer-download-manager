@@ -50,6 +50,8 @@
       <StreamGeometry x:Key="IcLink">M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1</StreamGeometry>
       <StreamGeometry x:Key="IcExternal">M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5</StreamGeometry>
       <StreamGeometry x:Key="IcRefresh">M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7</StreamGeometry>
+      <StreamGeometry x:Key="IcSun">M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4</StreamGeometry>
+      <StreamGeometry x:Key="IcMoon">M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z</StreamGeometry>
       <StreamGeometry x:Key="IcCheck">M5 12l5 5 9-10</StreamGeometry>
       <StreamGeometry x:Key="IcAlert">M12 8v5M12 16.5v.01M10.3 4.2L2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z</StreamGeometry>
       <StreamGeometry x:Key="IcBroom">M14 4l-4 9M6 13h8l2 7H4zM9 17v3M12 17v3</StreamGeometry>

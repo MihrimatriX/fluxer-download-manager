@@ -19,7 +19,6 @@
     </Style>
   </Window.Styles>
 
-  <!-- opaque even when the windows use Mica: the tray popup has no backdrop of its own -->
   <Border Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
     <StackPanel Margin="12" Spacing="10">
       <!-- header: brand · state -->

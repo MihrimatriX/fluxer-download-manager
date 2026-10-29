@@ -183,6 +183,18 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ToggleDetail() => DetailVisible = !DetailVisible;
 
+    public bool IsLight => _host.Engine.Settings.Theme == "Light";
+
+    /// Command palette: light ↔ dark without opening the settings.
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        var s = _host.Engine.Settings;
+        s.Theme = IsLight ? "Dark" : "Light";
+        _ = _host.Engine.SaveSettingsAsync(s);
+        _host.ReloadUi();
+    }
+
     partial void OnSelectedCategoryChanged(CategoryItem value) { IsSettingsOpen = false; Refilter(); }
     partial void OnSelectedStateFilterChanged(StateFilter value) => Refilter();
     partial void OnSearchChanged(string value) => Refilter();

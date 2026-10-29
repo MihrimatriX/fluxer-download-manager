@@ -230,32 +230,27 @@ public sealed class SpeedProfileTests
     public void UpgradeDesign_RunsOnce()
     {
         var s = new Downloads.AppSettings { Theme = "Light", ScheduleStart = null };
-        s.Ui.Backdrop = "neu";
         Assert.True(s.UpgradeDesign());
-        Assert.Equal(("Dark", "none", "01:00"), (s.Theme, s.Ui.Backdrop, s.ScheduleStart));
+        Assert.Equal(("Dark", "01:00"), (s.Theme, s.ScheduleStart));
         s.Theme = "Light";
         Assert.False(s.UpgradeDesign());
         Assert.Equal("Light", s.Theme);
     }
 
     [Fact]
-    public void UpgradeDesign_FromFirstRevision_KeepsThemeAndBackdrop()
+    public void UpgradeDesign_FromFirstRevision_KeepsLightOrDark()
     {
         var s = new Downloads.AppSettings { Theme = "Light" };
         s.Ui.DesignRevision = 1;
-        s.Ui.Accent = "#F5A623";          // the old orange, picked by hand
-        s.Ui.Backdrop = "mica";
         s.Ui.ToolbarLabels = true;
         s.Ui.ColumnWidths["size"] = 120;
         Assert.True(s.UpgradeDesign());
-        Assert.Equal(("Light", null, "mica", false), (s.Theme, s.Ui.Accent, s.Ui.Backdrop, s.Ui.ToolbarLabels));
+        Assert.Equal(("Light", false), (s.Theme, s.Ui.ToolbarLabels));
         Assert.Empty(s.Ui.ColumnWidths);
 
-        var neu = new Downloads.AppSettings();
-        neu.Ui.DesignRevision = 1;
-        neu.Ui.Backdrop = "neu";
-        neu.Ui.Accent = "#30D158";
-        Assert.True(neu.UpgradeDesign());
-        Assert.Equal(("none", "#30D158"), (neu.Ui.Backdrop, neu.Ui.Accent));
+        var system = new Downloads.AppSettings { Theme = "System" };
+        system.Ui.DesignRevision = 1;
+        Assert.True(system.UpgradeDesign());
+        Assert.Equal("Dark", system.Theme);
     }
 }

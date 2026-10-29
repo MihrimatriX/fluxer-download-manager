@@ -48,6 +48,32 @@
     <Style Selector="ListBox.secnav > ListBoxItem:selected c|Icon">
       <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
     </Style>
+    <!-- light / dark: two segments in a well -->
+    <Style Selector="ListBox.seg">
+      <Setter Property="Background" Value="{DynamicResource WellBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="ItemsPanel">
+        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem">
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.seg > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+    </Style>
     <!-- speed profile cards -->
     <Style Selector="Button.profile">
       <Setter Property="Padding" Value="12,10" />
@@ -157,30 +183,17 @@
             <Border Classes="card group">
               <StackPanel>
                 <c:SettingRow Title="{x:Static app:Strings.Theme}">
-                  <ComboBox ItemsSource="{Binding Themes}" SelectedIndex="{Binding ThemeIndex}" />
-                </c:SettingRow>
-                <c:SettingRow Title="{x:Static app:Strings.AccentColor}" Description="{x:Static app:Strings.AccentColorDesc}">
-                  <ListBox ItemsSource="{Binding Accents}" SelectedIndex="{Binding AccentIndex}" Background="Transparent">
-                    <ListBox.ItemsPanel>
-                      <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.Styles>
-                      <Style Selector="ListBoxItem">
-                        <Setter Property="Padding" Value="3" />
-                        <Setter Property="Margin" Value="1,0" />
-                        <Setter Property="CornerRadius" Value="12" />
-                        <Setter Property="MinWidth" Value="0" />
-                      </Style>
-                    </ListBox.Styles>
+                  <ListBox Classes="seg" ItemsSource="{Binding Themes}" SelectedIndex="{Binding ThemeIndex}"
+                           AutomationProperties.Name="{x:Static app:Strings.Theme}">
                     <ListBox.ItemTemplate>
-                      <DataTemplate x:DataType="vm:AccentSwatch">
-                        <Ellipse Width="18" Height="18" Fill="{Binding Brush}" ToolTip.Tip="{Binding Name}" />
+                      <DataTemplate x:DataType="vm:ThemeChoice">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                          <c:Icon Data="{Binding Icon}" Size="13" />
+                          <TextBlock Text="{Binding Label}" FontSize="12.5" VerticalAlignment="Center" />
+                        </StackPanel>
                       </DataTemplate>
                     </ListBox.ItemTemplate>
                   </ListBox>
-                </c:SettingRow>
-                <c:SettingRow Title="{x:Static app:Strings.BackdropSetting}" Description="{x:Static app:Strings.BackdropDesc}">
-                  <ComboBox ItemsSource="{Binding Backdrops}" SelectedIndex="{Binding BackdropIndex}" />
                 </c:SettingRow>
                 <c:SettingRow Title="{x:Static app:Strings.UiScale}" Description="{x:Static app:Strings.UiScaleDesc}">
                   <StackPanel Orientation="Horizontal" Spacing="10">

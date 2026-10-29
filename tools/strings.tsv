@@ -1,6 +1,3 @@
-AccentColor	Accent colour	Vurgu rengi
-AccentColorDesc	Buttons, progress and highlights. The first one is the Fluxer blue.	Butonlar, ilerleme ve vurgular. İlki Fluxer mavisi.
-AccentSystem	Windows accent	Windows vurgu rengi
 Accept	Accept	Kabul et
 AddPaused	Add paused	Duraklatılmış ekle
 AddToQueue	Add to queue	Kuyruğa ekle
@@ -160,12 +157,6 @@ MediaDisclaimer	Fluxer uses yt-dlp to save videos from websites. You are respons
 MediaProbing	Reading video information…	Video bilgileri okunuyor…
 MediaTitle	Save video	Videoyu kaydet
 MediaTools	Video tools	Video araçları
-BackdropSetting	Style	Görünüm stili
-BackdropDesc	Solid is the standard look; Mica tints the window with your wallpaper; acrylic blurs what is behind it. Both need Windows 11.	Düz standart görünüm; Mica pencereyi duvar kâğıdınla renklendirir; akrilik arkasını bulanık gösterir. İkisi de Windows 11 ister.
-BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
-BackdropGlass	Acrylic (blurred, translucent)	Akrilik (bulanık, saydam)
-BackdropMica	Mica (Windows 11)	Mica (Windows 11)
-BackdropNone	Solid (default)	Düz (varsayılan)
 RestartFromScratch	Restart from the beginning	Baştan başlat
 SelectAll	Select all	Tümünü seç
 SelectRow	Select	Seç
@@ -304,7 +295,8 @@ TabTorrentOptions	Options	Seçenekler
 Theme	Theme	Tema
 ThemeDark	Dark	Koyu
 ThemeLight	Light	Açık
-ThemeSystem	Follow system	Sistemi izle
+PaletteLightTheme	Switch to light theme	Açık temaya geç
+PaletteDarkTheme	Switch to dark theme	Koyu temaya geç
 ToggleDetail	Show or hide the detail panel	Ayrıntı panelini göster/gizle
 ToggleSidebar	Collapse or expand the sidebar	Kenar çubuğunu daralt/genişlet
 TookIs	took {0}	{0} sürdü
@@ -354,7 +346,6 @@ Minimize	Minimize	Simge durumuna küçült
 Maximize	Maximize	Ekranı kapla
 CloseWindow	Close	Kapat
 EtaDays	{0}d {1}h	{0}g {1}sa
-AccentNames	Fluxer blue|Teal|Green|Amber|Orange|Rose|Violet|Slate	Fluxer mavisi|Deniz yeşili|Yeşil|Kehribar|Turuncu|Gül|Menekşe|Arduvaz
 BackToDownloads	Back to downloads	İndirmelere dön
 Concurrent	{0} at once	{0} eşzamanlı
 DayNames	Mon|Tue|Wed|Thu|Fri|Sat|Sun	Pzt|Sal|Çar|Per|Cum|Cmt|Paz

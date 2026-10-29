@@ -135,12 +135,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (wasVisible) ShowMainWindow();
     }
 
-    private void ApplyTheme() => app.RequestedThemeVariant = Engine.Settings.Theme switch
-    {
-        "Light" => ThemeVariant.Light,
-        "Dark" => ThemeVariant.Dark,
-        _ => ThemeVariant.Default,
-    };
+    private void ApplyTheme() =>
+        app.RequestedThemeVariant = Engine.Settings.Theme == "Light" ? ThemeVariant.Light : ThemeVariant.Dark;
 
     /// Left click on the tray icon: the small status window (right click keeps the menu).
     private void ToggleTrayWindow()

@@ -3,7 +3,8 @@
 ## Yayımlanmamış
 
 ### Yeni arayüz
-- **Fluxer'ın kendi görünümü:** başka bir uygulamadan uyarlanmış önceki tasarım (lacivert degrade, turuncu vurgu, büyük kenar çubuğu) bırakıldı. Düz grafit (koyu) ya da kâğıt beyazı (açık) yüzeyler, ince çizgiler ve logodaki mavi vurgu. Neumorfik stil kaldırıldı; "Görünüm stili" artık Düz, Mica ve Akrilik.
+- **Fluxer'ın kendi görünümü:** başka bir uygulamadan uyarlanmış önceki tasarım (lacivert degrade, turuncu vurgu, büyük kenar çubuğu) bırakıldı. Düz grafit (koyu) ya da kâğıt beyazı (açık) yüzeyler, ince çizgiler ve logodaki mavi vurgu.
+- **Tema yalnızca Açık / Koyu:** "Görünüm stili" (Neumorfik, Mica, Akrilik) ve vurgu rengi seçimi kaldırıldı; vurgu her zaman logo mavisi. Tema, Ayarlar → Genel'deki iki düğmeli anahtarla ya da komut paletinde "Açık/Koyu temaya geç" ile değişiyor. "Sistemi izle" seçeneği yok; daha önce seçiliyse koyu tema açılıyor.
 - **Kompakt ana pencere:** kenar çubuğu yok. Yeni indirme, devam/duraklat/sil ve sıra düğmeleri başlık çubuğunda; durum sekmeleri ve dosya türü ikonları listenin üstünde tek satırda. Satırlar 32 px (ferah seçenek 40 px), dosya türleri renkli ikonlarla ayrılıyor. Disk boşluğu, kuyruk, hızlar ve hız profili durum çubuğunda.
 - **Daha küçük bilgi ekranları:** ayrıntı paneli tek satırlık özet (ad, yüzde, boyut, hız, kalan süre ve eylemler), ince ilerleme şeridi (HTTP'de bağlantı haritası) ve sekmelerden oluşuyor; varsayılan yüksekliği 300 yerine 210 px, liste ekranın çoğunu koruyor. İndirme penceresi 640 px'ten 440 px'e indi: istatistik kartları ve sekme kutusu yerine iki sütunluk kısa özet, küçük hız grafiği ve bağlantı/eş listesi. Tepsi penceresi 320 px.
 - **Ayarlar** ikonlu bölüm listesi ve gruplanmış kartlarla sadeleşti; yeni indirme penceresi (560 px) ve diyaloglar aynı ölçülere çekildi.
@@ -30,7 +31,7 @@
 
 ### Değişti
 - Kenar çubuğu, Ctrl+B ve "Dar kenar çubuğu" ayarı kaldırıldı.
-- Ayarlar bir kez yeni tasarıma geçiriliyor (`DesignRevision` 2): eski turuncu vurgu maviye, neumorfik stil düze dönüyor; araç çubuğu etiketleri kapanıyor; sütun genişlikleri ve panel yüksekliği sıfırlanıyor. Tema, dil ve diğer ayarlar korunuyor.
+- Ayarlar bir kez yeni tasarıma geçiriliyor (`DesignRevision` 2): "Sistemi izle" teması koyuya dönüyor; araç çubuğu etiketleri kapanıyor; sütun genişlikleri ve panel yüksekliği sıfırlanıyor. Açık/koyu seçimi, dil ve diğer ayarlar korunuyor. Kayıtlı `Ui.Accent` ve `Ui.Backdrop` değerleri artık okunmuyor.
 
 ## 0.9.4 — 2026-10-29
 

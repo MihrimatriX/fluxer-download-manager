@@ -197,10 +197,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         _lastState = state;
     }
 
-    /// Follows the accent colour the user picked (or the Windows one).
-    private static IBrush AccentBrush() =>
-        Avalonia.Application.Current?.TryFindResource("SystemAccentColor", Avalonia.Application.Current.ActualThemeVariant, out var c) == true && c is Color col
-            ? new SolidColorBrush(col) : new SolidColorBrush(Color.Parse(Appearance.DefaultAccent));
+    private static IBrush AccentBrush() => new SolidColorBrush(Color.Parse(Appearance.Accent));
 
     private void UpdateConnections(HttpDownload hd)
     {
