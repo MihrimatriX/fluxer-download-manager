@@ -129,7 +129,7 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
             if (d is TorrentDownload td) Add(Strings.InfoUploaded, Loc.Bytes(td.UploadedBytes));
         }
         if (r.Media is { } m) Add(Strings.InfoUrl, m.PageUrl);
-        Add(Strings.InfoQueue, d.State == DownloadState.Scheduled ? DownloadItemViewModel.NightQueueLabel() : Strings.MainQueue);
+        Add(Strings.InfoQueue, DownloadItemViewModel.QueueName(d));
         Add(Strings.InfoAdded, item.AddedText);
         if (r.Error is { } err) Add(Strings.InfoError, Loc.Error(err));
 

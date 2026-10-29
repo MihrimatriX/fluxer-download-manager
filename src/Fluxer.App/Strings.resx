@@ -348,6 +348,7 @@
   <data name="Manual" xml:space="preserve"><value>manual</value></data>
   <data name="MaxPeers" xml:space="preserve"><value>Max peers per torrent</value></data>
   <data name="MoveToNight" xml:space="preserve"><value>Move to night queue</value></data>
+  <data name="NightQueue" xml:space="preserve"><value>Night queue</value></data>
   <data name="NightQueueAt" xml:space="preserve"><value>Night queue · {0}</value></data>
   <data name="NightQueueManual" xml:space="preserve"><value>Night queue · manual start</value></data>
   <data name="NightQueueStart" xml:space="preserve"><value>Start the night queue at</value></data>
@@ -564,4 +565,29 @@
   <data name="CategoriesResetConfirm" xml:space="preserve"><value>Remove your own categories and restore the built-in ones with their extensions? Downloads keep their files.</value></data>
   <data name="CategoryRemove" xml:space="preserve"><value>Remove category</value></data>
   <data name="CategoryTorrentNote" xml:space="preserve"><value>Torrents land here whatever their files are.</value></data>
+  <data name="MoveToQueue" xml:space="preserve"><value>Move to queue</value></data>
+  <data name="NamedQueueOption" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="AddToNamedQueue" xml:space="preserve"><value>Add to {0}</value></data>
+  <data name="QueueManualLabel" xml:space="preserve"><value>{0} · manual start</value></data>
+  <data name="PaletteMoveToQueue" xml:space="preserve"><value>Move to {0}</value></data>
+  <data name="PaletteGroupQueues" xml:space="preserve"><value>Queues</value></data>
+  <data name="PaletteStartQueue" xml:space="preserve"><value>Start {0} now</value></data>
+  <data name="QueuesTitle" xml:space="preserve"><value>Queues</value></data>
+  <data name="QueuesDesc" xml:space="preserve"><value>Downloads you add to a queue wait until it starts, at its time on its days or with "Start now". Its own limit caps how many of them run at once (0 = only the global limit).</value></data>
+  <data name="QueueAdd" xml:space="preserve"><value>Add queue</value></data>
+  <data name="QueueName" xml:space="preserve"><value>Queue name</value></data>
+  <data name="QueueStartNow" xml:space="preserve"><value>Start now</value></data>
+  <data name="QueueStartAt" xml:space="preserve"><value>Start at</value></data>
+  <data name="QueueSlots" xml:space="preserve"><value>At once</value></data>
+  <data name="QueueSlotsDesc" xml:space="preserve"><value>0 = only the global limit</value></data>
+  <data name="QueueAfter" xml:space="preserve"><value>When done</value></data>
+  <data name="QueueRemove" xml:space="preserve"><value>Remove queue</value></data>
+  <data name="QueueRemoveConfirm" xml:space="preserve"><value>{1} download(s) in "{0}" go back to the main queue, paused. Remove the queue?</value></data>
+  <data name="QueueDefaultName" xml:space="preserve"><value>Queue</value></data>
+  <data name="QueueNumbered" xml:space="preserve"><value>Queue {0}</value></data>
+  <data name="PackageOption" xml:space="preserve"><value>Add as one package</value></data>
+  <data name="PackageDesc" xml:space="preserve"><value>Saved together in a folder of this name and tagged with it, so the list can show, pause and resume them as one.</value></data>
+  <data name="PackageName" xml:space="preserve"><value>Package name</value></data>
+  <data name="QueueStopAt" xml:space="preserve"><value>Stop at</value></data>
+  <data name="QueueStopDesc" xml:space="preserve"><value>What has not finished by then waits for the next start.</value></data>
 </root>

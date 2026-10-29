@@ -348,6 +348,7 @@
   <data name="Manual" xml:space="preserve"><value>elle</value></data>
   <data name="MaxPeers" xml:space="preserve"><value>En fazla eş (torrent başına)</value></data>
   <data name="MoveToNight" xml:space="preserve"><value>Gece kuyruğuna taşı</value></data>
+  <data name="NightQueue" xml:space="preserve"><value>Gece kuyruğu</value></data>
   <data name="NightQueueAt" xml:space="preserve"><value>Gece kuyruğu · {0}</value></data>
   <data name="NightQueueManual" xml:space="preserve"><value>Gece kuyruğu · elle başlar</value></data>
   <data name="NightQueueStart" xml:space="preserve"><value>Gece kuyruğunu şu saatte başlat</value></data>
@@ -564,4 +565,29 @@
   <data name="CategoriesResetConfirm" xml:space="preserve"><value>Kendi kategorileriniz silinsin ve yerleşik olanlar uzantılarıyla geri gelsin mi? İndirmelerin dosyaları yerinde kalır.</value></data>
   <data name="CategoryRemove" xml:space="preserve"><value>Kategoriyi sil</value></data>
   <data name="CategoryTorrentNote" xml:space="preserve"><value>Torrentler içindeki dosyalardan bağımsız olarak buraya gelir.</value></data>
+  <data name="MoveToQueue" xml:space="preserve"><value>Kuyruğa taşı</value></data>
+  <data name="NamedQueueOption" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="AddToNamedQueue" xml:space="preserve"><value>{0} kuyruğuna ekle</value></data>
+  <data name="QueueManualLabel" xml:space="preserve"><value>{0} · elle başlar</value></data>
+  <data name="PaletteMoveToQueue" xml:space="preserve"><value>{0} kuyruğuna taşı</value></data>
+  <data name="PaletteGroupQueues" xml:space="preserve"><value>Kuyruklar</value></data>
+  <data name="PaletteStartQueue" xml:space="preserve"><value>{0} şimdi başlasın</value></data>
+  <data name="QueuesTitle" xml:space="preserve"><value>Kuyruklar</value></data>
+  <data name="QueuesDesc" xml:space="preserve"><value>Bir kuyruğa eklenen indirmeler, kuyruk günlerinde saatinde ya da "Şimdi başlat" ile başlayana kadar bekler. Kendi sınırı aynı anda kaçının çalışacağını belirler (0 = yalnızca genel sınır).</value></data>
+  <data name="QueueAdd" xml:space="preserve"><value>Kuyruk ekle</value></data>
+  <data name="QueueName" xml:space="preserve"><value>Kuyruk adı</value></data>
+  <data name="QueueStartNow" xml:space="preserve"><value>Şimdi başlat</value></data>
+  <data name="QueueStartAt" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="QueueSlots" xml:space="preserve"><value>Aynı anda</value></data>
+  <data name="QueueSlotsDesc" xml:space="preserve"><value>0 = yalnızca genel sınır</value></data>
+  <data name="QueueAfter" xml:space="preserve"><value>Bitince</value></data>
+  <data name="QueueRemove" xml:space="preserve"><value>Kuyruğu sil</value></data>
+  <data name="QueueRemoveConfirm" xml:space="preserve"><value>"{0}" içindeki {1} indirme ana kuyruğa duraklatılmış olarak döner. Kuyruk silinsin mi?</value></data>
+  <data name="QueueDefaultName" xml:space="preserve"><value>Kuyruk</value></data>
+  <data name="QueueNumbered" xml:space="preserve"><value>Kuyruk {0}</value></data>
+  <data name="PackageOption" xml:space="preserve"><value>Tek paket olarak ekle</value></data>
+  <data name="PackageDesc" xml:space="preserve"><value>Bu adda bir klasörde toplanır ve bu adla etiketlenir; liste onları tek birim olarak gösterir, duraklatır ve sürdürür.</value></data>
+  <data name="PackageName" xml:space="preserve"><value>Paket adı</value></data>
+  <data name="QueueStopAt" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="QueueStopDesc" xml:space="preserve"><value>O saate kadar bitmeyenler bir sonraki başlangıcı bekler.</value></data>
 </root>

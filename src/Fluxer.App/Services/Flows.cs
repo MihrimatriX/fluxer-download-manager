@@ -102,7 +102,8 @@ public static class Flows
                 // Only a link the user kept knowing it is a web page may be saved as one; any other page
                 // (sign-in, expired session) fails with "got-html" instead of finishing as a 1 KB "download.php".
                 r.HashAlgorithm, r.Hash, rejectHtml: item.Kind != ProbeKind.Html, connections: r.Connections,
-                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors, category: r.Category ?? item.Category, tags: r.Tags));
+                night: r.Mode == ViewModels.StartMode.Night, mirrors: r.Mirrors, category: r.Category ?? item.Category, tags: r.Tags,
+                queueId: r.Mode == ViewModels.StartMode.Named ? r.QueueId : null));
         }
 
         // "Start now" jumps the queue; "Add to queue" waits its turn at the end.
@@ -345,7 +346,8 @@ public static class Flows
         var ctx = new RequestContext(page.PageUrl, page.UserAgent, AppHost.CookieHeader(page.Cookies));
         var result = await Dialogs.GrabAsync(host.Owner, host.Engine.Settings, page, host.Engine.Http, ctx);
         if (result is not { } r) return;
-        foreach (var url in r.Urls) host.Engine.AddHttp(url, null, ctx, r.Folder);
+        string[]? tags = r.Package && Path.GetFileName(r.Folder.TrimEnd('\\', '/')) is { Length: > 0 } name ? [name] : null;
+        foreach (var url in r.Urls) host.Engine.AddHttp(url, null, ctx, r.Folder, tags: tags);
         host.ShowMainWindow();
         Log.Information("Grabbed {Count} resources from {Page}", r.Urls.Count, new Uri(page.PageUrl).Host);
     }

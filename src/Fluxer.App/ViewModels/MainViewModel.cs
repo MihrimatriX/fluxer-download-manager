@@ -64,6 +64,9 @@ public sealed partial class StateFilter(string key) : ObservableObject
 /// One entry of the status bar's speed menu: a profile to switch to, or the way to the schedule page.
 public sealed record ProfileChoice(string Label, bool IsActive, Avalonia.Controls.MenuItemToggleType ToggleType, System.Windows.Input.ICommand Command);
 
+/// "Move to queue ›" in the row menu: main, night and the user's queues.
+public sealed record QueueTarget(string Label, System.Windows.Input.ICommand Command);
+
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly AppHost _host;
@@ -150,6 +153,7 @@ public sealed partial class MainViewModel : ObservableObject
     public void LoadUi()
     {
         RefreshCategories();
+        UpdateQueueTargets();
         _loadingUi = true;
         var ui = _host.Engine.Settings.Ui;
         ToolbarLabels = ui.ToolbarLabels;
@@ -297,7 +301,7 @@ public sealed partial class MainViewModel : ObservableObject
         TotalUp = "↑ " + (Loc.Speed(up) is { Length: > 0 } b ? b : "0 B/s");
         DhtText = engine.DhtNodes is { } n ? string.Format(CultureInfo.CurrentCulture, Strings.DhtNodes, n) : "";
         MainQueueText = string.Format(CultureInfo.CurrentCulture, Strings.Concurrent, s.HttpSlots);
-        var night = items.Count(d => d.State == DownloadState.Scheduled);
+        var night = items.Count(d => d.State == DownloadState.Scheduled && d.Record.QueueId is null);
         NightQueueOn = s.ScheduleStart is not null;
         NightQueueText = (s.ScheduleStart ?? Strings.Manual) + (night > 0 ? $" · {night}" : "");
         QueueText = string.Format(CultureInfo.CurrentCulture, Strings.QueueStatus, s.HttpSlots, NightQueueText);
@@ -574,13 +578,40 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// Sends the selected waiting downloads to the night queue.
     [RelayCommand]
-    private async Task MoveToNight()
+    private Task MoveToNight() => MoveToQueueAsync(null, night: true);
+
+    /// `queueId` null + night: the night queue; null alone: the main queue; else one of the user's queues.
+    private async Task MoveToQueueAsync(string? queueId, bool night)
     {
         foreach (var d in Targets.Where(d => d.State is not (DownloadState.Completed or DownloadState.Seeding)))
         {
+            if (queueId is null && !night)
+            {
+                _host.Engine.Queue.MoveToMain(d.Id);
+                continue;
+            }
             await _host.Engine.Queue.PauseAsync(d.Id);
-            _host.Engine.Queue.Defer(d.Id);
+            _host.Engine.Queue.Defer(d.Id, queueId);
         }
+    }
+
+    [ObservableProperty] private IReadOnlyList<QueueTarget> _queueTargets = [];
+
+    public IReadOnlyList<NamedQueue> NamedQueues => _host.Engine.Settings.Queues;
+
+    /// Palette and Settings: a queue starts now instead of at its time.
+    public void StartQueue(string? id) => _host.Engine.Queue.StartQueue(id);
+
+    /// Rebuilt when the settings change (queues added, renamed or removed).
+    private void UpdateQueueTargets()
+    {
+        var s = _host.Engine.Settings;
+        QueueTargets =
+        [
+            new(Strings.MainQueue, new RelayCommand(() => _ = MoveToQueueAsync(null, night: false))),
+            new(Strings.NightQueue, MoveToNightCommand),
+            .. s.Queues.Select(q => new QueueTarget(q.Name, new RelayCommand(() => _ = MoveToQueueAsync(q.Id, night: false)))),
+        ];
     }
 
     [RelayCommand]

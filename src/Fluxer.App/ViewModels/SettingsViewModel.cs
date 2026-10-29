@@ -359,6 +359,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         HasPendingUpdate = _host.HasPendingUpdate;
         LoadData(s);
         LoadCategories(s);
+        LoadQueues(s);
         SavedText = "";
         _loading = false;
     }
@@ -498,6 +499,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
         s.BackupInterval = BackupSetting(BackupIndex);
         s.CategoryList = [.. CategoryRows.Select(r => r.ToCategory())];
+        s.Queues = [.. QueueRows.Select(r => r.ToQueue())];
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);

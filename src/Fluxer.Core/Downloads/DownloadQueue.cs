@@ -11,6 +11,8 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     private readonly List<IDownload> _items = [];
     private readonly Dictionary<long, (CancellationTokenSource Cts, Task Task)> _running = [];
     private bool _hadWork;
+    /// Named queues started (by their time or by hand) whose downloads have not all finished yet.
+    private readonly HashSet<string> _startedQueues = [];
 
     public event Action<IDownload>? Added;
     public event Action<IDownload>? Removed;
@@ -19,6 +21,10 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     public event Action? Reordered;
     /// Raised once when the last running/queued download finishes (for "sleep/shutdown when done").
     public event Action? Drained;
+    /// A started named queue has nothing left to run (its "when done" action).
+    public event Action<string>? QueueDrained;
+
+    public bool IsStarted(string queueId) { lock (_lock) return _startedQueues.Contains(queueId); }
 
     public IReadOnlyList<IDownload> Items { get { lock (_lock) return [.. _items]; } }
 
@@ -48,10 +54,12 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         Schedule();
     }
 
-    /// `night`: waits in the night queue until <see cref="StartNight"/>.
+    /// `night`: waits in the night queue until <see cref="StartNight"/>. A record with a QueueId waits for that
+    /// queue (or joins it at once when it is running).
     public IDownload Add(DownloadRecord record, bool start = true, bool night = false)
     {
-        record.State = night ? DownloadState.Scheduled : start ? DownloadState.Queued : DownloadState.Paused;
+        record.State = record.QueueId is { } q ? (IsStarted(q) ? DownloadState.Queued : DownloadState.Scheduled)
+            : night ? DownloadState.Scheduled : start ? DownloadState.Queued : DownloadState.Paused;
         db.Insert(record);
         var d = Track(factory(record));
         Added?.Invoke(d);
@@ -99,18 +107,45 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         foreach (var d in Items) if (d.State is not (DownloadState.Completed or DownloadState.Failed or DownloadState.Scheduled)) await PauseAsync(d.Id);
     }
 
-    /// Moves an idle download to the night queue.
-    public void Defer(long id)
+    /// Moves an idle download to the night queue (null) or a named queue, where it waits for that queue's start.
+    public void Defer(long id, string? queueId = null)
     {
-        if (Find(id) is { } d && !IsRunning(id) && d.State is not (DownloadState.Completed or DownloadState.Scheduled))
-            SetIdleState(d, DownloadState.Scheduled);
+        if (Find(id) is not { } d || IsRunning(id) || d.State == DownloadState.Completed) return;
+        d.Record.QueueId = queueId;
+        SetIdleState(d, queueId is not null && IsStarted(queueId) ? DownloadState.Queued : DownloadState.Scheduled);
+        Schedule();
+    }
+
+    /// Back to the main queue: waits its turn there.
+    public void MoveToMain(long id)
+    {
+        if (Find(id) is not { } d || d.State == DownloadState.Completed) return;
+        d.Record.QueueId = null;
+        if (d.State == DownloadState.Scheduled) SetIdleState(d, DownloadState.Queued);
+        else db.Update(d.Record);
+        Schedule();
     }
 
     /// Night queue start: everything waiting in it joins the normal queue.
-    public void StartNight()
+    public void StartNight() => StartQueue(null);
+
+    /// A queue starts: its waiting downloads join the run, named ones with that queue's own slot limit.
+    public void StartQueue(string? queueId)
     {
-        foreach (var d in Items) if (d.State == DownloadState.Scheduled) SetIdleState(d, DownloadState.Queued);
+        if (queueId is not null) lock (_lock) _startedQueues.Add(queueId);
+        foreach (var d in Items) if (d.State == DownloadState.Scheduled && d.Record.QueueId == queueId) SetIdleState(d, DownloadState.Queued);
         Schedule();
+    }
+
+    /// A named queue's stop time: what has not finished waits for its next start.
+    public async Task StopQueueAsync(string queueId)
+    {
+        lock (_lock) _startedQueues.Remove(queueId);
+        foreach (var d in Items.Where(d => d.Record.QueueId == queueId && (IsRunning(d.Id) || d.State == DownloadState.Queued)))
+        {
+            await PauseAsync(d.Id);
+            if (d.State is DownloadState.Paused or DownloadState.Queued) SetIdleState(d, DownloadState.Scheduled);
+        }
     }
 
     public void ResumeAll()
@@ -202,28 +237,40 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     public void Schedule()
     {
         bool drained;
+        List<string> doneQueues = [];
         lock (_lock)
         {
             var s = settings();
             int http = 0, torrent = 0;
+            var perQueue = new Dictionary<string, int>();
             foreach (var (id, _) in _running)
             {
                 var d = _items.FirstOrDefault(x => x.Id == id);
                 if (d is null || !d.OccupiesSlot && d.State != DownloadState.Queued) continue;
                 if (d.Kind == DownloadKind.Torrent) torrent++; else http++;
+                if (d.Record.QueueId is { } q) perQueue[q] = perQueue.GetValueOrDefault(q) + 1;
             }
 
             foreach (var d in _items.Where(x => x.State == DownloadState.Queued && !_running.ContainsKey(x.Id)).OrderBy(x => x.Record.QueueOrder))
             {
                 var isTorrent = d.Kind == DownloadKind.Torrent;
                 if (isTorrent ? torrent >= s.TorrentSlots : http >= s.HttpSlots) continue;
+                if (d.Record.QueueId is { } q && s.Queues.FirstOrDefault(x => x.Id == q) is { Slots: > 0 } own && perQueue.GetValueOrDefault(q) >= own.Slots) continue;
                 if (isTorrent) torrent++; else http++;
+                if (d.Record.QueueId is { } q2) perQueue[q2] = perQueue.GetValueOrDefault(q2) + 1;
                 Start(d);
             }
 
             drained = _hadWork && http == 0 && torrent == 0 && !_items.Any(x => x.State == DownloadState.Queued);
             if (drained) _hadWork = false;
+            foreach (var q in _startedQueues.ToList())
+            {
+                if (_items.Any(x => x.Record.QueueId == q && (x.State == DownloadState.Queued || _running.ContainsKey(x.Id)))) continue;
+                _startedQueues.Remove(q);
+                doneQueues.Add(q);
+            }
         }
+        foreach (var q in doneQueues) QueueDrained?.Invoke(q);
         if (drained) Drained?.Invoke();
     }
 

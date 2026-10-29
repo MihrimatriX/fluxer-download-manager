@@ -23,6 +23,8 @@ public sealed class AppSettings
     public bool UseCategoryFolders { get; set; } = true;
     public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
+    /// The user's own queues besides the main and night ones.
+    public List<NamedQueue> Queues { get; set; } = [];
 
     /// Unlimited, balanced, background. The active one is copied into the limits above (UseProfile).
     public List<SpeedProfile> Profiles { get; set; } =

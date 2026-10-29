@@ -153,7 +153,7 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
             case DownloadState.Queued when queuePosition(d) is { } pos:
                 return (string.Format(CultureInfo.CurrentCulture, Strings.QueuedAt, pos), Theme.Brush("SubtleBrush"));
             case DownloadState.Scheduled:
-                return (NightQueueLabel(), Theme.Brush("SubtleBrush"));
+                return (WaitLabel(d.Record), Theme.Brush("SubtleBrush"));
             case DownloadState.Completed:
                 return (Loc.State(state), Theme.Brush("OkBrush"));
             default:
@@ -165,6 +165,22 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
         Services.AppHost.Current?.Engine?.Settings.ScheduleStart is { } at
             ? string.Format(CultureInfo.CurrentCulture, Strings.NightQueueAt, at)
             : Strings.NightQueueManual;
+
+    private static NamedQueue? QueueOf(DownloadRecord r) =>
+        r.QueueId is { } id ? Services.AppHost.Current?.Engine?.Settings.Queues.FirstOrDefault(q => q.Id == id) : null;
+
+    /// A waiting download: "Night queue · 01:00" or "Weekend · Sat 09:00" / "Weekend · manual start".
+    public static string WaitLabel(DownloadRecord r)
+    {
+        if (QueueOf(r) is not { } q) return NightQueueLabel();
+        if (q.NextStart(DateTime.Now) is not { } at) return string.Format(CultureInfo.CurrentCulture, Strings.QueueManualLabel, q.Name);
+        var when = at.Date == DateTime.Today ? at.ToString("HH:mm", CultureInfo.CurrentCulture) : at.ToString("ddd HH:mm", CultureInfo.CurrentCulture);
+        return $"{q.Name} · {when}";
+    }
+
+    /// Detail panel: which queue it is in.
+    public static string QueueName(IDownload d) =>
+        d.State == DownloadState.Scheduled ? WaitLabel(d.Record) : QueueOf(d.Record)?.Name ?? Strings.MainQueue;
 
     /// Each file type has its own tint, so a long list scans by colour as well as by name.
     public static string TintKey(IDownload d) => Cats.TintKey(d.Kind == DownloadKind.Torrent ? "Torrent" : d.Record.Category);

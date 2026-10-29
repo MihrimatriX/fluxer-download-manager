@@ -295,6 +295,14 @@
                       <Separator />
                       <MenuItem Header="{x:Static app:Strings.MoveToNight}" Command="{Binding MoveToNightCommand}" />
                     </MenuItem>
+                    <MenuItem Header="{x:Static app:Strings.MoveToQueue}" ItemsSource="{Binding QueueTargets}">
+                      <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="vm:QueueTarget">
+                          <Setter Property="Header" Value="{Binding Label}" />
+                          <Setter Property="Command" Value="{Binding Command}" />
+                        </ControlTheme>
+                      </MenuItem.ItemContainerTheme>
+                    </MenuItem>
                     <MenuItem Header="{x:Static app:Strings.RefreshLink}" Command="{Binding RefreshLinkCommand}" />
                     <MenuItem Header="{x:Static app:Strings.SpeedLimitTitle}" Command="{Binding SpeedLimitCommand}" />
                     <MenuItem Header="{x:Static app:Strings.CopyUrl}" Command="{Binding CopyUrlCommand}" />

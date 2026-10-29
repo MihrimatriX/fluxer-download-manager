@@ -15,6 +15,8 @@ public sealed class DownloadRecord
     public long DoneBytes { get; set; }
     public long SpeedLimit { get; set; }
     public long QueueOrder { get; set; }
+    /// The user's named queue it belongs to; null = the main queue (or the night queue while Scheduled).
+    public string? QueueId { get; set; }
     public string? Error { get; set; }
     public long CreatedAt { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     public long? CompletedAt { get; set; }

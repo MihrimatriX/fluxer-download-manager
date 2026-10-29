@@ -101,6 +101,8 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
         Cmd(sel, Strings.MoveDown, "Ctrl+Down", "IcDown", main.MoveDownCommand);
         Cmd(sel, Strings.MoveBottom, "Ctrl+End", "IcDown", main.MoveBottomCommand);
         Cmd(sel, Strings.MoveToNight, null, "IcClock", main.MoveToNightCommand);
+        foreach (var t in main.QueueTargets.Skip(2))
+            Add(sel, string.Format(CultureInfo.CurrentCulture, Strings.PaletteMoveToQueue, t.Label), null, "IcClock", () => t.Command.Execute(null));
         Cmd(sel, Strings.Delete, "Del", "IcTrash", main.DeleteCommand);
         Cmd(sel, Strings.DeleteWithFiles, null, "IcTrash", main.DeleteWithFilesCommand);
 
@@ -111,6 +113,11 @@ public sealed partial class CommandPaletteViewModel(MainViewModel main) : Observ
             Add(view, string.Format(CultureInfo.CurrentCulture, Strings.PaletteShow, c.Title), null, Cats.IconKey(c.Key), () => main.ShowCategory(c.Key));
         Cmd(view, Strings.ToggleDetail, "Ctrl+I", "IcPanel", main.ToggleDetailCommand);
         Cmd(view, main.IsLight ? Strings.PaletteDarkTheme : Strings.PaletteLightTheme, null, main.IsLight ? "IcMoon" : "IcSun", main.ToggleThemeCommand);
+
+        var queues = Strings.PaletteGroupQueues;
+        Add(queues, string.Format(CultureInfo.CurrentCulture, Strings.PaletteStartQueue, Strings.NightQueue), null, "IcPlay", () => main.StartQueue(null));
+        foreach (var q in main.NamedQueues)
+            Add(queues, string.Format(CultureInfo.CurrentCulture, Strings.PaletteStartQueue, q.Name), null, "IcPlay", () => main.StartQueue(q.Id));
 
         var speed = Strings.PaletteGroupSpeed;
         foreach (var p in main.ProfileChoices.Where(p => p.ToggleType == Avalonia.Controls.MenuItemToggleType.Radio))

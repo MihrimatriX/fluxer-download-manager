@@ -67,6 +67,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Engine.Queue.StateChanged += OnStateChanged;
         Engine.Queue.Reordered += () => Dispatcher.UIThread.Post(Main.OnReordered);
         Engine.Queue.Drained += () => Dispatcher.UIThread.Post(OnDrained);
+        Engine.Queue.QueueDrained += id => Dispatcher.UIThread.Post(() => OnQueueDrained(id));
         Engine.Queue.Load();
         Mark("queue");
         Main.Reload();
@@ -236,8 +237,14 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         var now = DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
         var key = DateTime.Now.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture);
         if (key == _lastScheduleFire) return;
-        if (s.ScheduleStart == now) { _lastScheduleFire = key; Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
-        else if (s.ScheduleStop == now) { _lastScheduleFire = key; _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+        _lastScheduleFire = key;
+        if (s.ScheduleStart == now) { Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
+        else if (s.ScheduleStop == now) { _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+        foreach (var q in s.Queues.Where(q => q.RunsOn(DateTime.Today)))
+        {
+            if (q.Start == now) { Engine.Queue.StartQueue(q.Id); Log.Information("Scheduler: queue {Queue} start", q.Name); }
+            else if (q.Stop == now) { _ = Engine.Queue.StopQueueAsync(q.Id); Log.Information("Scheduler: queue {Queue} stop", q.Name); }
+        }
     }
 
     private DateTime _lastBackupCheck;
@@ -304,6 +311,22 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Main.Settings.ProfileApplied();
     }
 
+    /// A named queue finished: its own "when done" action, and the queue-finished notification and sound.
+    private void OnQueueDrained(string id)
+    {
+        if (Engine.Settings.Queues.FirstOrDefault(q => q.Id == id) is not { } q) return;
+        Log.Information("Queue {Queue} done → {Action}", q.Name, q.AfterDone);
+        Feedback(Engine.Settings.OnQueueDone, "queue", Strings.NotifyQueueDone, q.Name);
+        if (Engine.Queue.AnyActive) return;   // never shut down under someone else's downloads
+        PowerAction(q.AfterDone);
+    }
+
+    private static void PowerAction(string action)
+    {
+        if (action == "Shutdown") Process.Start(new ProcessStartInfo("shutdown", "/s /t 60") { CreateNoWindow = true })?.Dispose();
+        else if (action == "Sleep") Process.Start(new ProcessStartInfo("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0") { CreateNoWindow = true })?.Dispose();
+    }
+
     private void OnDrained()
     {
         var s = Engine.Settings;
@@ -313,8 +336,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         s.AfterQueue = "None"; // one-shot: never surprise the user twice
         _ = Engine.SaveSettingsAsync(s);
         Log.Information("Queue drained → {Action}", action);
-        if (action == "Shutdown") Process.Start(new ProcessStartInfo("shutdown", "/s /t 60") { CreateNoWindow = true });
-        else if (action == "Sleep") Process.Start(new ProcessStartInfo("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0") { CreateNoWindow = true });
+        PowerAction(action);
     }
 
     // ================= per-download windows =================

@@ -48,6 +48,15 @@
     <Style Selector="ListBox.secnav > ListBoxItem:selected c|Icon">
       <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
     </Style>
+    <!-- queue days: small round toggles -->
+    <Style Selector="ToggleButton.day">
+      <Setter Property="MinWidth" Value="36" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="6,0" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
     <!-- light / dark: two segments in a well -->
     <Style Selector="ListBox.seg">
       <Setter Property="Background" Value="{DynamicResource WellBrush}" />
@@ -388,6 +397,60 @@
                 </WrapPanel>
               </StackPanel>
             </Border>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,18,0,0">
+              <TextBlock Classes="section" Text="{x:Static app:Strings.QueuesTitle}" VerticalAlignment="Bottom" />
+              <Button Grid.Column="1" Classes="accent" Content="{x:Static app:Strings.QueueAdd}" Command="{Binding AddQueueCommand}" />
+            </Grid>
+            <TextBlock Classes="subtle" Text="{x:Static app:Strings.QueuesDesc}" TextWrapping="Wrap" Margin="2,6,0,10" />
+            <ItemsControl ItemsSource="{Binding QueueRows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:QueueRow">
+                  <Border Classes="card group" Padding="14,10" Margin="0,0,0,8">
+                    <StackPanel Spacing="10">
+                      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <TextBox Text="{Binding Name}" FontWeight="SemiBold" MaxWidth="320" HorizontalAlignment="Left" MinWidth="200"
+                                 AutomationProperties.Name="{x:Static app:Strings.QueueName}" />
+                        <Button Grid.Column="1" Content="{x:Static app:Strings.QueueStartNow}"
+                                Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).StartQueueNowCommand}" CommandParameter="{Binding}" />
+                        <Button Grid.Column="2" Classes="tool" Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RemoveQueueCommand}" CommandParameter="{Binding}"
+                                ToolTip.Tip="{x:Static app:Strings.QueueRemove}" AutomationProperties.Name="{x:Static app:Strings.QueueRemove}">
+                          <c:Icon Data="{StaticResource IcTrash}" Size="14" />
+                        </Button>
+                      </Grid>
+                      <WrapPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,20,6">
+                          <CheckBox IsChecked="{Binding StartOn}" Content="{x:Static app:Strings.QueueStartAt}" />
+                          <TimePicker SelectedTime="{Binding Start}" ClockIdentifier="24HourClock" IsEnabled="{Binding StartOn}" MinuteIncrement="5" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,20,6">
+                          <CheckBox IsChecked="{Binding StopOn}" Content="{x:Static app:Strings.QueueStopAt}" ToolTip.Tip="{x:Static app:Strings.QueueStopDesc}" />
+                          <TimePicker SelectedTime="{Binding Stop}" ClockIdentifier="24HourClock" IsEnabled="{Binding StopOn}" MinuteIncrement="5" />
+                        </StackPanel>
+                      </WrapPanel>
+                      <WrapPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Spacing="3" Margin="0,0,20,6">
+                          <ToggleButton Classes="day" IsChecked="{Binding Mon}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[0]}" />
+                          <ToggleButton Classes="day" IsChecked="{Binding Tue}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[1]}" />
+                          <ToggleButton Classes="day" IsChecked="{Binding Wed}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[2]}" />
+                          <ToggleButton Classes="day" IsChecked="{Binding Thu}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[3]}" />
+                          <ToggleButton Classes="day" IsChecked="{Binding Fri}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[4]}" />
+                          <ToggleButton Classes="day" IsChecked="{Binding Sat}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[5]}" />
+                          <ToggleButton Classes="day" IsChecked="{Binding Sun}" Content="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).DayNames[6]}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,20,6">
+                          <TextBlock Text="{x:Static app:Strings.QueueSlots}" VerticalAlignment="Center" ToolTip.Tip="{x:Static app:Strings.QueueSlotsDesc}" />
+                          <NumericUpDown Value="{Binding Slots}" Minimum="0" Maximum="20" Increment="1" FormatString="0" Width="120" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,6">
+                          <TextBlock Text="{x:Static app:Strings.QueueAfter}" VerticalAlignment="Center" />
+                          <ComboBox ItemsSource="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).AfterQueueOptions}" SelectedIndex="{Binding AfterIndex}" MinWidth="150" />
+                        </StackPanel>
+                      </WrapPanel>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </StackPanel>
 
           <!-- ===== Categories ===== -->

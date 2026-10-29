@@ -38,7 +38,8 @@ public sealed partial class GrabRow(PageResource r) : ObservableObject
 
 public static partial class Dialogs
 {
-    public static async Task<(List<string> Urls, string Folder)?> GrabAsync(Window? owner, AppSettings s, PageResources page, HttpEngine http, RequestContext ctx)
+    /// `Package`: tag them with the folder name, so the list can treat them as one.
+    public static async Task<(List<string> Urls, string Folder, bool Package)?> GrabAsync(Window? owner, AppSettings s, PageResources page, HttpEngine http, RequestContext ctx)
     {
         var rows = page.Resources.Where(r => Uri.TryCreate(r.Url, UriKind.Absolute, out _)).Select(r => new GrabRow(r)).ToList();
         foreach (var r in rows) r.UpdateInfo();
@@ -108,6 +109,8 @@ public static partial class Dialogs
         var selectors = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Children = { all, none } };
         DockPanel.SetDock(selectors, Dock.Right);
         var (folder, folderValue) = FolderPicker(Path.Combine(s.DownloadDirectory, FolderNameFor(page.PageUrl)));
+        var package = new CheckBox { Content = Strings.PackageOption, IsChecked = true, Margin = new Thickness(0, 8, 0, 0) };
+        ToolTip.SetTip(package, Strings.PackageDesc);
 
         var filters = new WrapPanel { Orientation = Orientation.Horizontal };
         foreach (var (label, control) in new (string, Control)[] { (Strings.Kind, kind), (Strings.Extensions, ext), (Strings.MinDimension, minDim), (Strings.MinSizeKb, minKb) })
@@ -122,11 +125,12 @@ public static partial class Dialogs
                 new DockPanel { Margin = new Thickness(0, 8, 0, 4), Children = { selectors, count } },
                 new Border { Classes = { "card" }, Child = list },
                 Label(Strings.SaveTo), folder,
+                package,
             },
         };
         Apply();
 
-        (List<string>, string)? result = null;
+        (List<string>, string, bool)? result = null;
         using var cts = new CancellationTokenSource();
         var w = Shell(Strings.GrabTitle, body, 700,
             new Button(Strings.Cancel, false, () => true),
@@ -134,7 +138,7 @@ public static partial class Dialogs
             {
                 var chosen = visible.Where(r => r.IsChecked).Select(r => r.Url).ToList();
                 if (chosen.Count == 0) return false;
-                result = (chosen, folderValue());
+                result = (chosen, folderValue(), package.IsChecked == true);
                 return true;
             }));
         w.Opened += (_, _) => _ = FetchSizesAsync(rows, http, ctx, () => Dispatcher.UIThread.Post(Apply), cts.Token);

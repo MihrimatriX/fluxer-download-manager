@@ -64,7 +64,7 @@ public sealed class FluxerEngine : IAsyncDisposable
 
     public IDownload AddHttp(string url, string? fileName = null, RequestContext? ctx = null, string? saveDirectory = null,
         bool start = true, string? hashAlgorithm = null, string? hashExpected = null, bool rejectHtml = false, int? connections = null, bool night = false,
-        IEnumerable<string>? mirrors = null, string? category = null, IEnumerable<string>? tags = null)
+        IEnumerable<string>? mirrors = null, string? category = null, IEnumerable<string>? tags = null, string? queueId = null)
     {
         var r = new DownloadRecord
         {
@@ -73,6 +73,7 @@ public sealed class FluxerEngine : IAsyncDisposable
             SaveDirectory = saveDirectory ?? "",
             Category = category,
             Tags = tags is null ? [] : [.. tags],
+            QueueId = queueId,
             Http = new HttpInfo
             {
                 Url = url,

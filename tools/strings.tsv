@@ -596,3 +596,28 @@ CategoriesReset	Back to defaults	Varsayılana dön
 CategoriesResetConfirm	Remove your own categories and restore the built-in ones with their extensions? Downloads keep their files.	Kendi kategorileriniz silinsin ve yerleşik olanlar uzantılarıyla geri gelsin mi? İndirmelerin dosyaları yerinde kalır.
 CategoryRemove	Remove category	Kategoriyi sil
 CategoryTorrentNote	Torrents land here whatever their files are.	Torrentler içindeki dosyalardan bağımsız olarak buraya gelir.
+MoveToQueue	Move to queue	Kuyruğa taşı
+NamedQueueOption	{0} ({1})	{0} ({1})
+AddToNamedQueue	Add to {0}	{0} kuyruğuna ekle
+QueueManualLabel	{0} · manual start	{0} · elle başlar
+PaletteMoveToQueue	Move to {0}	{0} kuyruğuna taşı
+PaletteGroupQueues	Queues	Kuyruklar
+PaletteStartQueue	Start {0} now	{0} şimdi başlasın
+QueuesTitle	Queues	Kuyruklar
+QueuesDesc	Downloads you add to a queue wait until it starts, at its time on its days or with "Start now". Its own limit caps how many of them run at once (0 = only the global limit).	Bir kuyruğa eklenen indirmeler, kuyruk günlerinde saatinde ya da "Şimdi başlat" ile başlayana kadar bekler. Kendi sınırı aynı anda kaçının çalışacağını belirler (0 = yalnızca genel sınır).
+QueueAdd	Add queue	Kuyruk ekle
+QueueName	Queue name	Kuyruk adı
+QueueStartNow	Start now	Şimdi başlat
+QueueStartAt	Start at	Başlangıç
+QueueSlots	At once	Aynı anda
+QueueSlotsDesc	0 = only the global limit	0 = yalnızca genel sınır
+QueueAfter	When done	Bitince
+QueueRemove	Remove queue	Kuyruğu sil
+QueueRemoveConfirm	{1} download(s) in "{0}" go back to the main queue, paused. Remove the queue?	"{0}" içindeki {1} indirme ana kuyruğa duraklatılmış olarak döner. Kuyruk silinsin mi?
+QueueDefaultName	Queue	Kuyruk
+QueueNumbered	Queue {0}	Kuyruk {0}
+PackageOption	Add as one package	Tek paket olarak ekle
+PackageDesc	Saved together in a folder of this name and tagged with it, so the list can show, pause and resume them as one.	Bu adda bir klasörde toplanır ve bu adla etiketlenir; liste onları tek birim olarak gösterir, duraklatır ve sürdürür.
+PackageName	Package name	Paket adı
+QueueStopAt	Stop at	Bitiş
+QueueStopDesc	What has not finished by then waits for the next start.	O saate kadar bitmeyenler bir sonraki başlangıcı bekler.

@@ -55,6 +55,8 @@ public sealed class Database : IDisposable
         "ALTER TABLE http_downloads ADD COLUMN mirrors TEXT;",
         // 5: user tags (JSON array)
         "ALTER TABLE downloads ADD COLUMN tags TEXT;",
+        // 6: named queue
+        "ALTER TABLE downloads ADD COLUMN queue_id TEXT;",
     ];
 
     public Database(string path)
@@ -82,8 +84,8 @@ public sealed class Database : IDisposable
             r.QueueOrder = Convert.ToInt64(Scalar("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM downloads", tx), CultureInfo.InvariantCulture);
             r.Id = Convert.ToInt64(Scalar("""
                 INSERT INTO downloads (kind, state, file_name, save_dir, category, total_bytes, done_bytes,
-                  speed_limit, queue_order, error, created_at, completed_at, tags)
-                VALUES ($kind, $state, $file, $dir, $cat, $total, $done, $limit, $order, $err, $created, $completed, $tags);
+                  speed_limit, queue_order, error, created_at, completed_at, tags, queue_id)
+                VALUES ($kind, $state, $file, $dir, $cat, $total, $done, $limit, $order, $err, $created, $completed, $tags, $queue);
                 SELECT last_insert_rowid();
                 """, tx, CommonParams(r)), CultureInfo.InvariantCulture);
             WriteDetails(r, tx);
@@ -99,7 +101,7 @@ public sealed class Database : IDisposable
             Exec("""
                 UPDATE downloads SET kind=$kind, state=$state, file_name=$file, save_dir=$dir, category=$cat,
                   total_bytes=$total, done_bytes=$done, speed_limit=$limit, queue_order=$order, error=$err,
-                  created_at=$created, completed_at=$completed, tags=$tags WHERE id=$id
+                  created_at=$created, completed_at=$completed, tags=$tags, queue_id=$queue WHERE id=$id
                 """, tx, [.. CommonParams(r), ("$id", r.Id)]);
             WriteDetails(r, tx);
             tx.Commit();
@@ -136,6 +138,7 @@ public sealed class Database : IDisposable
                         CreatedAt = rd.GetInt64(rd.GetOrdinal("created_at")),
                         CompletedAt = Long(rd, "completed_at"),
                         Tags = Str(rd, "tags") is { } tg ? JsonSerializer.Deserialize<List<string>>(tg) ?? [] : [],
+                        QueueId = Str(rd, "queue_id"),
                     };
                     list[r.Id] = r;
                 }
@@ -315,7 +318,7 @@ public sealed class Database : IDisposable
         ("$kind", (int)r.Kind), ("$state", (int)r.State), ("$file", r.FileName), ("$dir", r.SaveDirectory),
         ("$cat", r.Category), ("$total", r.TotalBytes), ("$done", r.DoneBytes), ("$limit", r.SpeedLimit),
         ("$order", r.QueueOrder), ("$err", r.Error), ("$created", r.CreatedAt), ("$completed", r.CompletedAt),
-        ("$tags", r.Tags.Count == 0 ? null : JsonSerializer.Serialize(r.Tags)),
+        ("$tags", r.Tags.Count == 0 ? null : JsonSerializer.Serialize(r.Tags)), ("$queue", r.QueueId),
     ];
 
     private SqliteCommand Command(string sql, SqliteTransaction? tx, (string, object?)[] ps)
