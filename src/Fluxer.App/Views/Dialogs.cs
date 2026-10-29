@@ -28,24 +28,25 @@ public static partial class Dialogs
             ShowInTaskbar = false,
             Icon = new WindowIcon(Avalonia.Platform.AssetLoader.Open(new Uri("avares://Fluxer/Assets/fluxer.ico"))),
         };
-        var bar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right };
+        var bar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right };
         foreach (var b in buttons)
         {
-            var btn = new Avalonia.Controls.Button { Content = b.Text, MinWidth = 96, HorizontalContentAlignment = HorizontalAlignment.Center };
+            var btn = new Avalonia.Controls.Button { Content = b.Text, MinWidth = 84, HorizontalContentAlignment = HorizontalAlignment.Center };
             if (b.Accent) { btn.Classes.Add("accent"); btn.IsDefault = true; }
             btn.Click += (_, _) => { if (b.OnClick()) w.Close(); };
             bar.Children.Add(btn);
         }
-        var root = new DockPanel { Margin = new Thickness(24, 20, 24, 20), Width = width - 48 };
-        var header = new TextBlock { Text = title, FontSize = 18, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 14) };
+        // Same frame as every window: chrome around one surface, the title inside it.
+        var root = new DockPanel { Margin = new Thickness(18, 14, 18, 14), Width = width - 52 };
+        var header = new TextBlock { Text = title, FontSize = 15, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 10) };
         DockPanel.SetDock(header, Dock.Top);
         DockPanel.SetDock(bar, Dock.Bottom);
-        bar.Margin = new Thickness(0, buttons.Length > 0 ? 18 : 0, 0, 0);
+        bar.Margin = new Thickness(0, buttons.Length > 0 ? 16 : 0, 0, 0);
         root.Children.Add(header);
         root.Children.Add(bar);
         // Tall bodies (and 130 % scale) scroll instead of being cut at MaxHeight.
         root.Children.Add(new ScrollViewer { Content = body, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto });
-        w.Content = root;
+        w.Content = new Border { Classes = { "surface" }, Margin = new Thickness(8, 0, 8, 8), Child = root };
         w.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Escape) w.Close(); };
         return w;
     }
@@ -68,7 +69,7 @@ public static partial class Dialogs
         await tcs.Task;
     }
 
-    public static TextBlock Label(string text) => new() { Text = text, Margin = new Thickness(0, 10, 0, 4), FontSize = 12.5, Opacity = 0.8 };
+    public static TextBlock Label(string text) => new() { Text = text, Margin = new Thickness(0, 10, 0, 4), FontSize = 11.5, Classes = { "subtle" } };
 
     public static TextBlock Paragraph(string text) => new() { Text = text, TextWrapping = TextWrapping.Wrap, MaxWidth = 560 };
 
@@ -150,7 +151,7 @@ public static partial class Dialogs
     public static (Control View, Func<string> Value) FolderPicker(string initial)
     {
         var box = new TextBox { Text = initial };
-        var browse = new Avalonia.Controls.Button { Content = Strings.Browse, Margin = new Thickness(6, 0, 0, 0) };
+        var browse = new Avalonia.Controls.Button { Content = Strings.Browse, Margin = new Thickness(6, 0, 0, 0), MinHeight = 30 };
         browse.Click += async (_, _) =>
         {
             if (TopLevel.GetTopLevel(browse) is { } top && await PickFolderAsync(top, box.Text) is { } path) box.Text = path;

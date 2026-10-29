@@ -70,6 +70,7 @@ public static class ShellIntegration
     }
 
     /// The host manifest Chromium (allowed_origins) or Firefox (allowed_extensions) reads.
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public static string HostManifest(string hostExe, string allowKey, IEnumerable<string> allowed) =>
         JsonSerializer.Serialize(new Dictionary<string, object>
         {

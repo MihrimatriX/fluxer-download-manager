@@ -26,14 +26,14 @@ public static partial class Dialogs
         TorrentChoice? result = null;
         // Rows use the shared TorrentNode template (App.axaml); the panel virtualizes and the tree only lists
         // open folders, so a torrent with thousands of files only creates the rows that fit in the box.
-        var total = new TextBlock { Opacity = 0.7 };
+        var total = new TextBlock { Classes = { "subtle" }, Margin = new Thickness(0, 6, 0, 0) };
         TorrentTree tree = null!;
         tree = new TorrentTree(files.Select((f, i) => (i, f.Path, f.Length, true)), UpdateTotal);
         var list = new ItemsControl { ItemsSource = tree.Rows, ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()), Margin = new Thickness(0, 0, 14, 0) };
         tree.PropertyChanged += (_, _) => list.ItemsSource = tree.Rows;
         void UpdateTotal() => total.Text = $"{Strings.InfoSize}: {Loc.Bytes(tree.SelectedBytes)}";
         UpdateTotal();
-        var sequential = new CheckBox { Content = Strings.Sequential };
+        var sequential = new CheckBox { Content = Strings.Sequential, Margin = new Thickness(0, 8, 0, 0) };
         var defaultDir = s.UseCategoryFolders ? Path.Combine(s.DownloadDirectory, "Torrent") : s.DownloadDirectory;
         var (folder, folderValue) = FolderPicker(defaultDir);
 
@@ -41,7 +41,7 @@ public static partial class Dialogs
         if (files.Count > 0)
         {
             body.Children.Add(Label(Strings.Files));
-            body.Children.Add(new ScrollViewer { Content = list, MaxHeight = 280 });
+            body.Children.Add(new Border { Classes = { "card" }, Padding = new Thickness(8, 2, 0, 2), Child = new ScrollViewer { Content = list, MaxHeight = 260 } });
             body.Children.Add(total);
         }
         else body.Children.Add(Paragraph(Strings.MagnetNoFiles));
@@ -49,7 +49,7 @@ public static partial class Dialogs
         body.Children.Add(folder);
         body.Children.Add(sequential);
 
-        var w = Shell(Strings.AddTorrent, body, 620,
+        var w = Shell(Strings.AddTorrent, body, 580,
             new Button(Strings.Cancel, false, () => true),
             new Button(Strings.Download, true, () =>
             {
@@ -96,7 +96,7 @@ public static partial class Dialogs
         body.Children.Add(Label(Strings.SaveTo));
         body.Children.Add(folder);
 
-        var w = Shell(Strings.MediaTitle, body, 640,
+        var w = Shell(Strings.MediaTitle, body, 580,
             new Button(Strings.Cancel, false, () => true),
             new Button(Strings.Download, true, () =>
             {

@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="AccentColor" xml:space="preserve"><value>Accent colour</value></data>
-  <data name="AccentColorDesc" xml:space="preserve"><value>Buttons, progress and highlights. The first one is Fluxer orange.</value></data>
+  <data name="AccentColorDesc" xml:space="preserve"><value>Buttons, progress and highlights. The first one is the Fluxer blue.</value></data>
   <data name="Accept" xml:space="preserve"><value>Accept</value></data>
   <data name="AddPaused" xml:space="preserve"><value>Add paused</value></data>
   <data name="AddToQueue" xml:space="preserve"><value>Add to queue</value></data>
@@ -49,17 +49,15 @@
   <data name="ColSpeed" xml:space="preserve"><value>Speed</value></data>
   <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
   <data name="CompactMode" xml:space="preserve"><value>Compact rows</value></data>
-  <data name="CompactModeDesc" xml:space="preserve"><value>44 px list rows; off gives roomier 54 px rows.</value></data>
+  <data name="CompactModeDesc" xml:space="preserve"><value>32 px list rows; off gives roomier 40 px rows.</value></data>
   <data name="CompactTip" xml:space="preserve"><value>Show or hide details</value></data>
   <data name="Conflict" xml:space="preserve"><value>If a file with the same name exists</value></data>
   <data name="ConflictOverwrite" xml:space="preserve"><value>Overwrite it</value></data>
   <data name="ConflictRename" xml:space="preserve"><value>Keep both: "name (1).ext"</value></data>
   <data name="ConnActive" xml:space="preserve"><value>receiving</value></data>
   <data name="ConnDone" xml:space="preserve"><value>done</value></data>
-  <data name="ConnDownloaded" xml:space="preserve"><value>Received</value></data>
   <data name="Connections" xml:space="preserve"><value>Connections per download</value></data>
   <data name="ConnectionsDesc" xml:space="preserve"><value>Parallel connections for one HTTP download (1–32). Fluxer lowers it automatically if the server pushes back.</value></data>
-  <data name="ConnRange" xml:space="preserve"><value>Byte range</value></data>
   <data name="ConnWaiting" xml:space="preserve"><value>waiting</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
   <data name="CopyUrl" xml:space="preserve"><value>Copy address</value></data>
@@ -139,7 +137,7 @@
   <data name="KindMedia" xml:space="preserve"><value>Media</value></data>
   <data name="LangSystem" xml:space="preserve"><value>System language</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
-  <data name="LayoutTip" xml:space="preserve"><value>Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.</value></data>
+  <data name="LayoutTip" xml:space="preserve"><value>Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Ctrl+K lists every command. Window size, columns and panels are remembered.</value></data>
   <data name="LinkMatchAttach" xml:space="preserve"><value>Attach and resume</value></data>
   <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" is waiting for a new link. Use this download to resume it?</value></data>
   <data name="LinkMatchNew" xml:space="preserve"><value>Start a new download</value></data>
@@ -154,11 +152,10 @@
   <data name="MediaTitle" xml:space="preserve"><value>Save video</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video tools</value></data>
   <data name="BackdropSetting" xml:space="preserve"><value>Style</value></data>
-  <data name="BackdropDesc" xml:space="preserve"><value>Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.</value></data>
-  <data name="BackdropNeu" xml:space="preserve"><value>Neumorphic (soft, raised)</value></data>
-  <data name="BackdropGlass" xml:space="preserve"><value>Glass (blurred, translucent)</value></data>
+  <data name="BackdropDesc" xml:space="preserve"><value>Solid is the standard look; Mica tints the window with your wallpaper; acrylic blurs what is behind it. Both need Windows 11.</value></data>
+  <data name="BackdropGlass" xml:space="preserve"><value>Acrylic (blurred, translucent)</value></data>
   <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
-  <data name="BackdropNone" xml:space="preserve"><value>Navy (default)</value></data>
+  <data name="BackdropNone" xml:space="preserve"><value>Solid (default)</value></data>
   <data name="RestartFromScratch" xml:space="preserve"><value>Restart from the beginning</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
@@ -240,7 +237,6 @@
   <data name="SeedOverrideDesc" xml:space="preserve"><value>Ratio and minutes for this torrent only; off = global setting.</value></data>
   <data name="SeedRatio" xml:space="preserve"><value>Seeding ratio</value></data>
   <data name="SeedRatioDesc" xml:space="preserve"><value>Stop seeding when uploaded ÷ size reaches this ratio (0 = no limit).</value></data>
-  <data name="SegmentMap" xml:space="preserve"><value>Connections</value></data>
   <data name="SelectNone" xml:space="preserve"><value>Select none</value></data>
   <data name="Sequential" xml:space="preserve"><value>Download in order (for previewing media)</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
@@ -285,7 +281,7 @@
   <data name="ThemeSystem" xml:space="preserve"><value>Follow system</value></data>
   <data name="ToggleDetail" xml:space="preserve"><value>Show or hide the detail panel</value></data>
   <data name="TookIs" xml:space="preserve"><value>took {0}</value></data>
-  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Show text next to toolbar icons.</value></data>
+  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Show text next to the title bar's command icons.</value></data>
   <data name="ToolbarLabelsSetting" xml:space="preserve"><value>Toolbar labels</value></data>
   <data name="ToolsConsent" xml:space="preserve"><value>To save videos, Fluxer needs yt-dlp, deno and ffmpeg (about 150 MB). They will be downloaded once from their official GitHub releases and verified with the publishers' SHA-256 checksums.</value></data>
   <data name="ToolsDownloading" xml:space="preserve"><value>Downloading video tools…</value></data>
@@ -329,7 +325,7 @@
   <data name="Maximize" xml:space="preserve"><value>Maximize</value></data>
   <data name="CloseWindow" xml:space="preserve"><value>Close</value></data>
   <data name="EtaDays" xml:space="preserve"><value>{0}d {1}h</value></data>
-  <data name="AccentNames" xml:space="preserve"><value>Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite</value></data>
+  <data name="AccentNames" xml:space="preserve"><value>Fluxer blue|Teal|Green|Amber|Orange|Rose|Violet|Slate</value></data>
   <data name="BackToDownloads" xml:space="preserve"><value>Back to downloads</value></data>
   <data name="Concurrent" xml:space="preserve"><value>{0} at once</value></data>
   <data name="DayNames" xml:space="preserve"><value>Mon|Tue|Wed|Thu|Fri|Sat|Sun</value></data>
@@ -359,7 +355,6 @@
   <data name="Manual" xml:space="preserve"><value>manual</value></data>
   <data name="MaxPeers" xml:space="preserve"><value>Max peers per torrent</value></data>
   <data name="MoveToNight" xml:space="preserve"><value>Move to night queue</value></data>
-  <data name="NightQueue" xml:space="preserve"><value>Night queue</value></data>
   <data name="NightQueueAt" xml:space="preserve"><value>Night queue · {0}</value></data>
   <data name="NightQueueManual" xml:space="preserve"><value>Night queue · manual start</value></data>
   <data name="NightQueueStart" xml:space="preserve"><value>Start the night queue at</value></data>
@@ -373,7 +368,6 @@
   <data name="ProfileSlots" xml:space="preserve"><value>At once</value></data>
   <data name="ProfileTip" xml:space="preserve"><value>Switch speed profile</value></data>
   <data name="ProfileUp" xml:space="preserve"><value>Upload</value></data>
-  <data name="Queues" xml:space="preserve"><value>QUEUES</value></data>
   <data name="RemovedToast" xml:space="preserve"><value>{0} removed from the list · files stay on disk</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="ScheduleStopShort" xml:space="preserve"><value>Pause everything at</value></data>
@@ -383,8 +377,6 @@
   <data name="SeedAndNetwork" xml:space="preserve"><value>Seeding and network</value></data>
   <data name="SeedRatioFormat" xml:space="preserve"><value>Seeding · ratio {0}</value></data>
   <data name="SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
-  <data name="SidebarCollapsedDesc" xml:space="preserve"><value>Icons only; Ctrl+B toggles it any time.</value></data>
-  <data name="SidebarCollapsedSetting" xml:space="preserve"><value>Narrow sidebar</value></data>
   <data name="SpeedProfiles" xml:space="preserve"><value>Speed profiles</value></data>
   <data name="SpeedProfilesDesc" xml:space="preserve"><value>Switch with the button in the status bar or by the scheduler. 0 MB/s means unlimited.</value></data>
   <data name="Start" xml:space="preserve"><value>Start</value></data>
@@ -456,4 +448,28 @@
   <data name="ExtensionConnected" xml:space="preserve"><value>Browser extension connected</value></data>
   <data name="ExtensionConnectedBody" xml:space="preserve"><value>Downloads started in the browser now come to Fluxer.</value></data>
   <data name="StartInBrowser" xml:space="preserve"><value>Start in browser</value></data>
+  <data name="NewShort" xml:space="preserve"><value>New</value></data>
+  <data name="MoreWaysToAdd" xml:space="preserve"><value>More ways to add</value></data>
+  <data name="PasteLinks" xml:space="preserve"><value>Paste links</value></data>
+  <data name="MoreActions" xml:space="preserve"><value>More actions</value></data>
+  <data name="PaletteTip" xml:space="preserve"><value>Commands (Ctrl+K)</value></data>
+  <data name="PaletteTitle" xml:space="preserve"><value>Command palette</value></data>
+  <data name="PalettePlaceholder" xml:space="preserve"><value>Type a command or a filter…</value></data>
+  <data name="PaletteHint" xml:space="preserve"><value>↑ ↓ to move · Enter to run · Esc to close</value></data>
+  <data name="PaletteEmpty" xml:space="preserve"><value>No matching command</value></data>
+  <data name="PaletteGroupDownloads" xml:space="preserve"><value>Downloads</value></data>
+  <data name="PaletteGroupSelected" xml:space="preserve"><value>Selected</value></data>
+  <data name="PaletteGroupView" xml:space="preserve"><value>View</value></data>
+  <data name="PaletteGroupSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="PaletteShow" xml:space="preserve"><value>Show: {0}</value></data>
+  <data name="PaletteProfile" xml:space="preserve"><value>Speed profile: {0}</value></data>
+  <data name="SettingsTip" xml:space="preserve"><value>Settings (Ctrl+,)</value></data>
+  <data name="FilterByState" xml:space="preserve"><value>Filter by state</value></data>
+  <data name="SpeedNow" xml:space="preserve"><value>Now</value></data>
+  <data name="SpeedAverage" xml:space="preserve"><value>Average</value></data>
+  <data name="SpeedPeak" xml:space="preserve"><value>Peak</value></data>
+  <data name="TabSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="QueueStatus" xml:space="preserve"><value>{0} at once · night {1}</value></data>
+  <data name="EditProfiles" xml:space="preserve"><value>Speed profiles and schedule…</value></data>
+  <data name="PinOnTop" xml:space="preserve"><value>Keep on top of other windows</value></data>
 </root>

@@ -62,5 +62,5 @@ internal static class Program
     }
 
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace();
+        AppBuilder.Configure<App>().UseWin32().UseSkia().UseHarfBuzz().LogToTrace();
 }

@@ -44,24 +44,24 @@ public static partial class Dialogs
         foreach (var r in rows) r.UpdateInfo();
         var visible = new ObservableCollection<GrabRow>();
 
-        var kind = new ComboBox { ItemsSource = new[] { Strings.KindAll, Strings.KindFile, Strings.KindImage, Strings.KindMedia }, SelectedIndex = rows.Any(r => r.Kind == "image") ? 2 : 0, Width = 130 };
-        var ext = new TextBox { PlaceholderText = "jpg, png, pdf", Width = 150 };
-        var minDim = new NumericUpDown { Minimum = 0, Maximum = 10000, Value = 0, Increment = 100, FormatString = "0", Width = 130 };
-        var minKb = new NumericUpDown { Minimum = 0, Maximum = 10_000_000, Value = 0, Increment = 50, FormatString = "0", Width = 130 };
+        var kind = new ComboBox { ItemsSource = new[] { Strings.KindAll, Strings.KindFile, Strings.KindImage, Strings.KindMedia }, SelectedIndex = rows.Any(r => r.Kind == "image") ? 2 : 0, Width = 124 };
+        var ext = new TextBox { PlaceholderText = "jpg, png, pdf", Width = 140 };
+        var minDim = new NumericUpDown { Minimum = 0, Maximum = 10000, Value = 0, Increment = 100, FormatString = "0", Width = 124 };
+        var minKb = new NumericUpDown { Minimum = 0, Maximum = 10_000_000, Value = 0, Increment = 50, FormatString = "0", Width = 124 };
         var pattern = new TextBox { PlaceholderText = Strings.UrlPatternWatermark };
         var count = new TextBlock { Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center };
 
         var list = new ListBox
         {
             ItemsSource = visible,
-            MinHeight = 160,
-            MaxHeight = 330,
+            MinHeight = 140,
+            MaxHeight = 300,
             Background = Avalonia.Media.Brushes.Transparent,
             ItemTemplate = new FuncDataTemplate<GrabRow>((_, _) =>
             {
-                var check = new CheckBox { [!ToggleButton_IsChecked] = new Binding(nameof(GrabRow.IsChecked)) { Mode = BindingMode.TwoWay } };
-                var url = new TextBlock { [!TextBlock.TextProperty] = new Binding(nameof(GrabRow.Url)), TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis, FontSize = 12.5 };
-                var info = new TextBlock { [!TextBlock.TextProperty] = new Binding(nameof(GrabRow.Info)), Opacity = 0.6, FontSize = 11.5 };
+                var check = new CheckBox { [!ToggleButton_IsChecked] = CompiledBinding.Create((GrabRow r) => r.IsChecked, mode: BindingMode.TwoWay) };
+                var url = new TextBlock { [!TextBlock.TextProperty] = CompiledBinding.Create((GrabRow r) => r.Url), TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis, FontSize = 12 };
+                var info = new TextBlock { [!TextBlock.TextProperty] = CompiledBinding.Create((GrabRow r) => r.Info), Classes = { "subtle" }, FontSize = 11 };
                 var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
                 var text = new StackPanel { Children = { url, info }, VerticalAlignment = VerticalAlignment.Center };
                 Grid.SetColumn(text, 1);
@@ -117,10 +117,10 @@ public static partial class Dialogs
         {
             Children =
             {
-                new TextBlock { Text = page.PageUrl, Opacity = 0.7, TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis },
+                new TextBlock { Text = page.PageUrl, Classes = { "subtle" }, TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis },
                 filters, Label(Strings.UrlPattern), pattern,
                 new DockPanel { Margin = new Thickness(0, 8, 0, 4), Children = { selectors, count } },
-                new Border { Classes = { "card" }, Background = Avalonia.Media.Brushes.Transparent, CornerRadius = new CornerRadius(10), Child = list },
+                new Border { Classes = { "card" }, Child = list },
                 Label(Strings.SaveTo), folder,
             },
         };
@@ -128,7 +128,7 @@ public static partial class Dialogs
 
         (List<string>, string)? result = null;
         using var cts = new CancellationTokenSource();
-        var w = Shell(Strings.GrabTitle, body, 760,
+        var w = Shell(Strings.GrabTitle, body, 700,
             new Button(Strings.Cancel, false, () => true),
             new Button(Strings.Download, true, () =>
             {

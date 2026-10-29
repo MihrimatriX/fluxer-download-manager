@@ -109,6 +109,7 @@ public sealed class Database : IDisposable
         lock (_lock) Exec("DELETE FROM downloads WHERE id=$id", null, ("$id", id));
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public List<DownloadRecord> LoadAll()
     {
         lock (_lock)
@@ -230,6 +231,7 @@ public sealed class Database : IDisposable
 
     // ---------- settings ----------
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public T GetSetting<T>(string key) where T : new()
     {
         lock (_lock)
@@ -238,6 +240,7 @@ public sealed class Database : IDisposable
                 : new T();
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public void SetSetting<T>(string key, T value)
     {
         lock (_lock)
@@ -249,6 +252,7 @@ public sealed class Database : IDisposable
 
     // ---------- helpers ----------
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private void WriteDetails(DownloadRecord r, SqliteTransaction tx)
     {
         if (r.Http is { } h)

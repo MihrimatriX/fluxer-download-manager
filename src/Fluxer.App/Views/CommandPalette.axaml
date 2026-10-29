@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Fluxer.App.ViewModels"
+             xmlns:c="using:Fluxer.App.Controls"
+             xmlns:app="using:Fluxer.App"
+             x:Class="Fluxer.App.Views.CommandPalette"
+             x:DataType="vm:CommandPaletteViewModel">
+  <UserControl.Styles>
+    <Style Selector="ListBox#Results > ListBoxItem">
+      <Setter Property="Padding" Value="10,0" />
+      <Setter Property="MinHeight" Value="34" />
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="ListBox#Results > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox#Results > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="TextBox#QueryBox">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="MinHeight" Value="44" />
+    </Style>
+  </UserControl.Styles>
+
+  <Panel>
+    <!-- a click outside closes it -->
+    <Border x:Name="Scrim" Background="{DynamicResource ScrimBrush}" />
+    <Border Width="580" VerticalAlignment="Top" Margin="16,70,16,16" CornerRadius="10" ClipToBounds="True"
+            Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1"
+            BoxShadow="0 18 50 0 #59000000">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="14,0,10,0">
+          <c:Icon Data="{StaticResource IcSearch}" Size="16" StrokeThickness="2" Foreground="{DynamicResource SubtleBrush}" />
+          <TextBox x:Name="QueryBox" Grid.Column="1" Classes="bare" Text="{Binding Query}" PlaceholderText="{x:Static app:Strings.PalettePlaceholder}"
+                   AutomationProperties.Name="{x:Static app:Strings.PaletteTitle}" />
+          <Border Grid.Column="2" Classes="kbd"><TextBlock Text="Esc" /></Border>
+        </Grid>
+        <Border DockPanel.Dock="Top" Classes="hline" />
+        <TextBlock DockPanel.Dock="Bottom" Classes="faint" FontSize="11" Margin="14,6,14,8" Text="{x:Static app:Strings.PaletteHint}" />
+        <Border DockPanel.Dock="Bottom" Classes="hline" />
+        <Panel>
+          <ListBox x:Name="Results" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent"
+                   MaxHeight="380" Padding="6" AutomationProperties.Name="{x:Static app:Strings.PaletteTitle}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:PaletteItem">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                  <c:Icon Data="{Binding Icon}" Size="15" Foreground="{DynamicResource SubtleBrush}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text="{Binding Group}" Classes="faint" FontSize="11.5" VerticalAlignment="Center" />
+                  <Border Grid.Column="3" Classes="kbd" IsVisible="{Binding HasShortcut}"><TextBlock Text="{Binding Shortcut}" /></Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock IsVisible="{Binding IsEmpty}" Text="{x:Static app:Strings.PaletteEmpty}" Classes="subtle" Margin="18,16" />
+        </Panel>
+      </DockPanel>
+    </Border>
+  </Panel>
+</UserControl>

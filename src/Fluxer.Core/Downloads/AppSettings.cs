@@ -111,20 +111,27 @@ public sealed class AppSettings
         return null;
     }
 
-    /// Settings saved by an older version get the 0.8 design defaults once (dark navy, orange, gradient,
-    /// fresh column layout). Returns true when something changed and should be saved.
+    /// Settings saved by an older version get the current design's defaults once. Revision 1 (0.8): dark theme,
+    /// compact rows, night queue at 01:00. Revision 2 (the compact redesign): the logo blue replaces the old orange,
+    /// the neumorphic style is gone, the toolbar shows icons only, and columns and the detail panel start fresh.
+    /// Returns true when something changed and should be saved.
     public bool UpgradeDesign()
     {
-        if (Ui.DesignRevision >= 1) return false;
-        Ui.DesignRevision = 1;
-        Theme = "Dark";
-        Ui.Accent = null;
-        Ui.Backdrop = "none";
-        Ui.Compact = true;
+        if (Ui.DesignRevision >= 2) return false;
+        if (Ui.DesignRevision < 1)
+        {
+            Theme = "Dark";
+            Ui.Compact = true;
+            ScheduleStart ??= "01:00";
+        }
+        Ui.DesignRevision = 2;
+        if (Ui.Accent == "#F5A623") Ui.Accent = null;
+        if (Ui.Backdrop is not ("mica" or "glass")) Ui.Backdrop = "none";
+        Ui.ToolbarLabels = false;
+        Ui.DetailHeight = new UiSettings().DetailHeight;
         Ui.ColumnOrder.Clear();
         Ui.ColumnWidths.Clear();
         Ui.HiddenColumns.Clear();
-        ScheduleStart ??= "01:00";
         return true;
     }
 }
@@ -140,15 +147,14 @@ public sealed class SpeedProfile
 /// Look and layout the user can change; remembered between sessions.
 public sealed class UiSettings
 {
-    public string? Accent { get; set; }                 // "#RRGGBB", null = Fluxer orange
-    public string Backdrop { get; set; } = "none";      // "none" (navy gradient), "glass" (acrylic blur), "mica", "neu" (neumorphic)
-    public bool Compact { get; set; } = true;           // 44 px rows (design "sıkı"); off = 54 px
+    public string? Accent { get; set; }                 // "#RRGGBB", null = the logo blue
+    public string Backdrop { get; set; } = "none";      // "none" (solid), "mica" (Windows 11), "glass" (acrylic blur)
+    public bool Compact { get; set; } = true;           // 32 px rows; off = 40 px
     public double Scale { get; set; } = 1.0;            // 0.85 – 1.3
     public bool Animations { get; set; } = true;
-    public bool ToolbarLabels { get; set; } = true;
-    public bool SidebarCollapsed { get; set; }
+    public bool ToolbarLabels { get; set; }             // text next to the title bar's command icons
     public bool DetailVisible { get; set; }
-    public double DetailHeight { get; set; } = 300;     // the detail panel sits under the list
+    public double DetailHeight { get; set; } = 210;     // the detail panel sits under the list
     public int DesignRevision { get; set; }
     public List<string> HiddenColumns { get; set; } = [];
     public Dictionary<string, double> ColumnWidths { get; set; } = [];

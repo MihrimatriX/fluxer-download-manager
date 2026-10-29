@@ -237,4 +237,25 @@ public sealed class SpeedProfileTests
         Assert.False(s.UpgradeDesign());
         Assert.Equal("Light", s.Theme);
     }
+
+    [Fact]
+    public void UpgradeDesign_FromFirstRevision_KeepsThemeAndBackdrop()
+    {
+        var s = new Downloads.AppSettings { Theme = "Light" };
+        s.Ui.DesignRevision = 1;
+        s.Ui.Accent = "#F5A623";          // the old orange, picked by hand
+        s.Ui.Backdrop = "mica";
+        s.Ui.ToolbarLabels = true;
+        s.Ui.ColumnWidths["size"] = 120;
+        Assert.True(s.UpgradeDesign());
+        Assert.Equal(("Light", null, "mica", false), (s.Theme, s.Ui.Accent, s.Ui.Backdrop, s.Ui.ToolbarLabels));
+        Assert.Empty(s.Ui.ColumnWidths);
+
+        var neu = new Downloads.AppSettings();
+        neu.Ui.DesignRevision = 1;
+        neu.Ui.Backdrop = "neu";
+        neu.Ui.Accent = "#30D158";
+        Assert.True(neu.UpgradeDesign());
+        Assert.Equal(("none", "#30D158"), (neu.Ui.Backdrop, neu.Ui.Accent));
+    }
 }

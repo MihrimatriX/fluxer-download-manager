@@ -17,8 +17,8 @@ public sealed record TrackerRow(string Url, string Status, bool Ok);
 public sealed record ConnRow(string Number, double Percent, string Text, IBrush Brush);
 public sealed record DetailTab(string Key, string Label);
 
-/// Detail panel (right side) for the selected download: progress, speed graph and tabs —
-/// torrents: info, files, peers, trackers, options; HTTP: info, connections, log, headers; media: info, log.
+/// Detail panel (under the list) for the selected download: one headline, a progress strip and tabs —
+/// torrents: info, speed, files, peers, trackers, options; HTTP: info, speed, connections, log, headers; media: info, speed, log.
 public sealed partial class DetailViewModel(AppHost host) : ObservableObject
 {
     private const int HistoryLength = 240; // 60 s at 4 Hz
@@ -42,6 +42,15 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
     [ObservableProperty] private bool _filesPending;
     [ObservableProperty] private bool _noPeers;
     [ObservableProperty] private string _primaryLabel = "";
+    [ObservableProperty] private Geometry? _primaryIcon;
+    /// "2.5 GB / 6.1 GB · 44.0 MB/s · 1 min 21 s left" next to the name.
+    [ObservableProperty] private string _headline = "";
+    [ObservableProperty] private string _avgSpeedText = "—";
+    [ObservableProperty] private string _peakSpeedText = "—";
+    /// HTTP downloads draw their connections on the progress strip.
+    [ObservableProperty] private bool _showSegments;
+    [ObservableProperty] private SegmentRow[] _segments = [];
+    [ObservableProperty] private long _totalBytes;
     // per-torrent controls
     [ObservableProperty] private decimal? _torrentDownKb;
     [ObservableProperty] private decimal? _torrentUpKb;
@@ -80,10 +89,10 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         if (changed)
         {
             Tabs = IsTorrent
-                ? [new("info", Strings.TabInfo), new("files", Strings.TabFiles), new("peers", Strings.TabPeers), new("trackers", Strings.TabTrackers), new("options", Strings.TabTorrentOptions)]
+                ? [new("info", Strings.TabInfo), new("speed", Strings.TabSpeed), new("files", Strings.TabFiles), new("peers", Strings.TabPeers), new("trackers", Strings.TabTrackers), new("options", Strings.TabTorrentOptions)]
                 : IsHttp
-                    ? [new("info", Strings.TabInfo), new("conns", Strings.TabConnectionsList), new("log", Strings.TabLog), new("headers", Strings.TabHeaders)]
-                    : [new("info", Strings.TabInfo), new("log", Strings.TabLog)];
+                    ? [new("info", Strings.TabInfo), new("speed", Strings.TabSpeed), new("conns", Strings.TabConnectionsList), new("log", Strings.TabLog), new("headers", Strings.TabHeaders)]
+                    : [new("info", Strings.TabInfo), new("speed", Strings.TabSpeed), new("log", Strings.TabLog)];
             // Keep the tab when the new download has it too.
             SelectedTab = Tabs.FirstOrDefault(t => t.Key == TabKey) ?? Tabs[0];
         }
@@ -98,10 +107,10 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         ErrorText = item.IsError
             ? string.Format(CultureInfo.CurrentCulture, Strings.ErrorKept, Loc.Error(r.Error) is { Length: > 0 } e ? e : Loc.State(d.State), Loc.Bytes(d.GetProgress().BytesDone))
             : "";
-        PrimaryLabel = item.IsActive ? Strings.Pause
-            : item.IsError ? Strings.Retry
-            : item.IsDone ? Strings.OpenFile
-            : Strings.Start;
+        (PrimaryLabel, PrimaryIcon) = item.IsActive ? (Strings.Pause, Theme.Geometry("IcPause"))
+            : item.IsError ? (Strings.Retry, Theme.Geometry("IcRefresh"))
+            : item.IsDone ? (Strings.OpenFile, Theme.Geometry("IcFile"))
+            : (Strings.Start, Theme.Geometry("IcPlay"));
 
         Info.Clear();
         Add(Strings.InfoSavedTo, r.SaveDirectory);
@@ -222,7 +231,21 @@ public sealed partial class DetailViewModel(AppHost host) : ObservableObject
         Push(_upHistory, d is TorrentDownload up ? up.UploadRate : 0);
         SpeedHistory = [.. _history];
         UpHistoryValues = [.. _upHistory];
-        if (d is HttpDownload hd) SyncConnections(hd.GetSegments(), Item.IsActive);
+        var moving = _history.Where(v => v > 0).ToList();
+        AvgSpeedText = moving.Count > 0 ? Loc.Speed((long)moving.Average()) : "—";
+        PeakSpeedText = moving.Count > 0 ? Loc.Speed((long)moving.Max()) : "—";
+        var speed = Item.IsActive && Item.SpeedText != "—" ? Item.SpeedText : "";
+        var status = Item.IsError ? "" : Item.StatusText;   // the error box says it in full
+        Headline = string.Join(" · ", new[] { Item.DoneText, speed, status }.Where(t => t.Length > 0).Distinct());
+        TotalBytes = p.TotalBytes ?? 0;
+        if (d is HttpDownload hd)
+        {
+            var segments = hd.GetSegments();
+            Segments = segments;
+            ShowSegments = segments.Length > 0 && TotalBytes > 0 && !Item.IsDone;
+            SyncConnections(segments, Item.IsActive);
+        }
+        else ShowSegments = false;
         if (d is MediaDownload md)
         {
             var (i, n) = md.Fragments;

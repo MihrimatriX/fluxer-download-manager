@@ -1,5 +1,5 @@
 AccentColor	Accent colour	Vurgu rengi
-AccentColorDesc	Buttons, progress and highlights. The first one is Fluxer orange.	Butonlar, ilerleme ve vurgular. İlki Fluxer turuncusu.
+AccentColorDesc	Buttons, progress and highlights. The first one is the Fluxer blue.	Butonlar, ilerleme ve vurgular. İlki Fluxer mavisi.
 AccentSystem	Windows accent	Windows vurgu rengi
 Accept	Accept	Kabul et
 AddPaused	Add paused	Duraklatılmış ekle
@@ -48,7 +48,7 @@ ColSize	Size	Boyut
 ColSpeed	Speed	Hız
 ColStatus	Status	Durum
 CompactMode	Compact rows	Sıkı satırlar
-CompactModeDesc	44 px list rows; off gives roomier 54 px rows.	44 px liste satırları; kapalıyken daha ferah 54 px.
+CompactModeDesc	32 px list rows; off gives roomier 40 px rows.	32 px liste satırları; kapalıyken daha ferah 40 px.
 CompactTip	Show or hide details	Ayrıntıları göster/gizle
 Conflict	If a file with the same name exists	Aynı adda dosya varsa
 ConflictOverwrite	Overwrite it	Üzerine yaz
@@ -142,7 +142,7 @@ KindMagnet	Magnet link — opens as a torrent	Magnet bağlantısı — torrent o
 KindMedia	Media	Medya
 LangSystem	System language	Sistem dili
 Language	Language	Dil
-LayoutTip	Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.	İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Pencere boyutu, sütunlar, paneller ve kenar çubuğu hatırlanır.
+LayoutTip	Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Ctrl+K lists every command. Window size, columns and panels are remembered.	İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Ctrl+K tüm komutları listeler. Pencere boyutu, sütunlar ve paneller hatırlanır.
 LimitHttp	HTTP downloads	HTTP indirmeleri
 LimitHttpDesc	Shared by all HTTP and video downloads.	Tüm HTTP ve video indirmeleri arasında paylaşılır.
 LimitTorrentDown	Torrent download	Torrent indirme
@@ -161,11 +161,11 @@ MediaProbing	Reading video information…	Video bilgileri okunuyor…
 MediaTitle	Save video	Videoyu kaydet
 MediaTools	Video tools	Video araçları
 BackdropSetting	Style	Görünüm stili
-BackdropDesc	Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.	Lacivert standart görünüm; cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdınla renklenir; neumorfik yumuşak kabartmalı yüzeyler kullanır.
+BackdropDesc	Solid is the standard look; Mica tints the window with your wallpaper; acrylic blurs what is behind it. Both need Windows 11.	Düz standart görünüm; Mica pencereyi duvar kâğıdınla renklendirir; akrilik arkasını bulanık gösterir. İkisi de Windows 11 ister.
 BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
-BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
+BackdropGlass	Acrylic (blurred, translucent)	Akrilik (bulanık, saydam)
 BackdropMica	Mica (Windows 11)	Mica (Windows 11)
-BackdropNone	Navy (default)	Lacivert (varsayılan)
+BackdropNone	Solid (default)	Düz (varsayılan)
 RestartFromScratch	Restart from the beginning	Baştan başlat
 SelectAll	Select all	Tümünü seç
 SelectRow	Select	Seç
@@ -308,7 +308,7 @@ ThemeSystem	Follow system	Sistemi izle
 ToggleDetail	Show or hide the detail panel	Ayrıntı panelini göster/gizle
 ToggleSidebar	Collapse or expand the sidebar	Kenar çubuğunu daralt/genişlet
 TookIs	took {0}	{0} sürdü
-ToolbarLabelsDesc	Show text next to toolbar icons.	Araç çubuğu ikonlarının yanında yazı göster.
+ToolbarLabelsDesc	Show text next to the title bar's command icons.	Başlık çubuğundaki komut ikonlarının yanında yazı göster.
 ToolbarLabelsSetting	Toolbar labels	Araç çubuğu etiketleri
 ToolsConsent	To save videos, Fluxer needs yt-dlp, deno and ffmpeg (about 150 MB). They will be downloaded once from their official GitHub releases and verified with the publishers' SHA-256 checksums.	Video kaydetmek için Fluxer'ın yt-dlp, deno ve ffmpeg araçlarına ihtiyacı var (yaklaşık 150 MB). Resmi GitHub sürümlerinden bir kez indirilip yayıncıların SHA-256 özetleriyle doğrulanacaklar.
 ToolsDownloading	Downloading video tools…	Video araçları indiriliyor…
@@ -354,7 +354,7 @@ Minimize	Minimize	Simge durumuna küçült
 Maximize	Maximize	Ekranı kapla
 CloseWindow	Close	Kapat
 EtaDays	{0}d {1}h	{0}g {1}sa
-AccentNames	Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite	Turuncu|Mavi|Çivit|Mor|Pembe|Yeşil|Turkuaz|Grafit
+AccentNames	Fluxer blue|Teal|Green|Amber|Orange|Rose|Violet|Slate	Fluxer mavisi|Deniz yeşili|Yeşil|Kehribar|Turuncu|Gül|Menekşe|Arduvaz
 BackToDownloads	Back to downloads	İndirmelere dön
 Concurrent	{0} at once	{0} eşzamanlı
 DayNames	Mon|Tue|Wed|Thu|Fri|Sat|Sun	Pzt|Sal|Çar|Per|Cum|Cmt|Paz
@@ -482,3 +482,27 @@ ExtensionNotSeen	No word from the extension since Fluxer started. Already instal
 ExtensionConnected	Browser extension connected	Tarayıcı eklentisi bağlandı
 ExtensionConnectedBody	Downloads started in the browser now come to Fluxer.	Tarayıcıda başlayan indirmeler artık Fluxer'a gelir.
 StartInBrowser	Start in browser	Tarayıcıda başlat
+NewShort	New	Yeni
+MoreWaysToAdd	More ways to add	Diğer ekleme yolları
+PasteLinks	Paste links	Bağlantıları yapıştır
+MoreActions	More actions	Diğer işlemler
+PaletteTip	Commands (Ctrl+K)	Komutlar (Ctrl+K)
+PaletteTitle	Command palette	Komut paleti
+PalettePlaceholder	Type a command or a filter…	Bir komut ya da filtre yazın…
+PaletteHint	↑ ↓ to move · Enter to run · Esc to close	↑ ↓ ile gezin · Enter ile çalıştırın · Esc ile kapatın
+PaletteEmpty	No matching command	Eşleşen komut yok
+PaletteGroupDownloads	Downloads	İndirmeler
+PaletteGroupSelected	Selected	Seçili
+PaletteGroupView	View	Görünüm
+PaletteGroupSpeed	Speed	Hız
+PaletteShow	Show: {0}	Göster: {0}
+PaletteProfile	Speed profile: {0}	Hız profili: {0}
+SettingsTip	Settings (Ctrl+,)	Ayarlar (Ctrl+,)
+FilterByState	Filter by state	Duruma göre süz
+SpeedNow	Now	Şu an
+SpeedAverage	Average	Ortalama
+SpeedPeak	Peak	Tepe
+TabSpeed	Speed	Hız
+QueueStatus	{0} at once · night {1}	{0} eşzamanlı · gece {1}
+EditProfiles	Speed profiles and schedule…	Hız profilleri ve zamanlama…
+PinOnTop	Keep on top of other windows	Diğer pencerelerin üstünde tut

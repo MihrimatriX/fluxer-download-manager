@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fluxer.App.Services;
 using Fluxer.App.Views;
+using Fluxer.Core;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Platform.Windows;
 using Fluxer.Core.Torrent;
@@ -25,12 +26,18 @@ public sealed record AccentSwatch(int Index, string Hex, string Name)
 
 public sealed record BrowserRow(string Browser, bool Ok)
 {
-    public string Glyph => Ok ? "" : "";
+    public Avalonia.Media.Geometry? Icon => Theme.Geometry(Ok ? "IcCheck" : "IcClose");
+    public Avalonia.Media.IBrush Brush => Theme.Brush(Ok ? "OkBrush" : "ErrBrush");
     public string Text => Ok ? Strings.IntegrationOk : Strings.IntegrationMissing;
 }
 
 public sealed record SettingsSection(string Key, string Label)
 {
+    public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
+    {
+        "downloads" => "IcLogo", "speed" => "IcGauge", "torrent" => "IcTorrent", "browser" => "IcGlobe", "advanced" => "IcSliders", _ => "IcGear",
+    });
+
     public override string ToString() => Label;
 }
 
@@ -156,12 +163,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         [.. Appearance.AccentChoices.Select((h, i) => new AccentSwatch(i, h, Strings.AccentNames.Split('|').ElementAtOrDefault(i) ?? h))];
     [ObservableProperty] private int _accentIndex;
     [ObservableProperty] private int _backdropIndex;
-    public string[] Backdrops => [Strings.BackdropNone, Strings.BackdropGlass, Strings.BackdropMica, Strings.BackdropNeu];
+    public string[] Backdrops => [Strings.BackdropNone, Strings.BackdropMica, Strings.BackdropGlass];
     [ObservableProperty] private bool _compact;
     [ObservableProperty] private double _scalePercent = 100;
     [ObservableProperty] private bool _animations;
     [ObservableProperty] private bool _toolbarLabelsOn;
-    [ObservableProperty] private bool _sidebarCollapsedOn;
     public string ScaleText => Loc.Percent(ScalePercent / 100);
     partial void OnScalePercentChanged(double value) => OnPropertyChanged(nameof(ScaleText));
 
@@ -237,12 +243,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         var s = _host.Engine.Settings;
         LanguageIndex = s.Language switch { "tr" => 1, "en" => 2, _ => 0 };
         AccentIndex = Math.Max(0, Array.IndexOf(Appearance.AccentChoices, s.Ui.Accent ?? Appearance.DefaultAccent));
-        BackdropIndex = s.Ui.Backdrop switch { "glass" => 1, "mica" => 2, "neu" => 3, _ => 0 };
+        BackdropIndex = s.Ui.Backdrop switch { "mica" => 1, "glass" => 2, _ => 0 };
         Compact = s.Ui.Compact;
         ScalePercent = Math.Round(s.Ui.Scale * 100);
         Animations = s.Ui.Animations;
         ToolbarLabelsOn = s.Ui.ToolbarLabels;
-        SidebarCollapsedOn = s.Ui.SidebarCollapsed;
         ThemeIndex = s.Theme switch { "Light" => 1, "Dark" => 2, _ => 0 };
         Notifications = s.Notifications;
         ShowAddDialog = s.ShowAddDialog;
@@ -358,6 +363,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _saveTimer.Start();
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private async Task SaveAsync()
     {
         var engine = _host.Engine;
@@ -365,12 +371,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         var s = JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(old))!;
         s.Language = LanguageIndex switch { 1 => "tr", 2 => "en", _ => "" };
         s.Ui.Accent = AccentIndex > 0 ? Appearance.AccentChoices[AccentIndex] : null;
-        s.Ui.Backdrop = BackdropIndex switch { 1 => "glass", 2 => "mica", 3 => "neu", _ => "none" };
+        s.Ui.Backdrop = BackdropIndex switch { 1 => "mica", 2 => "glass", _ => "none" };
         s.Ui.Compact = Compact;
         s.Ui.Scale = Math.Clamp(ScalePercent / 100, 0.85, 1.3);
         s.Ui.Animations = Animations;
         s.Ui.ToolbarLabels = ToolbarLabelsOn;
-        s.Ui.SidebarCollapsed = SidebarCollapsedOn;
         s.Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" };
         s.Notifications = Notifications;
         s.ShowAddDialog = ShowAddDialog;
@@ -563,7 +568,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             MediaDisclaimerAccepted = old.MediaDisclaimerAccepted,
             LastYtDlpCheck = old.LastYtDlpCheck,
             RecentFolders = old.RecentFolders,
-            Ui = new UiSettings { DesignRevision = 1 },
+            Ui = new UiSettings { DesignRevision = 2 },
         };
         await _host.Engine.SaveSettingsAsync(fresh);
         Load();
@@ -610,6 +615,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// Logs + settings (proxy credentials stripped) — never the database (cookies) or download URLs.
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private static void WriteDiagnostics(AppSettings settings, string zipPath)
     {
         File.Delete(zipPath);
