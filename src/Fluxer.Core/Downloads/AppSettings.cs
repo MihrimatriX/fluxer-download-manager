@@ -78,7 +78,13 @@ public sealed class AppSettings
     public bool ShowProgressWindow { get; set; } = true;
     public bool ShowCompletedCard { get; set; } = true;
     public List<string> RecentFolders { get; set; } = [];
-    public bool Notifications { get; set; } = true;
+    public bool Notifications { get; set; } = true;  // master switch for the per-event notifications below
+    public EventFeedback OnCompleted { get; set; } = new();
+    public EventFeedback OnFailed { get; set; } = new() { Sound = true };
+    public EventFeedback OnQueueDone { get; set; } = new() { Notify = false };
+    /// "Exit" from the tray asks first while downloads are running or waiting.
+    public bool ConfirmExit { get; set; } = true;
+    public AutomationSettings Automation { get; set; } = new();
     public bool RegisterFileAssociations { get; set; } = true;
     public const string DefaultUpdateFeed = "https://github.com/MihrimatriX/fluxer-download-manager";
     public string? UpdateFeed { get; set; }        // Velopack feed URL or folder; null = DefaultUpdateFeed
@@ -133,6 +139,26 @@ public sealed class AppSettings
         Ui.HiddenColumns.Clear();
         return true;
     }
+}
+
+/// A Windows notification and/or a sound for one kind of event. SoundFile null = the Windows sound for it.
+public sealed class EventFeedback
+{
+    public bool Notify { get; set; } = true;
+    public bool Sound { get; set; }
+    public string? SoundFile { get; set; }
+}
+
+/// What runs when a download finishes or fails.
+public sealed class AutomationSettings
+{
+    /// Command line; %F path, %N name, %D folder, %K category, %Z size, %U address, %E event, %I id.
+    public string? Program { get; set; }
+    public bool ProgramOnFailed { get; set; }
+    public string? WebhookUrl { get; set; }
+    public bool WebhookOnAdded { get; set; }
+    public bool WebhookOnCompleted { get; set; } = true;
+    public bool WebhookOnFailed { get; set; } = true;
 }
 
 /// One speed profile; 0 = unlimited.

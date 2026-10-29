@@ -14,11 +14,17 @@ internal static class Program
 
     public static string[] Args { get; private set; } = [];
 
+    public static string ExePath => Path.Combine(AppContext.BaseDirectory, "Fluxer.exe");
+
     [STAThread]
     public static int Main(string[] args)
     {
         VelopackApp.Build()
-            .OnBeforeUninstallFastCallback(_ => ShellIntegration.Unregister(DataDirectory))
+            .OnBeforeUninstallFastCallback(_ =>
+            {
+                ShellIntegration.Unregister(DataDirectory);
+                Autostart.RemoveIfFor(ExePath);
+            })
             .Run();
 
         Args = args;

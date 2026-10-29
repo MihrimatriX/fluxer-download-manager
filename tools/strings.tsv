@@ -497,3 +497,36 @@ TabSpeed	Speed	Hız
 QueueStatus	{0} at once · night {1}	{0} eşzamanlı · gece {1}
 EditProfiles	Speed profiles and schedule…	Hız profilleri ve zamanlama…
 PinOnTop	Keep on top of other windows	Diğer pencerelerin üstünde tut
+SecAutomation	Automation	Otomasyon
+SecNotifications	Notifications and sounds	Bildirimler ve sesler
+StartWithWindows	Start with Windows	Windows ile başlat
+StartWithWindowsDesc	Starts in the tray when you sign in, so the browser extension and the night queue always find Fluxer.	Oturum açılınca tepside başlar; tarayıcı eklentisi ve gece kuyruğu Fluxer'ı her zaman bulur.
+ConfirmExit	Ask before exiting	Çıkmadan önce sor
+ConfirmExitDesc	When downloads are running or waiting. They pause and continue at the next start.	İndirme sürerken ya da beklerken. İndirmeler duraklar, sonraki açılışta kaldığı yerden sürer.
+ExitTitle	Exit Fluxer?	Fluxer'dan çıkılsın mı?
+ExitBody	{0} download(s) are running or waiting. They pause now and continue the next time Fluxer starts.	{0} indirme sürüyor ya da bekliyor. Şimdi duraklar, Fluxer bir sonraki açılışta kaldığı yerden sürdürür.
+EventCompleted	Finished	Biten
+EventFailed	Failed	Hata veren
+EventQueueDone	Queue finished	Kuyruk bitince
+EventAdded	Added	Eklenen
+Notification	Notification	Bildirim
+Sound	Sound	Ses
+SoundWindows	Windows sound	Windows sesi
+PlaySound	Play	Çal
+PickSound	Choose a sound (.wav)	Ses seç (.wav)
+NotifyQueueDone	Queue finished	Kuyruk bitti
+NotifyQueueDoneBody	Nothing is downloading or waiting any more.	İnen ya da bekleyen indirme kalmadı.
+AfterDownload	When a download finishes	İndirme bitince
+HookProgram	Run a program	Program çalıştır
+HookProgramDesc	After the antivirus check. Move the file, refresh a media library, send a message.	Virüs taramasından sonra. Dosyayı taşıyın, medya kütüphanesini tazeleyin, mesaj gönderin.
+HookEnvHelp	The same values are in the FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL and FLUXER_EVENT environment variables. Batch files (.bat, .cmd) should read those: an argument with &, | or % is not passed to them.	Aynı değerler FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL ve FLUXER_EVENT ortam değişkenlerinde de var. Toplu iş dosyaları (.bat, .cmd) bunları okumalı: &, | veya % içeren bir argüman onlara verilmez.
+HookAlsoFailed	Also for failed downloads	Hata veren indirmelerde de
+PlaceholderNames	path|name|folder|category|size|address|event|id	yol|ad|klasör|kategori|boyut|adres|olay|no
+Programs	Programs	Programlar
+Webhook	Send a webhook	Webhook gönder
+WebhookDesc	A JSON POST with name, path, size, address and event, for Home Assistant, n8n, Discord bridges and the like.	Ad, yol, boyut, adres ve olay bilgisiyle JSON POST; Home Assistant, n8n, Discord köprüleri gibi araçlar için.
+WebhookEvents	Events:	Olaylar:
+WebhookInvalid	Enter an http(s) address.	Bir http(s) adresi girin.
+WebhookSending	Sending…	Gönderiliyor…
+WebhookResult	Answered HTTP {0} in {1} ms.	HTTP {0} ile {1} ms'de yanıt verdi.
+Test	Test	Dene

@@ -155,7 +155,13 @@
       </Border>
 
       <ScrollViewer Grid.Column="1">
-        <Panel Margin="24,18,24,24" MaxWidth="860" HorizontalAlignment="Left">
+        <!-- every section as wide as the page allows, up to 860 px, left-aligned -->
+        <Grid Margin="24,18,24,24">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="860" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+        <Panel>
 
           <!-- ===== General ===== -->
           <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=general}">
@@ -165,8 +171,11 @@
                 <c:SettingRow Title="{x:Static app:Strings.Language}">
                   <ComboBox ItemsSource="{Binding Languages}" SelectedIndex="{Binding LanguageIndex}" />
                 </c:SettingRow>
-                <c:SettingRow Title="{x:Static app:Strings.ShowNotifications}" Description="{x:Static app:Strings.ShowNotificationsDesc}">
-                  <ToggleSwitch IsChecked="{Binding Notifications}" />
+                <c:SettingRow Title="{x:Static app:Strings.StartWithWindows}" Description="{x:Static app:Strings.StartWithWindowsDesc}">
+                  <ToggleSwitch IsChecked="{Binding StartWithWindows}" />
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.ConfirmExit}" Description="{x:Static app:Strings.ConfirmExitDesc}">
+                  <ToggleSwitch IsChecked="{Binding ConfirmExit}" />
                 </c:SettingRow>
                 <c:SettingRow Title="{x:Static app:Strings.ShowAddDialog}" Description="{x:Static app:Strings.ShowAddDialogDesc}">
                   <ToggleSwitch IsChecked="{Binding ShowAddDialog}" />
@@ -177,6 +186,42 @@
                 <c:SettingRow Title="{x:Static app:Strings.ShowCompletedCard}" Description="{x:Static app:Strings.ShowCompletedCardDesc}">
                   <ToggleSwitch IsChecked="{Binding ShowCompletedCard}" />
                 </c:SettingRow>
+              </StackPanel>
+            </Border>
+            <TextBlock Classes="section" Text="{x:Static app:Strings.SecNotifications}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.ShowNotifications}" Description="{x:Static app:Strings.ShowNotificationsDesc}">
+                  <ToggleSwitch IsChecked="{Binding Notifications}" />
+                </c:SettingRow>
+                <ItemsControl ItemsSource="{Binding Events}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:EventRow">
+                      <Border Padding="16,8" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,1,0,0">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="14">
+                          <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                          <CheckBox Grid.Column="1" IsChecked="{Binding Notify}" Content="{x:Static app:Strings.Notification}"
+                                    IsEnabled="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).Notifications}" />
+                          <CheckBox Grid.Column="2" IsChecked="{Binding Sound}" Content="{x:Static app:Strings.Sound}" />
+                          <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2" IsEnabled="{Binding Sound}" Width="196">
+                            <Button Classes="tool" Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).PlaySoundCommand}" CommandParameter="{Binding}"
+                                    ToolTip.Tip="{x:Static app:Strings.PlaySound}" AutomationProperties.Name="{x:Static app:Strings.PlaySound}">
+                              <c:Icon Data="{StaticResource IcVolume}" Size="14" />
+                            </Button>
+                            <Button Classes="link" Content="{Binding SoundName}" MaxWidth="150" FontSize="12"
+                                    Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).PickSoundCommand}" CommandParameter="{Binding}"
+                                    ToolTip.Tip="{x:Static app:Strings.PickSound}" />
+                            <Button Classes="tool" Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).ResetSoundCommand}" CommandParameter="{Binding}"
+                                    IsVisible="{Binding SoundFile, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                    ToolTip.Tip="{x:Static app:Strings.SoundWindows}" AutomationProperties.Name="{x:Static app:Strings.SoundWindows}">
+                              <c:Icon Data="{StaticResource IcClose}" Size="12" />
+                            </Button>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
               </StackPanel>
             </Border>
             <TextBlock Classes="section" Text="{x:Static app:Strings.SecAppearance}" />
@@ -480,6 +525,46 @@
             </Border>
           </StackPanel>
 
+          <!-- ===== Automation ===== -->
+          <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=automation}">
+            <TextBlock Classes="section" Text="{x:Static app:Strings.AfterDownload}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.HookProgram}" Description="{x:Static app:Strings.HookProgramDesc}">
+                  <ToggleSwitch IsChecked="{Binding ProgramOn}" />
+                </c:SettingRow>
+                <StackPanel Margin="16,0,16,12" Spacing="8" IsVisible="{Binding ProgramOn}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding ProgramLine}" FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                             PlaceholderText="&quot;C:\Tools\move.cmd&quot; &quot;%F&quot;" AutomationProperties.Name="{x:Static app:Strings.HookProgram}" />
+                    <Button Grid.Column="1" Content="{x:Static app:Strings.Browse}" Command="{Binding BrowseProgramCommand}" />
+                  </Grid>
+                  <TextBlock Text="{Binding PlaceholderHelp}" Classes="subtle" FontSize="11.5" TextWrapping="Wrap" FontFamily="Cascadia Mono, Consolas, monospace" />
+                  <TextBlock Text="{x:Static app:Strings.HookEnvHelp}" Classes="subtle" FontSize="11.5" TextWrapping="Wrap" />
+                  <CheckBox IsChecked="{Binding ProgramOnFailed}" Content="{x:Static app:Strings.HookAlsoFailed}" />
+                </StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.Webhook}" Description="{x:Static app:Strings.WebhookDesc}">
+                  <ToggleSwitch IsChecked="{Binding WebhookOn}" />
+                </c:SettingRow>
+                <StackPanel Margin="16,0,16,12" Spacing="8" IsVisible="{Binding WebhookOn}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding WebhookUrl}" FontFamily="Cascadia Mono, Consolas, monospace" FontSize="12"
+                             PlaceholderText="https://hooks.example.org/fluxer" AutomationProperties.Name="{x:Static app:Strings.Webhook}" />
+                    <Button Grid.Column="1" Content="{x:Static app:Strings.Test}" Command="{Binding TestWebhookCommand}" />
+                  </Grid>
+                  <StackPanel Orientation="Horizontal" Spacing="16">
+                    <TextBlock Text="{x:Static app:Strings.WebhookEvents}" Classes="subtle" VerticalAlignment="Center" />
+                    <CheckBox IsChecked="{Binding WebhookOnCompleted}" Content="{x:Static app:Strings.EventCompleted}" />
+                    <CheckBox IsChecked="{Binding WebhookOnFailed}" Content="{x:Static app:Strings.EventFailed}" />
+                    <CheckBox IsChecked="{Binding WebhookOnAdded}" Content="{x:Static app:Strings.EventAdded}" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding WebhookStatus}" Classes="subtle" FontSize="11.5"
+                             IsVisible="{Binding WebhookStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
           <!-- ===== Advanced ===== -->
           <StackPanel IsVisible="{Binding Section, Converter={x:Static vm:Is.Equal}, ConverterParameter=advanced}">
             <TextBlock Classes="section" Text="{x:Static app:Strings.TabAdvanced}" />
@@ -513,6 +598,7 @@
             </Border>
           </StackPanel>
         </Panel>
+        </Grid>
       </ScrollViewer>
     </Grid>
   </Border>

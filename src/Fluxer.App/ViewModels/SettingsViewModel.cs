@@ -35,7 +35,8 @@ public sealed record SettingsSection(string Key, string Label)
 {
     public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
     {
-        "downloads" => "IcLogo", "speed" => "IcGauge", "torrent" => "IcTorrent", "browser" => "IcGlobe", "advanced" => "IcSliders", _ => "IcGear",
+        "downloads" => "IcLogo", "speed" => "IcGauge", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
+        "advanced" => "IcSliders", _ => "IcGear",
     });
 
     public override string ToString() => Label;
@@ -109,6 +110,33 @@ public sealed partial class RssFeedRow(string url, Action changed) : ObservableO
     };
 }
 
+/// Notification and sound for one event (finished, failed, queue done) in Settings → General.
+public sealed partial class EventRow(string key, string label, Action changed) : ObservableObject
+{
+    public string Key { get; } = key;
+    public string Label { get; } = label;
+    [ObservableProperty] private bool _notify;
+    [ObservableProperty] private bool _sound;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(SoundName))] private string? _soundFile;
+    public string SoundName => SoundFile is { Length: > 0 } f ? Path.GetFileNameWithoutExtension(f) : Strings.SoundWindows;
+    public bool Loading { get; set; }
+
+    partial void OnNotifyChanged(bool value) { if (!Loading) changed(); }
+    partial void OnSoundChanged(bool value) { if (!Loading) changed(); }
+    partial void OnSoundFileChanged(string? value) { if (!Loading) changed(); }
+
+    public void Load(EventFeedback f)
+    {
+        Loading = true;
+        Notify = f.Notify;
+        Sound = f.Sound;
+        SoundFile = f.SoundFile;
+        Loading = false;
+    }
+
+    public EventFeedback ToFeedback() => new() { Notify = Notify, Sound = Sound, SoundFile = SoundFile is { Length: > 0 } ? SoundFile : null };
+}
+
 /// Settings page. Every change is saved automatically (debounced); there is no Save button.
 public sealed partial class SettingsViewModel : ObservableObject
 {
@@ -127,10 +155,16 @@ public sealed partial class SettingsViewModel : ObservableObject
             await SaveAsync();
         });
         Profiles = [.. Enumerable.Range(0, 3).Select(i => new ProfileCard(i, QueueSave))];
+        Events =
+        [
+            new("completed", Strings.EventCompleted, QueueSave), new("failed", Strings.EventFailed, QueueSave),
+            new("queue", Strings.EventQueueDone, QueueSave),
+        ];
         Sections =
         [
             new("general", Strings.SecGeneral), new("downloads", Strings.SecDownloads), new("speed", Strings.SecSpeedSchedule),
-            new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("advanced", Strings.TabAdvanced),
+            new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("automation", Strings.SecAutomation),
+            new("advanced", Strings.TabAdvanced),
         ];
         _selectedSection = Sections[0];
         host.Engine.Rss.Checked += () => Dispatcher.UIThread.Post(RefreshRssStatus);
@@ -173,6 +207,21 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _showAddDialog;
     [ObservableProperty] private bool _showProgressWindow;
     [ObservableProperty] private bool _showCompletedCard;
+    [ObservableProperty] private bool _startWithWindows;
+    [ObservableProperty] private bool _confirmExit;
+    public IReadOnlyList<EventRow> Events { get; }
+    // Automation
+    [ObservableProperty] private bool _programOn;
+    [ObservableProperty] private string _programLine = "";
+    [ObservableProperty] private bool _programOnFailed;
+    [ObservableProperty] private bool _webhookOn;
+    [ObservableProperty] private string _webhookUrl = "";
+    [ObservableProperty] private bool _webhookOnAdded;
+    [ObservableProperty] private bool _webhookOnCompleted;
+    [ObservableProperty] private bool _webhookOnFailed;
+    [ObservableProperty] private string _webhookStatus = "";
+    public string PlaceholderHelp => string.Join("   ", Fluxer.Core.Automation.DownloadHooks.Placeholders
+        .Zip(Strings.PlaceholderNames.Split('|'), (p, name) => $"{p.Token} {name}"));
     // Downloads
     [ObservableProperty] private string _downloadDirectory = "";
     [ObservableProperty] private bool _useCategoryFolders;
@@ -230,6 +279,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ScaleText), nameof(SelectedSection), nameof(Section), nameof(BrushIndex), nameof(BrushName),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
+        nameof(WebhookStatus),
     ];
 
     public void Load()
@@ -246,6 +296,20 @@ public sealed partial class SettingsViewModel : ObservableObject
         ShowAddDialog = s.ShowAddDialog;
         ShowProgressWindow = s.ShowProgressWindow;
         ShowCompletedCard = s.ShowCompletedCard;
+        StartWithWindows = OperatingSystem.IsWindows() && Autostart.IsEnabled();
+        ConfirmExit = s.ConfirmExit;
+        Events[0].Load(s.OnCompleted);
+        Events[1].Load(s.OnFailed);
+        Events[2].Load(s.OnQueueDone);
+        ProgramOn = s.Automation.Program is { Length: > 0 };
+        ProgramLine = s.Automation.Program ?? _lastProgram;
+        ProgramOnFailed = s.Automation.ProgramOnFailed;
+        WebhookOn = s.Automation.WebhookUrl is { Length: > 0 };
+        WebhookUrl = s.Automation.WebhookUrl ?? _lastWebhook;
+        WebhookOnAdded = s.Automation.WebhookOnAdded;
+        WebhookOnCompleted = s.Automation.WebhookOnCompleted;
+        WebhookOnFailed = s.Automation.WebhookOnFailed;
+        WebhookStatus = "";
         DownloadDirectory = s.DownloadDirectory;
         UseCategoryFolders = s.UseCategoryFolders;
         ConflictIndex = s.Conflict == ConflictPolicy.Overwrite ? 1 : 0;
@@ -372,6 +436,27 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.ShowAddDialog = ShowAddDialog;
         s.ShowProgressWindow = ShowProgressWindow;
         s.ShowCompletedCard = ShowCompletedCard;
+        s.ConfirmExit = ConfirmExit;
+        s.OnCompleted = Events[0].ToFeedback();
+        s.OnFailed = Events[1].ToFeedback();
+        s.OnQueueDone = Events[2].ToFeedback();
+        // Switched off, the text stays in the box for this session so turning it back on keeps it.
+        _lastProgram = ProgramLine;
+        _lastWebhook = WebhookUrl;
+        s.Automation = new AutomationSettings
+        {
+            Program = ProgramOn && !string.IsNullOrWhiteSpace(ProgramLine) ? ProgramLine.Trim() : null,
+            ProgramOnFailed = ProgramOnFailed,
+            WebhookUrl = WebhookOn && !string.IsNullOrWhiteSpace(WebhookUrl) ? WebhookUrl.Trim() : null,
+            WebhookOnAdded = WebhookOnAdded,
+            WebhookOnCompleted = WebhookOnCompleted,
+            WebhookOnFailed = WebhookOnFailed,
+        };
+        if (OperatingSystem.IsWindows() && Protocol.Instance.Length == 0 && StartWithWindows != Autostart.IsEnabled())
+        {
+            try { Autostart.Set(StartWithWindows, Program.ExePath); }
+            catch (Exception e) { Serilog.Log.Warning(e, "Start with Windows could not be changed"); }
+        }
         if (!string.IsNullOrWhiteSpace(DownloadDirectory)) s.DownloadDirectory = DownloadDirectory.Trim();
         s.UseCategoryFolders = UseCategoryFolders;
         s.Conflict = ConflictIndex == 1 ? ConflictPolicy.Overwrite : ConflictPolicy.Rename;
@@ -428,6 +513,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         Avalonia.Threading.DispatcherTimer.RunOnce(() => { if (stamp == _savedStamp) SavedText = ""; }, TimeSpan.FromSeconds(2.5));
         if (uiChanged) _host.ReloadUi();
     }
+
+    private string _lastProgram = "", _lastWebhook = "";
 
     private static TimeSpan? ParseTime(string? t) =>
         TimeOnly.TryParseExact(t, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var v) ? v.ToTimeSpan() : null;
@@ -497,6 +584,53 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void RefreshRssStatus()
     {
         foreach (var row in RssFeeds) row.UpdateStatus(_host.Engine.Rss.StateOf(row.Url));
+    }
+
+    [RelayCommand]
+    private async Task PickSound(EventRow row)
+    {
+        if (_host.Owner is not { } w) return;
+        var media = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media");
+        var files = await w.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Strings.PickSound,
+            FileTypeFilter = [new FilePickerFileType("WAV") { Patterns = ["*.wav"] }],
+            SuggestedStartLocation = await w.StorageProvider.TryGetFolderFromPathAsync(Path.GetDirectoryName(row.SoundFile) ?? media),
+        });
+        if (files.FirstOrDefault()?.TryGetLocalPath() is { } path)
+        {
+            row.SoundFile = path;
+            row.Sound = true;
+        }
+    }
+
+    [RelayCommand]
+    private static void PlaySound(EventRow row) => Sounds.Play(row.SoundFile, row.Key);
+
+    [RelayCommand]
+    private static void ResetSound(EventRow row) => row.SoundFile = null;
+
+    [RelayCommand]
+    private async Task BrowseProgram()
+    {
+        if (_host.Owner is not { } w) return;
+        var files = await w.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Strings.HookProgram,
+            FileTypeFilter = [new FilePickerFileType(Strings.Programs) { Patterns = ["*.exe", "*.cmd", "*.bat", "*.ps1"] }],
+        });
+        if (files.FirstOrDefault()?.TryGetLocalPath() is { } path)
+        {
+            ProgramLine = $"\"{path}\" \"%F\"";
+            ProgramOn = true;
+        }
+    }
+
+    [RelayCommand]
+    private async Task TestWebhook()
+    {
+        WebhookStatus = Strings.WebhookSending;
+        WebhookStatus = await _host.TestWebhookAsync(WebhookUrl);
     }
 
     [RelayCommand]
@@ -625,6 +759,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         copy.RecentFolders = [];
         // Feed URLs often carry a tracker passkey; keep only the host.
         foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
+        if (copy.Automation.WebhookUrl is { } hook) copy.Automation.WebhookUrl = Uri.TryCreate(hook, UriKind.Absolute, out var hu) ? hu.Host : "?";
         using (var w = new StreamWriter(zip.CreateEntry("settings.json").Open()))
             w.Write(JsonSerializer.Serialize(copy, new JsonSerializerOptions { WriteIndented = true }));
         using (var w = new StreamWriter(zip.CreateEntry("system.txt").Open()))

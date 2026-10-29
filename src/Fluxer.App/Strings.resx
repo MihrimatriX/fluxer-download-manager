@@ -465,4 +465,37 @@
   <data name="QueueStatus" xml:space="preserve"><value>{0} at once · night {1}</value></data>
   <data name="EditProfiles" xml:space="preserve"><value>Speed profiles and schedule…</value></data>
   <data name="PinOnTop" xml:space="preserve"><value>Keep on top of other windows</value></data>
+  <data name="SecAutomation" xml:space="preserve"><value>Automation</value></data>
+  <data name="SecNotifications" xml:space="preserve"><value>Notifications and sounds</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
+  <data name="StartWithWindowsDesc" xml:space="preserve"><value>Starts in the tray when you sign in, so the browser extension and the night queue always find Fluxer.</value></data>
+  <data name="ConfirmExit" xml:space="preserve"><value>Ask before exiting</value></data>
+  <data name="ConfirmExitDesc" xml:space="preserve"><value>When downloads are running or waiting. They pause and continue at the next start.</value></data>
+  <data name="ExitTitle" xml:space="preserve"><value>Exit Fluxer?</value></data>
+  <data name="ExitBody" xml:space="preserve"><value>{0} download(s) are running or waiting. They pause now and continue the next time Fluxer starts.</value></data>
+  <data name="EventCompleted" xml:space="preserve"><value>Finished</value></data>
+  <data name="EventFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="EventQueueDone" xml:space="preserve"><value>Queue finished</value></data>
+  <data name="EventAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="Notification" xml:space="preserve"><value>Notification</value></data>
+  <data name="Sound" xml:space="preserve"><value>Sound</value></data>
+  <data name="SoundWindows" xml:space="preserve"><value>Windows sound</value></data>
+  <data name="PlaySound" xml:space="preserve"><value>Play</value></data>
+  <data name="PickSound" xml:space="preserve"><value>Choose a sound (.wav)</value></data>
+  <data name="NotifyQueueDone" xml:space="preserve"><value>Queue finished</value></data>
+  <data name="NotifyQueueDoneBody" xml:space="preserve"><value>Nothing is downloading or waiting any more.</value></data>
+  <data name="AfterDownload" xml:space="preserve"><value>When a download finishes</value></data>
+  <data name="HookProgram" xml:space="preserve"><value>Run a program</value></data>
+  <data name="HookProgramDesc" xml:space="preserve"><value>After the antivirus check. Move the file, refresh a media library, send a message.</value></data>
+  <data name="HookEnvHelp" xml:space="preserve"><value>The same values are in the FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL and FLUXER_EVENT environment variables. Batch files (.bat, .cmd) should read those: an argument with &amp;, | or % is not passed to them.</value></data>
+  <data name="HookAlsoFailed" xml:space="preserve"><value>Also for failed downloads</value></data>
+  <data name="PlaceholderNames" xml:space="preserve"><value>path|name|folder|category|size|address|event|id</value></data>
+  <data name="Programs" xml:space="preserve"><value>Programs</value></data>
+  <data name="Webhook" xml:space="preserve"><value>Send a webhook</value></data>
+  <data name="WebhookDesc" xml:space="preserve"><value>A JSON POST with name, path, size, address and event, for Home Assistant, n8n, Discord bridges and the like.</value></data>
+  <data name="WebhookEvents" xml:space="preserve"><value>Events:</value></data>
+  <data name="WebhookInvalid" xml:space="preserve"><value>Enter an http(s) address.</value></data>
+  <data name="WebhookSending" xml:space="preserve"><value>Sending…</value></data>
+  <data name="WebhookResult" xml:space="preserve"><value>Answered HTTP {0} in {1} ms.</value></data>
+  <data name="Test" xml:space="preserve"><value>Test</value></data>
 </root>

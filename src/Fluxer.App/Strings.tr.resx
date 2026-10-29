@@ -465,4 +465,37 @@
   <data name="QueueStatus" xml:space="preserve"><value>{0} eşzamanlı · gece {1}</value></data>
   <data name="EditProfiles" xml:space="preserve"><value>Hız profilleri ve zamanlama…</value></data>
   <data name="PinOnTop" xml:space="preserve"><value>Diğer pencerelerin üstünde tut</value></data>
+  <data name="SecAutomation" xml:space="preserve"><value>Otomasyon</value></data>
+  <data name="SecNotifications" xml:space="preserve"><value>Bildirimler ve sesler</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Windows ile başlat</value></data>
+  <data name="StartWithWindowsDesc" xml:space="preserve"><value>Oturum açılınca tepside başlar; tarayıcı eklentisi ve gece kuyruğu Fluxer'ı her zaman bulur.</value></data>
+  <data name="ConfirmExit" xml:space="preserve"><value>Çıkmadan önce sor</value></data>
+  <data name="ConfirmExitDesc" xml:space="preserve"><value>İndirme sürerken ya da beklerken. İndirmeler duraklar, sonraki açılışta kaldığı yerden sürer.</value></data>
+  <data name="ExitTitle" xml:space="preserve"><value>Fluxer'dan çıkılsın mı?</value></data>
+  <data name="ExitBody" xml:space="preserve"><value>{0} indirme sürüyor ya da bekliyor. Şimdi duraklar, Fluxer bir sonraki açılışta kaldığı yerden sürdürür.</value></data>
+  <data name="EventCompleted" xml:space="preserve"><value>Biten</value></data>
+  <data name="EventFailed" xml:space="preserve"><value>Hata veren</value></data>
+  <data name="EventQueueDone" xml:space="preserve"><value>Kuyruk bitince</value></data>
+  <data name="EventAdded" xml:space="preserve"><value>Eklenen</value></data>
+  <data name="Notification" xml:space="preserve"><value>Bildirim</value></data>
+  <data name="Sound" xml:space="preserve"><value>Ses</value></data>
+  <data name="SoundWindows" xml:space="preserve"><value>Windows sesi</value></data>
+  <data name="PlaySound" xml:space="preserve"><value>Çal</value></data>
+  <data name="PickSound" xml:space="preserve"><value>Ses seç (.wav)</value></data>
+  <data name="NotifyQueueDone" xml:space="preserve"><value>Kuyruk bitti</value></data>
+  <data name="NotifyQueueDoneBody" xml:space="preserve"><value>İnen ya da bekleyen indirme kalmadı.</value></data>
+  <data name="AfterDownload" xml:space="preserve"><value>İndirme bitince</value></data>
+  <data name="HookProgram" xml:space="preserve"><value>Program çalıştır</value></data>
+  <data name="HookProgramDesc" xml:space="preserve"><value>Virüs taramasından sonra. Dosyayı taşıyın, medya kütüphanesini tazeleyin, mesaj gönderin.</value></data>
+  <data name="HookEnvHelp" xml:space="preserve"><value>Aynı değerler FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL ve FLUXER_EVENT ortam değişkenlerinde de var. Toplu iş dosyaları (.bat, .cmd) bunları okumalı: &amp;, | veya % içeren bir argüman onlara verilmez.</value></data>
+  <data name="HookAlsoFailed" xml:space="preserve"><value>Hata veren indirmelerde de</value></data>
+  <data name="PlaceholderNames" xml:space="preserve"><value>yol|ad|klasör|kategori|boyut|adres|olay|no</value></data>
+  <data name="Programs" xml:space="preserve"><value>Programlar</value></data>
+  <data name="Webhook" xml:space="preserve"><value>Webhook gönder</value></data>
+  <data name="WebhookDesc" xml:space="preserve"><value>Ad, yol, boyut, adres ve olay bilgisiyle JSON POST; Home Assistant, n8n, Discord köprüleri gibi araçlar için.</value></data>
+  <data name="WebhookEvents" xml:space="preserve"><value>Olaylar:</value></data>
+  <data name="WebhookInvalid" xml:space="preserve"><value>Bir http(s) adresi girin.</value></data>
+  <data name="WebhookSending" xml:space="preserve"><value>Gönderiliyor…</value></data>
+  <data name="WebhookResult" xml:space="preserve"><value>HTTP {0} ile {1} ms'de yanıt verdi.</value></data>
+  <data name="Test" xml:space="preserve"><value>Dene</value></data>
 </root>

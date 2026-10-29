@@ -62,7 +62,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Mark("theme+integration");
 
         Main = new MainViewModel(this);
-        Engine.Queue.Added += d => Dispatcher.UIThread.Post(() => Main.OnAdded(d));
+        Engine.Queue.Added += d => { Dispatcher.UIThread.Post(() => Main.OnAdded(d)); OnAddedEvent(d); };
         Engine.Queue.Removed += d => Dispatcher.UIThread.Post(() => { Main.OnRemoved(d); CloseDownloadWindows(d.Id); });
         Engine.Queue.StateChanged += OnStateChanged;
         Engine.Queue.Reordered += () => Dispatcher.UIThread.Post(Main.OnReordered);
@@ -189,8 +189,15 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         _ = Engine.SaveSettingsAsync(Engine.Settings);
     }
 
-    public async Task ExitAsync()
+    /// `ask`: the tray's Exit asks first while something is downloading or waiting (Settings → General).
+    public async Task ExitAsync(bool ask = true)
     {
+        if (_exiting) return;
+        var busy = Engine.Queue.Items.Count(d => d.State is DownloadState.Starting or DownloadState.Downloading
+            or DownloadState.Verifying or DownloadState.Queued);
+        if (ask && busy > 0 && Engine.Settings.ConfirmExit
+            && !await Dialogs.ConfirmAsync(Owner, Strings.ExitTitle, string.Format(CultureInfo.CurrentCulture, Strings.ExitBody, busy), Strings.TrayExit, Strings.Cancel))
+            return;
         if (_exiting) return;
         SaveLayout();
         _exiting = true;
@@ -263,6 +270,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
     private void OnDrained()
     {
         var s = Engine.Settings;
+        Feedback(s.OnQueueDone, "queue", Strings.NotifyQueueDone, Strings.NotifyQueueDoneBody);
         if (s.AfterQueue == "None") return;
         var action = s.AfterQueue;
         s.AfterQueue = "None"; // one-shot: never surprise the user twice
@@ -318,21 +326,19 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
     private void OnStateChanged(IDownload d)
     {
-        if (d.State == DownloadState.Completed)
-        {
-            Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
-            ScanCompleted(d);
-        }
         Log.Information("Download {Id} ({Kind}) → {State} {Error}", d.Id, d.Kind, d.State, d.Record.Error);
         Dispatcher.UIThread.Post(() => Main.OnStateChanged(d));
-        if (!Engine.Settings.Notifications) return;
+        var s = Engine.Settings;
         switch (d.State)
         {
             case DownloadState.Completed:
-                Notifier.Show(Strings.NotifyCompleted, d.FileName);
+                Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
+                Feedback(s.OnCompleted, "completed", Strings.NotifyCompleted, d.FileName);
+                OnFinished(d);
                 break;
             case DownloadState.Failed or DownloadState.DiskFull or DownloadState.NeedsLinkRefresh:
-                Notifier.Show(Loc.State(d.State), $"{d.FileName}\n{Loc.Error(d.Record.Error)}");
+                Feedback(s.OnFailed, "failed", Loc.State(d.State), $"{d.FileName}\n{Loc.Error(d.Record.Error)}");
+                OnFailedEvent(d);
                 break;
         }
     }
