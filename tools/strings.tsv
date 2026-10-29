@@ -530,3 +530,39 @@ WebhookInvalid	Enter an http(s) address.	Bir http(s) adresi girin.
 WebhookSending	Sending…	Gönderiliyor…
 WebhookResult	Answered HTTP {0} in {1} ms.	HTTP {0} ile {1} ms'de yanıt verdi.
 Test	Test	Dene
+SecData	Data	Veri
+DataFolder	Data folder	Veri klasörü
+PortableMode	Portable mode	Taşınabilir mod
+PortableModeDesc	Keeps the database, logs and tools in a "data" folder next to Fluxer, so it runs from a USB stick.	Veritabanı, günlükler ve araçlar Fluxer'ın yanındaki "data" klasöründe durur; USB bellekten çalışır.
+PortableOn	Make portable…	Taşınabilir yap…
+PortableOff	Move back to this PC…	Bu bilgisayara geri taşı…
+PortableOnConfirm	Your downloads and settings are copied to {0} and Fluxer restarts. Running downloads pause and continue after the restart.	İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Süren indirmeler duraklar, yeniden başlayınca devam eder.
+PortableOffConfirm	Your downloads and settings are copied to {0} and Fluxer restarts. The portable "data" folder stays as it is.	İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Taşınabilir "data" klasörü olduğu gibi kalır.
+RestartNow	Restart	Yeniden başlat
+DownloadList	Download list	İndirme listesi
+DownloadListDesc	A .json file keeps everything needed to add the list again on another PC (no cookies); a .txt file is one link per line.	.json dosyası listeyi başka bir bilgisayarda yeniden eklemek için gereken her şeyi tutar (çerezler hariç); .txt dosyası satır başına bir bağlantıdır.
+SettingsFile	Settings	Ayarlar
+SettingsFileDesc	Speed profiles, schedule, RSS feeds, automation, everything on these pages.	Hız profilleri, takvim, RSS beslemeleri, otomasyon; bu sayfalardaki her şey.
+ImportEllipsis	Import…	İçe aktar…
+ExportEllipsis	Export…	Dışa aktar…
+ExportJson	Fluxer list (.json)	Fluxer listesi (.json)
+ExportText	Links (.txt)	Bağlantılar (.txt)
+ExportDone	{0} downloads written to {1}.	{0} indirme {1} dosyasına yazıldı.
+ImportList	Import downloads	İndirmeleri içe aktar
+ImportDone	{0} downloads added, {1} were already in the list or not readable.	{0} indirme eklendi, {1} tanesi zaten listedeydi ya da okunamadı.
+ImportNothing	No links found in that file.	Dosyada bağlantı bulunamadı.
+SettingsExported	Settings written to {0}.	Ayarlar {0} dosyasına yazıldı.
+ImportSettings	Import settings	Ayarları içe aktar
+ImportSettingsConfirm	Replace all settings with the ones in this file?	Tüm ayarlar bu dosyadakilerle değiştirilsin mi?
+ImportSettingsInvalid	That file does not hold Fluxer settings.	Bu dosyada Fluxer ayarları yok.
+AutoBackup	Automatic backup	Otomatik yedek
+BackupOff	Off	Kapalı
+BackupDaily	Daily	Her gün
+BackupWeekly	Weekly	Her hafta
+BackupNone	No backup yet. The last 5 are kept in the data folder.	Henüz yedek yok. Son 5 yedek veri klasöründe tutulur.
+BackupLast	Last backup {0} · {1} kept	Son yedek {0} · {1} yedek tutuluyor
+BackupRunning	Backing up…	Yedekleniyor…
+BackupNow	Back up now	Şimdi yedekle
+BackupRestoreEllipsis	Restore…	Geri yükle…
+BackupRestore	Restore a backup	Yedekten geri yükle
+BackupRestoreConfirm	The download list and settings go back to {0}. Fluxer restarts; the current database is kept as fluxer.db.before-restore.	İndirme listesi ve ayarlar {0} yedeğine döner. Fluxer yeniden başlar; şimdiki veritabanı fluxer.db.before-restore olarak saklanır.

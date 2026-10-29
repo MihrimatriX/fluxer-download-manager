@@ -498,4 +498,40 @@
   <data name="WebhookSending" xml:space="preserve"><value>Sending…</value></data>
   <data name="WebhookResult" xml:space="preserve"><value>Answered HTTP {0} in {1} ms.</value></data>
   <data name="Test" xml:space="preserve"><value>Test</value></data>
+  <data name="SecData" xml:space="preserve"><value>Data</value></data>
+  <data name="DataFolder" xml:space="preserve"><value>Data folder</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>Portable mode</value></data>
+  <data name="PortableModeDesc" xml:space="preserve"><value>Keeps the database, logs and tools in a "data" folder next to Fluxer, so it runs from a USB stick.</value></data>
+  <data name="PortableOn" xml:space="preserve"><value>Make portable…</value></data>
+  <data name="PortableOff" xml:space="preserve"><value>Move back to this PC…</value></data>
+  <data name="PortableOnConfirm" xml:space="preserve"><value>Your downloads and settings are copied to {0} and Fluxer restarts. Running downloads pause and continue after the restart.</value></data>
+  <data name="PortableOffConfirm" xml:space="preserve"><value>Your downloads and settings are copied to {0} and Fluxer restarts. The portable "data" folder stays as it is.</value></data>
+  <data name="RestartNow" xml:space="preserve"><value>Restart</value></data>
+  <data name="DownloadList" xml:space="preserve"><value>Download list</value></data>
+  <data name="DownloadListDesc" xml:space="preserve"><value>A .json file keeps everything needed to add the list again on another PC (no cookies); a .txt file is one link per line.</value></data>
+  <data name="SettingsFile" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsFileDesc" xml:space="preserve"><value>Speed profiles, schedule, RSS feeds, automation, everything on these pages.</value></data>
+  <data name="ImportEllipsis" xml:space="preserve"><value>Import…</value></data>
+  <data name="ExportEllipsis" xml:space="preserve"><value>Export…</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Fluxer list (.json)</value></data>
+  <data name="ExportText" xml:space="preserve"><value>Links (.txt)</value></data>
+  <data name="ExportDone" xml:space="preserve"><value>{0} downloads written to {1}.</value></data>
+  <data name="ImportList" xml:space="preserve"><value>Import downloads</value></data>
+  <data name="ImportDone" xml:space="preserve"><value>{0} downloads added, {1} were already in the list or not readable.</value></data>
+  <data name="ImportNothing" xml:space="preserve"><value>No links found in that file.</value></data>
+  <data name="SettingsExported" xml:space="preserve"><value>Settings written to {0}.</value></data>
+  <data name="ImportSettings" xml:space="preserve"><value>Import settings</value></data>
+  <data name="ImportSettingsConfirm" xml:space="preserve"><value>Replace all settings with the ones in this file?</value></data>
+  <data name="ImportSettingsInvalid" xml:space="preserve"><value>That file does not hold Fluxer settings.</value></data>
+  <data name="AutoBackup" xml:space="preserve"><value>Automatic backup</value></data>
+  <data name="BackupOff" xml:space="preserve"><value>Off</value></data>
+  <data name="BackupDaily" xml:space="preserve"><value>Daily</value></data>
+  <data name="BackupWeekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="BackupNone" xml:space="preserve"><value>No backup yet. The last 5 are kept in the data folder.</value></data>
+  <data name="BackupLast" xml:space="preserve"><value>Last backup {0} · {1} kept</value></data>
+  <data name="BackupRunning" xml:space="preserve"><value>Backing up…</value></data>
+  <data name="BackupNow" xml:space="preserve"><value>Back up now</value></data>
+  <data name="BackupRestoreEllipsis" xml:space="preserve"><value>Restore…</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Restore a backup</value></data>
+  <data name="BackupRestoreConfirm" xml:space="preserve"><value>The download list and settings go back to {0}. Fluxer restarts; the current database is kept as fluxer.db.before-restore.</value></data>
 </root>

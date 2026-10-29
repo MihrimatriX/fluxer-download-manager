@@ -59,6 +59,16 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         return d;
     }
 
+    /// An imported download keeps its state (paused, or completed as history) and does not start.
+    public IDownload AddImported(DownloadRecord record)
+    {
+        if (record.State != DownloadState.Completed) record.State = DownloadState.Paused;
+        db.Insert(record);
+        var d = Track(factory(record));
+        Added?.Invoke(d);
+        return d;
+    }
+
     public void Resume(long id)
     {
         var d = Find(id);

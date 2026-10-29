@@ -498,4 +498,40 @@
   <data name="WebhookSending" xml:space="preserve"><value>Gönderiliyor…</value></data>
   <data name="WebhookResult" xml:space="preserve"><value>HTTP {0} ile {1} ms'de yanıt verdi.</value></data>
   <data name="Test" xml:space="preserve"><value>Dene</value></data>
+  <data name="SecData" xml:space="preserve"><value>Veri</value></data>
+  <data name="DataFolder" xml:space="preserve"><value>Veri klasörü</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>Taşınabilir mod</value></data>
+  <data name="PortableModeDesc" xml:space="preserve"><value>Veritabanı, günlükler ve araçlar Fluxer'ın yanındaki "data" klasöründe durur; USB bellekten çalışır.</value></data>
+  <data name="PortableOn" xml:space="preserve"><value>Taşınabilir yap…</value></data>
+  <data name="PortableOff" xml:space="preserve"><value>Bu bilgisayara geri taşı…</value></data>
+  <data name="PortableOnConfirm" xml:space="preserve"><value>İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Süren indirmeler duraklar, yeniden başlayınca devam eder.</value></data>
+  <data name="PortableOffConfirm" xml:space="preserve"><value>İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Taşınabilir "data" klasörü olduğu gibi kalır.</value></data>
+  <data name="RestartNow" xml:space="preserve"><value>Yeniden başlat</value></data>
+  <data name="DownloadList" xml:space="preserve"><value>İndirme listesi</value></data>
+  <data name="DownloadListDesc" xml:space="preserve"><value>.json dosyası listeyi başka bir bilgisayarda yeniden eklemek için gereken her şeyi tutar (çerezler hariç); .txt dosyası satır başına bir bağlantıdır.</value></data>
+  <data name="SettingsFile" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="SettingsFileDesc" xml:space="preserve"><value>Hız profilleri, takvim, RSS beslemeleri, otomasyon; bu sayfalardaki her şey.</value></data>
+  <data name="ImportEllipsis" xml:space="preserve"><value>İçe aktar…</value></data>
+  <data name="ExportEllipsis" xml:space="preserve"><value>Dışa aktar…</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Fluxer listesi (.json)</value></data>
+  <data name="ExportText" xml:space="preserve"><value>Bağlantılar (.txt)</value></data>
+  <data name="ExportDone" xml:space="preserve"><value>{0} indirme {1} dosyasına yazıldı.</value></data>
+  <data name="ImportList" xml:space="preserve"><value>İndirmeleri içe aktar</value></data>
+  <data name="ImportDone" xml:space="preserve"><value>{0} indirme eklendi, {1} tanesi zaten listedeydi ya da okunamadı.</value></data>
+  <data name="ImportNothing" xml:space="preserve"><value>Dosyada bağlantı bulunamadı.</value></data>
+  <data name="SettingsExported" xml:space="preserve"><value>Ayarlar {0} dosyasına yazıldı.</value></data>
+  <data name="ImportSettings" xml:space="preserve"><value>Ayarları içe aktar</value></data>
+  <data name="ImportSettingsConfirm" xml:space="preserve"><value>Tüm ayarlar bu dosyadakilerle değiştirilsin mi?</value></data>
+  <data name="ImportSettingsInvalid" xml:space="preserve"><value>Bu dosyada Fluxer ayarları yok.</value></data>
+  <data name="AutoBackup" xml:space="preserve"><value>Otomatik yedek</value></data>
+  <data name="BackupOff" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="BackupDaily" xml:space="preserve"><value>Her gün</value></data>
+  <data name="BackupWeekly" xml:space="preserve"><value>Her hafta</value></data>
+  <data name="BackupNone" xml:space="preserve"><value>Henüz yedek yok. Son 5 yedek veri klasöründe tutulur.</value></data>
+  <data name="BackupLast" xml:space="preserve"><value>Son yedek {0} · {1} yedek tutuluyor</value></data>
+  <data name="BackupRunning" xml:space="preserve"><value>Yedekleniyor…</value></data>
+  <data name="BackupNow" xml:space="preserve"><value>Şimdi yedekle</value></data>
+  <data name="BackupRestoreEllipsis" xml:space="preserve"><value>Geri yükle…</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Yedekten geri yükle</value></data>
+  <data name="BackupRestoreConfirm" xml:space="preserve"><value>İndirme listesi ve ayarlar {0} yedeğine döner. Fluxer yeniden başlar; şimdiki veritabanı fluxer.db.before-restore olarak saklanır.</value></data>
 </root>

@@ -8,13 +8,14 @@ namespace Fluxer.App;
 
 internal static class Program
 {
-    public static readonly string DataDirectory =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            Protocol.Instance.Length > 0 ? "Fluxer-" + Protocol.Instance : "Fluxer");
+    /// %LOCALAPPDATA%\Fluxer, or the "data" folder next to the app when portable.txt sits there (portable mode).
+    public static readonly string DataDirectory = PortableData.Resolve();
 
     public static string[] Args { get; private set; } = [];
 
     public static string ExePath => Path.Combine(AppContext.BaseDirectory, "Fluxer.exe");
+
+    public const string RestartArg = "--restarted";
 
     [STAThread]
     public static int Main(string[] args)
@@ -35,13 +36,22 @@ internal static class Program
             .CreateLogger();
         Services.CrashGuard.Install();
 
-        // Single instance: the second process forwards its arguments and exits.
+        // Single instance: the second process forwards its arguments and exits. A restart (portable mode switch,
+        // restored backup) waits for the old process to let go instead.
         using var mutex = new Mutex(true, @"Local\" + Protocol.PipeName, out var first);
+        if (!first && args.Contains(RestartArg))
+        {
+            try { first = mutex.WaitOne(TimeSpan.FromSeconds(20)); }
+            catch (AbandonedMutexException) { first = true; }
+        }
         if (!first)
         {
             ForwardToRunningInstance(args);
             return 0;
         }
+        args = [.. args.Where(a => a != RestartArg)];
+        Args = args;
+        PortableData.ApplyPending(DataDirectory);
 
         try
         {

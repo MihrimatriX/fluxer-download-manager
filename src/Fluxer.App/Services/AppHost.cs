@@ -225,6 +225,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Main.UpdateTotals();
         RunScheduler();
         RunWeekSchedule();
+        RunBackup();
         PollClipboard();
         if (DateTime.UtcNow - _lastUpdateCheck > UpdateInterval) _ = CheckAppUpdateAsync();
     }
@@ -237,6 +238,42 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (key == _lastScheduleFire) return;
         if (s.ScheduleStart == now) { _lastScheduleFire = key; Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
         else if (s.ScheduleStop == now) { _lastScheduleFire = key; _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+    }
+
+    private DateTime _lastBackupCheck;
+    private bool _backingUp;
+
+    /// Daily or weekly copy of the database (Settings → Advanced → Data); checked once a minute.
+    private void RunBackup()
+    {
+        if (_backingUp || DateTime.UtcNow - _lastBackupCheck < TimeSpan.FromMinutes(1)) return;
+        _lastBackupCheck = DateTime.UtcNow;
+        var s = Engine.Settings;
+        if (!Fluxer.Core.Storage.Backups.Due(s.BackupInterval, s.LastBackupAt, DateTimeOffset.UtcNow)) return;
+        _ = BackupNowAsync();
+    }
+
+    public async Task<string?> BackupNowAsync()
+    {
+        if (_backingUp) return null;
+        _backingUp = true;
+        try
+        {
+            var path = await Task.Run(() => Fluxer.Core.Storage.Backups.Create(Engine.Db, Program.DataDirectory, DateTime.Now));
+            Engine.Settings.LastBackupAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            await Engine.SaveSettingsAsync(Engine.Settings);
+            Log.Information("Backup {Path}", path);
+            return path;
+        }
+        catch (Exception e) { Log.Warning(e, "Backup failed"); return null; }
+        finally { _backingUp = false; }
+    }
+
+    /// Portable switch, restored backup: a new process takes over once this one has let go of its files.
+    public async Task RestartAsync()
+    {
+        Process.Start(new ProcessStartInfo(Program.ExePath, Program.RestartArg) { UseShellExecute = false })?.Dispose();
+        await ExitAsync(ask: false);
     }
 
     private int? _lastScheduledProfile;

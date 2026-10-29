@@ -279,7 +279,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ScaleText), nameof(SelectedSection), nameof(Section), nameof(BrushIndex), nameof(BrushName),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
-        nameof(WebhookStatus),
+        nameof(WebhookStatus), nameof(BackupText), nameof(DataText),
     ];
 
     public void Load()
@@ -356,6 +356,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         WatchFolderOn = s.WatchFolder is not null;
         WatchFolder = s.WatchFolder ?? "";
         HasPendingUpdate = _host.HasPendingUpdate;
+        LoadData(s);
         SavedText = "";
         _loading = false;
     }
@@ -493,6 +494,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.ScanDownloads = ScanDownloads;
         s.WatchClipboard = WatchClipboard;
         s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
+        s.BackupInterval = BackupSetting(BackupIndex);
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);

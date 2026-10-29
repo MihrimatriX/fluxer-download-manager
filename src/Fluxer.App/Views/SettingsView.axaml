@@ -596,6 +596,41 @@
                 </c:SettingRow>
               </StackPanel>
             </Border>
+            <TextBlock Classes="section" Text="{x:Static app:Strings.SecData}" />
+            <Border Classes="card group">
+              <StackPanel>
+                <c:SettingRow Title="{x:Static app:Strings.DataFolder}" Description="{Binding DataFolder}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{Binding PortableButton}" Command="{Binding TogglePortableCommand}" IsVisible="{Binding CanSwitchPortable}"
+                            ToolTip.Tip="{x:Static app:Strings.PortableModeDesc}" />
+                    <Button Classes="soft" Width="30" Height="30" Padding="0" Command="{Binding OpenDataFolderCommand}"
+                            AutomationProperties.Name="{x:Static app:Strings.OpenFolder}" ToolTip.Tip="{x:Static app:Strings.OpenFolder}">
+                      <c:Icon Data="{StaticResource IcFolder}" Size="14" />
+                    </Button>
+                  </StackPanel>
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.DownloadList}" Description="{x:Static app:Strings.DownloadListDesc}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{x:Static app:Strings.ImportEllipsis}" Command="{Binding ImportListCommand}" />
+                    <Button Content="{x:Static app:Strings.ExportEllipsis}" Command="{Binding ExportListCommand}" />
+                  </StackPanel>
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.SettingsFile}" Description="{x:Static app:Strings.SettingsFileDesc}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{x:Static app:Strings.ImportEllipsis}" Command="{Binding ImportSettingsCommand}" />
+                    <Button Content="{x:Static app:Strings.ExportEllipsis}" Command="{Binding ExportSettingsCommand}" />
+                  </StackPanel>
+                </c:SettingRow>
+                <c:SettingRow Title="{x:Static app:Strings.AutoBackup}" Description="{Binding BackupText}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{x:Static app:Strings.BackupNow}" Command="{Binding BackupNowCommand}" />
+                    <Button Content="{x:Static app:Strings.BackupRestoreEllipsis}" Command="{Binding RestoreBackupCommand}" />
+                    <ComboBox ItemsSource="{Binding BackupIntervals}" SelectedIndex="{Binding BackupIndex}" MinWidth="120" />
+                  </StackPanel>
+                </c:SettingRow>
+              </StackPanel>
+            </Border>
+            <TextBlock Text="{Binding DataText}" Classes="subtle" Margin="2,0,0,0" IsVisible="{Binding DataText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
           </StackPanel>
         </Panel>
         </Grid>

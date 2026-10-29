@@ -69,3 +69,87 @@ public sealed class DownloadHooksTests
         Assert.Equal(("completed", "https://cdn.example.org/a.zip", "http"), (p.Event, p.Url, p.Kind));
     }
 }
+
+public sealed class ListTransferTests
+{
+    [Fact]
+    public void Json_RoundTripsEveryKindWithoutCookies()
+    {
+        var http = new DownloadRecord
+        {
+            Kind = DownloadKind.Http, FileName = "a.zip", SaveDirectory = "D:/dl", Category = "Archives", Tags = ["work"], TotalBytes = 10,
+            State = DownloadState.Completed, CompletedAt = 5,
+            Http = new HttpInfo { Url = "https://example.org/a.zip", Cookies = "sid=secret", Mirrors = ["https://m.example.org/a.zip"] },
+        };
+        var torrent = new DownloadRecord
+        {
+            Kind = DownloadKind.Torrent, FileName = "t", State = DownloadState.Downloading,
+            Torrent = new TorrentInfo { InfoHash = "ABC", Magnet = "magnet:?xt=urn:btih:ABC", TorrentFile = [1, 2, 3] },
+        };
+        var media = new DownloadRecord { Kind = DownloadKind.Media, FileName = "v", Media = new MediaInfo { PageUrl = "https://video.example.org/w", AudioOnly = true } };
+
+        var json = Storage.ListTransfer.ToJson([http, torrent, media]);
+        Assert.DoesNotContain("secret", json);
+        var back = Storage.ListTransfer.ParseExport(json)!.Items.Select(Storage.ListTransfer.ToRecord).ToList();
+
+        Assert.Equal((DownloadKind.Http, DownloadState.Completed, "https://example.org/a.zip", null), (back[0]!.Kind, back[0]!.State, back[0]!.Http!.Url, back[0]!.Http!.Cookies));
+        Assert.Equal(["work"], back[0]!.Tags);
+        Assert.Equal(["https://m.example.org/a.zip"], back[0]!.Http!.Mirrors);
+        Assert.Equal((DownloadState.Paused, "ABC"), (back[1]!.State, back[1]!.Torrent!.InfoHash));
+        Assert.Equal([1, 2, 3], back[1]!.Torrent!.TorrentFile!);
+        Assert.True(back[2]!.Media!.AudioOnly);
+    }
+
+    [Fact]
+    public void Text_IsOneLinkPerLine_AndParsesBack()
+    {
+        var a = new DownloadRecord { Http = new HttpInfo { Url = "https://example.org/1" } };
+        var b = new DownloadRecord { Torrent = new TorrentInfo { InfoHash = "X", Magnet = "magnet:?xt=urn:btih:X" } };
+        var text = Storage.ListTransfer.ToText([a, b]);
+        Assert.Null(Storage.ListTransfer.ParseExport(text));
+        Assert.Equal(["https://example.org/1", "magnet:?xt=urn:btih:X"], Storage.ListTransfer.ParseLinks(text + "not a link\nftp://x\n"));
+    }
+
+    [Fact]
+    public void ParseExport_RejectsOtherJson() => Assert.Null(Storage.ListTransfer.ParseExport("{\"items\":[]}"));
+
+    [Theory]
+    [InlineData("daily", 0, true)]
+    [InlineData("daily", 3600, false)]
+    [InlineData("weekly", 2 * 86400, false)]
+    [InlineData("weekly", 8 * 86400, true)]
+    [InlineData("off", 0, false)]
+    public void Backups_AreDueAfterTheirInterval(string interval, long agoSeconds, bool due)
+    {
+        var now = DateTimeOffset.FromUnixTimeSeconds(1_800_000_000);
+        var last = agoSeconds == 0 && interval != "off" ? 0 : now.ToUnixTimeSeconds() - agoSeconds;
+        Assert.Equal(due, Storage.Backups.Due(interval, last, now));
+    }
+}
+
+public sealed class DatabaseBackupTests
+{
+    [Fact]
+    public void Tags_Persist_AndABackupOpensWithTheSameRows()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "fluxer-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            using (var db = new Storage.Database(Path.Combine(dir, "fluxer.db")))
+            {
+                db.Insert(new DownloadRecord { Kind = DownloadKind.Http, FileName = "a", SaveDirectory = dir, Tags = ["x", "y"], Http = new HttpInfo { Url = "https://e.org/a" } });
+                Assert.Equal(["x", "y"], db.LoadAll()[0].Tags);
+                var backup = Storage.Backups.Create(db, dir, new DateTime(2026, 10, 29, 12, 0, 0));
+                using var copy = new Storage.Database(backup);
+                Assert.Equal("https://e.org/a", copy.LoadAll().Single().Http!.Url);
+            }
+            Assert.Single(Storage.Backups.List(dir));
+        }
+        finally
+        {
+            Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+            try { Directory.Delete(dir, true); } catch (IOException) { }
+        }
+    }
+}

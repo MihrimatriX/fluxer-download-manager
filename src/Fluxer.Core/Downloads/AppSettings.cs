@@ -85,6 +85,8 @@ public sealed class AppSettings
     /// "Exit" from the tray asks first while downloads are running or waiting.
     public bool ConfirmExit { get; set; } = true;
     public AutomationSettings Automation { get; set; } = new();
+    public string BackupInterval { get; set; } = "daily";   // off | daily | weekly
+    public long LastBackupAt { get; set; }                   // Unix seconds
     public bool RegisterFileAssociations { get; set; } = true;
     public const string DefaultUpdateFeed = "https://github.com/MihrimatriX/fluxer-download-manager";
     public string? UpdateFeed { get; set; }        // Velopack feed URL or folder; null = DefaultUpdateFeed
