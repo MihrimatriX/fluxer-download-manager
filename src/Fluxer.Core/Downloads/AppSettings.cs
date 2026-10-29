@@ -23,6 +23,7 @@ public sealed class AppSettings
     public bool UseCategoryFolders { get; set; } = true;
     public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
+    public SmartSpeed Smart { get; set; } = new();
     /// The user's own queues besides the main and night ones.
     public List<NamedQueue> Queues { get; set; } = [];
 
@@ -104,6 +105,13 @@ public sealed class AppSettings
     public bool ToolsConsentGiven { get; set; }
     public long LastYtDlpCheck { get; set; }
 
+    /// Per-site login, connections, headers and speed limit.
+    public List<SiteRule> Sites { get; set; } = [];
+
+    /// The most specific rule for a host (the longest pattern wins).
+    public SiteRule? SiteRuleFor(string? host) =>
+        host is { Length: > 0 } ? Sites.Where(r => r.Matches(host)).OrderByDescending(r => r.Host.Length).FirstOrDefault() : null;
+
     /// Built-in and user categories, in the order the filter row shows them.
     public List<Category> CategoryList { get; set; } = Category.Defaults();
 
@@ -159,6 +167,20 @@ public sealed class EventFeedback
     public bool Notify { get; set; } = true;
     public bool Sound { get; set; }
     public string? SoundFile { get; set; }
+}
+
+/// Speed rules that follow the PC instead of the clock.
+public sealed class SmartSpeed
+{
+    /// While someone works in another program, use BusyProfile; back to the usual profile after IdleMinutes.
+    public bool BusyOn { get; set; }
+    public int BusyProfile { get; set; } = 2;
+    public int IdleMinutes { get; set; } = 3;
+    /// On battery below this percentage everything pauses (0 = off); it continues on mains power.
+    public int BatteryPercent { get; set; }
+    /// No more than QuotaMb in any QuotaHours (0 = off); downloads pause until the window frees up.
+    public long QuotaMb { get; set; }
+    public int QuotaHours { get; set; } = 24;
 }
 
 /// What runs when a download finishes or fails.

@@ -35,7 +35,7 @@ public sealed record SettingsSection(string Key, string Label)
 {
     public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
     {
-        "downloads" => "IcLogo", "speed" => "IcGauge", "categories" => "IcTag", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
+        "downloads" => "IcLogo", "speed" => "IcGauge", "categories" => "IcTag", "sites" => "IcLock", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
         "advanced" => "IcSliders", _ => "IcGear",
     });
 
@@ -163,7 +163,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         Sections =
         [
             new("general", Strings.SecGeneral), new("downloads", Strings.SecDownloads), new("speed", Strings.SecSpeedSchedule),
-            new("categories", Strings.SecCategories), new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration),
+            new("categories", Strings.SecCategories), new("sites", Strings.SecSites), new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration),
             new("automation", Strings.SecAutomation),
             new("advanced", Strings.TabAdvanced),
         ];
@@ -280,7 +280,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ScaleText), nameof(SelectedSection), nameof(Section), nameof(BrushIndex), nameof(BrushName),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
-        nameof(WebhookStatus), nameof(BackupText), nameof(DataText),
+        nameof(WebhookStatus), nameof(BackupText), nameof(DataText), nameof(QuotaUsedText),
     ];
 
     public void Load()
@@ -360,6 +360,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         LoadData(s);
         LoadCategories(s);
         LoadQueues(s);
+        LoadSites(s);
         SavedText = "";
         _loading = false;
     }
@@ -500,6 +501,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.BackupInterval = BackupSetting(BackupIndex);
         s.CategoryList = [.. CategoryRows.Select(r => r.ToCategory())];
         s.Queues = [.. QueueRows.Select(r => r.ToQueue())];
+        SaveSites(s);
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);
@@ -767,6 +769,11 @@ public sealed partial class SettingsViewModel : ObservableObject
         // Feed URLs often carry a tracker passkey; keep only the host.
         foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
         if (copy.Automation.WebhookUrl is { } hook) copy.Automation.WebhookUrl = Uri.TryCreate(hook, UriKind.Absolute, out var hu) ? hu.Host : "?";
+        foreach (var site in copy.Sites)
+        {
+            if (site.UserName is not null) site.UserName = "***";
+            site.PasswordProtected = null;
+        }
         using (var w = new StreamWriter(zip.CreateEntry("settings.json").Open()))
             w.Write(JsonSerializer.Serialize(copy, new JsonSerializerOptions { WriteIndented = true }));
         using (var w = new StreamWriter(zip.CreateEntry("system.txt").Open()))

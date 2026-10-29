@@ -132,6 +132,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _totalUp = "";
     [ObservableProperty] private string _dhtText = "";
     [ObservableProperty] private string _profileText = "";
+    /// Smart speed holding every download (low battery, traffic quota); empty otherwise.
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsHeld))] private string _holdText = "";
+    public bool IsHeld => HoldText.Length > 0;
 
     // undo toast
     [ObservableProperty] private string _toastText = "";

@@ -125,7 +125,11 @@ public sealed class HttpDownload : IDownload
         try
         {
             var first = await PrepareAsync(stop.Token);
-            _connectionLimit = Http.Resumable ? Math.Clamp(Http.MaxConnections, 1, 32) : 1;
+            // A site that tolerates only a few connections gets no more, whatever the download asked for.
+            var site = _settings().SiteRuleFor(Uri.TryCreate(Http.FinalUrl ?? Http.Url, UriKind.Absolute, out var su) ? su.Host : null);
+            var connections = site is { MaxConnections: > 0 } ? Math.Min(Http.MaxConnections, site.MaxConnections) : Http.MaxConnections;
+            _connectionLimit = Http.Resumable ? Math.Clamp(connections, 1, 32) : 1;
+            _bucket.BytesPerSecond = Record.SpeedLimit > 0 ? Record.SpeedLimit : site?.SpeedLimit ?? 0;
             _mirrorProbes = ProbeMirrorsAsync(stop.Token);
             SetState(DownloadState.Downloading, null);
 

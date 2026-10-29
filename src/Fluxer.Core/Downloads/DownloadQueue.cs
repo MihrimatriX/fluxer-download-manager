@@ -11,6 +11,7 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
     private readonly List<IDownload> _items = [];
     private readonly Dictionary<long, (CancellationTokenSource Cts, Task Task)> _running = [];
     private bool _hadWork;
+    private bool _held;
     /// Named queues started (by their time or by hand) whose downloads have not all finished yet.
     private readonly HashSet<string> _startedQueues = [];
 
@@ -148,6 +149,26 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
         }
     }
 
+    /// Smart speed (low battery, traffic quota): nothing starts while held, and what was running waits its turn
+    /// again, so it continues by itself when the hold ends.
+    public bool Held { get { lock (_lock) return _held; } }
+
+    public async Task HoldAsync(bool on)
+    {
+        lock (_lock)
+        {
+            if (_held == on) return;
+            _held = on;
+        }
+        if (!on) { Schedule(); return; }
+        foreach (var d in Items.Where(d => IsRunning(d.Id)))
+        {
+            await PauseAsync(d.Id);
+            if (d.State == DownloadState.Paused) SetIdleState(d, DownloadState.Queued);
+        }
+        if (!Held) Schedule();      // released while these were still stopping
+    }
+
     public void ResumeAll()
     {
         foreach (var d in Items) if (d.State is DownloadState.Paused or DownloadState.DiskFull) Resume(d.Id);
@@ -251,7 +272,7 @@ public sealed class DownloadQueue(Database db, Func<AppSettings> settings, Func<
                 if (d.Record.QueueId is { } q) perQueue[q] = perQueue.GetValueOrDefault(q) + 1;
             }
 
-            foreach (var d in _items.Where(x => x.State == DownloadState.Queued && !_running.ContainsKey(x.Id)).OrderBy(x => x.Record.QueueOrder))
+            foreach (var d in _items.Where(x => !_held && x.State == DownloadState.Queued && !_running.ContainsKey(x.Id)).OrderBy(x => x.Record.QueueOrder))
             {
                 var isTorrent = d.Kind == DownloadKind.Torrent;
                 if (isTorrent ? torrent >= s.TorrentSlots : http >= s.HttpSlots) continue;

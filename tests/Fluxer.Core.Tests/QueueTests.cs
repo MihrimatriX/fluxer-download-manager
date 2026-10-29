@@ -118,6 +118,23 @@ public sealed class NamedQueueTests : IDisposable
     }
 
     [Fact]
+    public async Task Hold_StopsWhatRuns_AndNothingStartsUntilReleased()
+    {
+        var a = Add("a", null);
+        await Until(() => _queue.IsRunning(a.Id));
+        await _queue.HoldAsync(true);
+        Assert.Equal(DownloadState.Queued, a.State);
+        Assert.False(_queue.IsRunning(a.Id));
+
+        var b = Add("b", null);
+        await Task.Delay(50);
+        Assert.False(_queue.IsRunning(b.Id));
+
+        await _queue.HoldAsync(false);
+        await Until(() => _queue.IsRunning(a.Id) && _queue.IsRunning(b.Id));
+    }
+
+    [Fact]
     public void NextStart_SkipsDaysTheQueueDoesNotRun()
     {
         var q = new NamedQueue { Start = "09:00", Days = "0000011" };          // Saturday and Sunday

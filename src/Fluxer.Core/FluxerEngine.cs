@@ -2,6 +2,7 @@ using Fluxer.Core.Downloads;
 using Fluxer.Core.Http;
 using Fluxer.Core.Media;
 using Fluxer.Core.Platform.Windows;
+using Fluxer.Core.Stats;
 using Fluxer.Core.Storage;
 using Fluxer.Core.Torrent;
 
@@ -22,6 +23,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         Http = new HttpEngine(Settings.Proxy);
         YtDlp.Proxy = Settings.Proxy;
         Http.GlobalBucket.BytesPerSecond = Settings.HttpLimit;
+        HttpEngine.SiteRules = host => Settings.SiteRuleFor(host);
         // The torrent engine opens ports and joins DHT; only start it once a torrent exists.
         _torrent = new(() => new TorrentEngineHost(Path.Combine(dataDirectory, "torrent"), Settings));
         Tools = new ToolManager(Path.Combine(dataDirectory, "tools"), Http);
@@ -29,6 +31,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         // Not started here: the CLI has no use for it; the app calls Rss.Start().
         Rss = new RssPoller(() => Http.Client, () => Settings, Db, (file, magnet, dir) => AddTorrent(file, magnet, saveDirectory: dir));
         _sleep = new SleepBlocker(() => Queue.AnyActive);
+        Meter.Restore(Db.GetSetting<TrafficLog>("traffic"), DateTimeOffset.UtcNow);
     }
 
     public string DataDirectory { get; }
@@ -38,6 +41,12 @@ public sealed class FluxerEngine : IAsyncDisposable
     public DownloadQueue Queue { get; }
     public RssPoller Rss { get; }
     public AppSettings Settings { get; private set; }
+    public TransferMeter Meter { get; } = new();
+
+    /// Called every few seconds by the app: what each running download moved since the last call.
+    public void MeasureTraffic(DateTimeOffset now) =>
+        Meter.Observe(Queue.Items.Where(d => d.State is DownloadState.Downloading or DownloadState.Seeding)
+            .Select(d => (d.Id, d.GetProgress().BytesDone, (d as TorrentDownload)?.UploadedBytes ?? 0)), now);
 
     public async Task SaveSettingsAsync(AppSettings s)
     {
@@ -144,6 +153,7 @@ public sealed class FluxerEngine : IAsyncDisposable
         if (_torrent.IsValueCreated) await _torrent.Value.DisposeAsync();
         _sleep.Dispose();
         Http.Dispose();
+        Db.SetSetting("traffic", Meter.Snapshot());
         Db.Dispose();
     }
 }

@@ -14,6 +14,10 @@ public sealed class HttpEngine : IDisposable
     public HttpEngine(string? proxy = null) => _client = Build(proxy);
 
     public HttpClient Client => _client;
+
+    /// The site rule for a request's host (set by the engine; reads the current settings). Static because
+    /// requests are built in many places that only have a URL and a context.
+    public static Func<string, Downloads.SiteRule?>? SiteRules { get; set; }
     public TokenBucket GlobalBucket { get; } = new();
 
     /// Proxy changes need a new handler; in-flight requests keep the old one until they finish.
@@ -33,6 +37,7 @@ public sealed class HttpEngine : IDisposable
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
             EnableMultipleHttp2Connections = false,
             ConnectCallback = HappyEyeballsAsync,
+            Credentials = new SiteCredentials(),
         };
         if (!string.IsNullOrWhiteSpace(proxy))
         {
@@ -99,7 +104,10 @@ public sealed class HttpEngine : IDisposable
         }
     }
 
-    public static HttpRequestMessage NewRequest(HttpMethod method, string url, Downloads.RequestContext? ctx)
+    public static HttpRequestMessage NewRequest(HttpMethod method, string url, Downloads.RequestContext? ctx) =>
+        NewRequest(method, url, ctx, Uri.TryCreate(url, UriKind.Absolute, out var u) ? SiteRules?.Invoke(u.Host) : null);
+
+    internal static HttpRequestMessage NewRequest(HttpMethod method, string url, Downloads.RequestContext? ctx, Downloads.SiteRule? rule)
     {
         var req = new HttpRequestMessage(method, url)
         {
@@ -107,12 +115,24 @@ public sealed class HttpEngine : IDisposable
             Version = HttpVersion.Version11,
             VersionPolicy = HttpVersionPolicy.RequestVersionExact,
         };
-        req.Headers.TryAddWithoutValidation("User-Agent", ctx?.UserAgent ?? DefaultUserAgent);
-        if (!string.IsNullOrEmpty(ctx?.Referrer)) req.Headers.TryAddWithoutValidation("Referer", ctx.Referrer);
+        // A site rule is the user's explicit wish, so its User-Agent wins over the browser's; its Referer only fills a gap.
+        req.Headers.TryAddWithoutValidation("User-Agent", rule?.UserAgent is { Length: > 0 } ua ? ua : ctx?.UserAgent ?? DefaultUserAgent);
+        var referrer = !string.IsNullOrEmpty(ctx?.Referrer) ? ctx.Referrer : rule?.Referrer;
+        if (!string.IsNullOrEmpty(referrer)) req.Headers.TryAddWithoutValidation("Referer", referrer);
+        // Sent up front (HTTP Basic). The handler drops it when it follows a redirect, so it never reaches another
+        // host; a challenge after that is answered by SiteCredentials for the new address.
+        if (rule?.Authorization() is { } auth) req.Headers.TryAddWithoutValidation("Authorization", auth);
         if (!string.IsNullOrEmpty(ctx?.Cookies)) req.Headers.TryAddWithoutValidation("Cookie", ctx.Cookies);
         req.Headers.TryAddWithoutValidation("Accept", "*/*");
         req.Headers.TryAddWithoutValidation("Accept-Encoding", "identity");
         return req;
+    }
+
+    /// Answers a server's login challenge (Basic, Digest, NTLM) with the account of the site rule for that address.
+    private sealed class SiteCredentials : ICredentials
+    {
+        public NetworkCredential? GetCredential(Uri uri, string authType) =>
+            SiteRules?.Invoke(uri.Host) is { UserName: { Length: > 0 } user } rule ? new NetworkCredential(user, rule.Password) : null;
     }
 
     public void Dispose() => _client.Dispose();

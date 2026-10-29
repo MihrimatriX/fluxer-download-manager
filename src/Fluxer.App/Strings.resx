@@ -590,4 +590,38 @@
   <data name="PackageName" xml:space="preserve"><value>Package name</value></data>
   <data name="QueueStopAt" xml:space="preserve"><value>Stop at</value></data>
   <data name="QueueStopDesc" xml:space="preserve"><value>What has not finished by then waits for the next start.</value></data>
+  <data name="SecSites" xml:space="preserve"><value>Sites</value></data>
+  <data name="SiteAdd" xml:space="preserve"><value>Add site</value></data>
+  <data name="SitesDesc" xml:space="preserve"><value>Settings applied to every download from a site: login, connection count, User-Agent, Referer and speed limit. The password is stored encrypted for your Windows user.</value></data>
+  <data name="SitesEmpty" xml:space="preserve"><value>No site settings yet. Add one for sites that need a login or limit connections.</value></data>
+  <data name="SiteHost" xml:space="preserve"><value>Site</value></data>
+  <data name="SiteHostTip" xml:space="preserve"><value>"example.org" also covers its subdomains; the most specific match wins.</value></data>
+  <data name="SiteRemove" xml:space="preserve"><value>Remove site</value></data>
+  <data name="SiteUser" xml:space="preserve"><value>User name</value></data>
+  <data name="SitePassword" xml:space="preserve"><value>Password</value></data>
+  <data name="SiteUserAgent" xml:space="preserve"><value>User-Agent (empty = default)</value></data>
+  <data name="SiteReferrer" xml:space="preserve"><value>Referer (empty = none)</value></data>
+  <data name="SiteConnections" xml:space="preserve"><value>Max connections</value></data>
+  <data name="SiteSpeed" xml:space="preserve"><value>Speed per download</value></data>
+  <data name="SiteZeroTip" xml:space="preserve"><value>0 = no limit of its own for this site</value></data>
+  <data name="SmartSpeed" xml:space="preserve"><value>Smart speed</value></data>
+  <data name="SmartBusy" xml:space="preserve"><value>Slow down while I work</value></data>
+  <data name="SmartBusyDesc" xml:space="preserve"><value>Switches to the chosen profile while you use another program, and back once you are idle.</value></data>
+  <data name="SmartBusyProfile" xml:space="preserve"><value>Profile while busy</value></data>
+  <data name="SmartIdle" xml:space="preserve"><value>Idle after</value></data>
+  <data name="SmartIdleDesc" xml:space="preserve"><value>No keyboard or mouse input for this long counts as idle.</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>min</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>h</value></data>
+  <data name="SmartBattery" xml:space="preserve"><value>Pause on low battery</value></data>
+  <data name="SmartBatteryDesc" xml:space="preserve"><value>On battery below this level downloads wait; they continue on mains power.</value></data>
+  <data name="SmartQuota" xml:space="preserve"><value>Traffic quota</value></data>
+  <data name="QuotaPer" xml:space="preserve"><value>GB per</value></data>
+  <data name="QuotaHours" xml:space="preserve"><value>Quota window (hours)</value></data>
+  <data name="QuotaUsed" xml:space="preserve"><value>Downloads wait once this much is downloaded. Last {0} h: {1}</value></data>
+  <data name="HoldTitle" xml:space="preserve"><value>Downloads on hold</value></data>
+  <data name="HoldBatteryBody" xml:space="preserve"><value>Battery at {0}%, downloads continue on mains power.</value></data>
+  <data name="HoldQuotaBody" xml:space="preserve"><value>Traffic quota used up; downloads continue around {0}.</value></data>
+  <data name="HoldBattery" xml:space="preserve"><value>Low battery, on hold</value></data>
+  <data name="HoldQuota" xml:space="preserve"><value>Quota reached · {0}</value></data>
+  <data name="HoldTip" xml:space="preserve"><value>Smart speed is holding downloads. Click for its settings.</value></data>
 </root>

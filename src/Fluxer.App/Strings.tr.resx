@@ -590,4 +590,38 @@
   <data name="PackageName" xml:space="preserve"><value>Paket adı</value></data>
   <data name="QueueStopAt" xml:space="preserve"><value>Bitiş</value></data>
   <data name="QueueStopDesc" xml:space="preserve"><value>O saate kadar bitmeyenler bir sonraki başlangıcı bekler.</value></data>
+  <data name="SecSites" xml:space="preserve"><value>Siteler</value></data>
+  <data name="SiteAdd" xml:space="preserve"><value>Site ekle</value></data>
+  <data name="SitesDesc" xml:space="preserve"><value>Bir siteden yapılan her indirmeye uygulanan ayarlar: giriş, bağlantı sayısı, User-Agent, Referer ve hız sınırı. Parola Windows kullanıcınız için şifrelenerek saklanır.</value></data>
+  <data name="SitesEmpty" xml:space="preserve"><value>Henüz site ayarı yok. Giriş isteyen ya da bağlantı sınırlayan siteler için ekleyin.</value></data>
+  <data name="SiteHost" xml:space="preserve"><value>Site</value></data>
+  <data name="SiteHostTip" xml:space="preserve"><value>"example.org" alt alan adlarını da kapsar; en özel eşleşme geçerli olur.</value></data>
+  <data name="SiteRemove" xml:space="preserve"><value>Siteyi kaldır</value></data>
+  <data name="SiteUser" xml:space="preserve"><value>Kullanıcı adı</value></data>
+  <data name="SitePassword" xml:space="preserve"><value>Parola</value></data>
+  <data name="SiteUserAgent" xml:space="preserve"><value>User-Agent (boş = varsayılan)</value></data>
+  <data name="SiteReferrer" xml:space="preserve"><value>Referer (boş = yok)</value></data>
+  <data name="SiteConnections" xml:space="preserve"><value>En fazla bağlantı</value></data>
+  <data name="SiteSpeed" xml:space="preserve"><value>İndirme başına hız</value></data>
+  <data name="SiteZeroTip" xml:space="preserve"><value>0 = bu siteye özel sınır yok</value></data>
+  <data name="SmartSpeed" xml:space="preserve"><value>Akıllı hız</value></data>
+  <data name="SmartBusy" xml:space="preserve"><value>Çalışırken yavaşla</value></data>
+  <data name="SmartBusyDesc" xml:space="preserve"><value>Başka bir programı kullanırken seçilen profile geçer, boşta kalınca geri döner.</value></data>
+  <data name="SmartBusyProfile" xml:space="preserve"><value>Meşgulken profil</value></data>
+  <data name="SmartIdle" xml:space="preserve"><value>Boşta sayılma</value></data>
+  <data name="SmartIdleDesc" xml:space="preserve"><value>Bu süre klavye ve fare kullanılmazsa boşta sayılır.</value></data>
+  <data name="MinutesShort" xml:space="preserve"><value>dk</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>sa</value></data>
+  <data name="SmartBattery" xml:space="preserve"><value>Pil azalınca beklet</value></data>
+  <data name="SmartBatteryDesc" xml:space="preserve"><value>Pille çalışırken bu seviyenin altında indirmeler bekler; prize takılınca devam eder.</value></data>
+  <data name="SmartQuota" xml:space="preserve"><value>Trafik kotası</value></data>
+  <data name="QuotaPer" xml:space="preserve"><value>GB /</value></data>
+  <data name="QuotaHours" xml:space="preserve"><value>Kota süresi (saat)</value></data>
+  <data name="QuotaUsed" xml:space="preserve"><value>Bu kadar indirilince indirmeler bekler. Son {0} sa: {1}</value></data>
+  <data name="HoldTitle" xml:space="preserve"><value>İndirmeler bekletiliyor</value></data>
+  <data name="HoldBatteryBody" xml:space="preserve"><value>Pil %{0}, indirmeler prize takılınca devam edecek.</value></data>
+  <data name="HoldQuotaBody" xml:space="preserve"><value>Trafik kotası doldu; indirmeler {0} civarında devam edecek.</value></data>
+  <data name="HoldBattery" xml:space="preserve"><value>Pil zayıf, bekliyor</value></data>
+  <data name="HoldQuota" xml:space="preserve"><value>Kota doldu · {0}</value></data>
+  <data name="HoldTip" xml:space="preserve"><value>Akıllı hız indirmeleri bekletiyor. Ayarları için tıklayın.</value></data>
 </root>

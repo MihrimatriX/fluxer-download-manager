@@ -621,6 +621,13 @@
             <TextBlock Text="{Binding QueueText}" Foreground="{DynamicResource SubtleBrush}" />
           </StackPanel>
         </Button>
+        <Button Grid.Column="3" Classes="tool" IsVisible="{Binding IsHeld}" Command="{Binding OpenScheduleCommand}" HorizontalAlignment="Left"
+                ToolTip.Tip="{x:Static app:Strings.HoldTip}" AutomationProperties.Name="{Binding HoldText}">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <c:Icon Data="{StaticResource IcPause}" Size="12" StrokeThickness="2" Foreground="{DynamicResource WarnBrush}" />
+            <TextBlock Text="{Binding HoldText}" Foreground="{DynamicResource WarnTextBrush}" />
+          </StackPanel>
+        </Button>
         <TextBlock Grid.Column="4" Text="{Binding DhtText}" Foreground="{DynamicResource FaintBrush}" />
         <TextBlock Grid.Column="5" Text="{Binding TotalDown}" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
         <TextBlock Grid.Column="6" Text="{Binding TotalUp}" Foreground="{DynamicResource InfoTextBrush}" />

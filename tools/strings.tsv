@@ -621,3 +621,37 @@ PackageDesc	Saved together in a folder of this name and tagged with it, so the l
 PackageName	Package name	Paket adı
 QueueStopAt	Stop at	Bitiş
 QueueStopDesc	What has not finished by then waits for the next start.	O saate kadar bitmeyenler bir sonraki başlangıcı bekler.
+SecSites	Sites	Siteler
+SiteAdd	Add site	Site ekle
+SitesDesc	Settings applied to every download from a site: login, connection count, User-Agent, Referer and speed limit. The password is stored encrypted for your Windows user.	Bir siteden yapılan her indirmeye uygulanan ayarlar: giriş, bağlantı sayısı, User-Agent, Referer ve hız sınırı. Parola Windows kullanıcınız için şifrelenerek saklanır.
+SitesEmpty	No site settings yet. Add one for sites that need a login or limit connections.	Henüz site ayarı yok. Giriş isteyen ya da bağlantı sınırlayan siteler için ekleyin.
+SiteHost	Site	Site
+SiteHostTip	"example.org" also covers its subdomains; the most specific match wins.	"example.org" alt alan adlarını da kapsar; en özel eşleşme geçerli olur.
+SiteRemove	Remove site	Siteyi kaldır
+SiteUser	User name	Kullanıcı adı
+SitePassword	Password	Parola
+SiteUserAgent	User-Agent (empty = default)	User-Agent (boş = varsayılan)
+SiteReferrer	Referer (empty = none)	Referer (boş = yok)
+SiteConnections	Max connections	En fazla bağlantı
+SiteSpeed	Speed per download	İndirme başına hız
+SiteZeroTip	0 = no limit of its own for this site	0 = bu siteye özel sınır yok
+SmartSpeed	Smart speed	Akıllı hız
+SmartBusy	Slow down while I work	Çalışırken yavaşla
+SmartBusyDesc	Switches to the chosen profile while you use another program, and back once you are idle.	Başka bir programı kullanırken seçilen profile geçer, boşta kalınca geri döner.
+SmartBusyProfile	Profile while busy	Meşgulken profil
+SmartIdle	Idle after	Boşta sayılma
+SmartIdleDesc	No keyboard or mouse input for this long counts as idle.	Bu süre klavye ve fare kullanılmazsa boşta sayılır.
+MinutesShort	min	dk
+HoursShort	h	sa
+SmartBattery	Pause on low battery	Pil azalınca beklet
+SmartBatteryDesc	On battery below this level downloads wait; they continue on mains power.	Pille çalışırken bu seviyenin altında indirmeler bekler; prize takılınca devam eder.
+SmartQuota	Traffic quota	Trafik kotası
+QuotaPer	GB per	GB /
+QuotaHours	Quota window (hours)	Kota süresi (saat)
+QuotaUsed	Downloads wait once this much is downloaded. Last {0} h: {1}	Bu kadar indirilince indirmeler bekler. Son {0} sa: {1}
+HoldTitle	Downloads on hold	İndirmeler bekletiliyor
+HoldBatteryBody	Battery at {0}%, downloads continue on mains power.	Pil %{0}, indirmeler prize takılınca devam edecek.
+HoldQuotaBody	Traffic quota used up; downloads continue around {0}.	Trafik kotası doldu; indirmeler {0} civarında devam edecek.
+HoldBattery	Low battery, on hold	Pil zayıf, bekliyor
+HoldQuota	Quota reached · {0}	Kota doldu · {0}
+HoldTip	Smart speed is holding downloads. Click for its settings.	Akıllı hız indirmeleri bekletiyor. Ayarları için tıklayın.

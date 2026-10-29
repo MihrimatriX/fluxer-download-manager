@@ -200,6 +200,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
             && !await Dialogs.ConfirmAsync(Owner, Strings.ExitTitle, string.Format(CultureInfo.CurrentCulture, Strings.ExitBody, busy), Strings.TrayExit, Strings.Cancel))
             return;
         if (_exiting) return;
+        await RestoreBusyProfileAsync();
         SaveLayout();
         _exiting = true;
         _timer?.Stop();
@@ -226,6 +227,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Main.UpdateTotals();
         RunScheduler();
         RunWeekSchedule();
+        RunSmartSpeed();
         RunBackup();
         PollClipboard();
         if (DateTime.UtcNow - _lastUpdateCheck > UpdateInterval) _ = CheckAppUpdateAsync();
