@@ -153,3 +153,43 @@ public sealed class DatabaseBackupTests
         }
     }
 }
+
+public sealed class UrlPatternTests
+{
+    [Fact]
+    public void ZeroPaddedRange_KeepsTheWidth()
+    {
+        var urls = Http.UrlPattern.Expand("https://e.org/foto_[001-120].jpg", out var n)!;
+        Assert.Equal(120, n);
+        Assert.Equal(("https://e.org/foto_001.jpg", "https://e.org/foto_120.jpg"), (urls[0], urls[^1]));
+    }
+
+    [Fact]
+    public void PlainRange_StepLettersAndProduct()
+    {
+        Assert.Equal(["p1", "p2", "p3"], Http.UrlPattern.Expand("p[1-3]", out _)!);
+        Assert.Equal(["0", "5", "10"], Http.UrlPattern.Expand("[0-10:5]", out _)!);
+        Assert.Equal(["3", "2", "1"], Http.UrlPattern.Expand("[3-1]", out _)!);
+        Assert.Equal(["a1", "a2", "b1", "b2"], Http.UrlPattern.Expand("[a-b][1-2]", out _)!);
+        Assert.Equal(["X", "Y"], Http.UrlPattern.Expand("[X-Y]", out _)!);
+    }
+
+    [Fact]
+    public void NotARange_StaysNull()
+    {
+        Assert.Null(Http.UrlPattern.Expand("http://[::1]:8080/a", out _));
+        Assert.Null(Http.UrlPattern.Expand("https://e.org/q?a[]=1", out _));
+        Assert.Null(Http.UrlPattern.Expand("https://e.org/[a-Z]", out _));
+        Assert.False(Http.UrlPattern.Has("https://e.org/plain.zip"));
+    }
+
+    [Fact]
+    public void TooMany_ReturnsEmptyWithTheCount()
+    {
+        var urls = Http.UrlPattern.Expand("[1-99999999]", out var n)!;
+        Assert.Empty(urls);
+        Assert.Equal(99999999, n);
+        Assert.Empty(Http.UrlPattern.Expand("[1-100][1-100]", out var m)!);
+        Assert.True(m > Http.UrlPattern.Max);
+    }
+}
