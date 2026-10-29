@@ -4,8 +4,6 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="AccentColor" xml:space="preserve"><value>Accent colour</value></data>
-  <data name="AccentColorDesc" xml:space="preserve"><value>Buttons, progress and highlights. The first one is Fluxer orange.</value></data>
   <data name="Accept" xml:space="preserve"><value>Accept</value></data>
   <data name="AddPaused" xml:space="preserve"><value>Add paused</value></data>
   <data name="AddToQueue" xml:space="preserve"><value>Add to queue</value></data>
@@ -49,17 +47,15 @@
   <data name="ColSpeed" xml:space="preserve"><value>Speed</value></data>
   <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
   <data name="CompactMode" xml:space="preserve"><value>Compact rows</value></data>
-  <data name="CompactModeDesc" xml:space="preserve"><value>44 px list rows; off gives roomier 54 px rows.</value></data>
+  <data name="CompactModeDesc" xml:space="preserve"><value>32 px list rows; off gives roomier 40 px rows.</value></data>
   <data name="CompactTip" xml:space="preserve"><value>Show or hide details</value></data>
   <data name="Conflict" xml:space="preserve"><value>If a file with the same name exists</value></data>
   <data name="ConflictOverwrite" xml:space="preserve"><value>Overwrite it</value></data>
   <data name="ConflictRename" xml:space="preserve"><value>Keep both: "name (1).ext"</value></data>
   <data name="ConnActive" xml:space="preserve"><value>receiving</value></data>
   <data name="ConnDone" xml:space="preserve"><value>done</value></data>
-  <data name="ConnDownloaded" xml:space="preserve"><value>Received</value></data>
   <data name="Connections" xml:space="preserve"><value>Connections per download</value></data>
   <data name="ConnectionsDesc" xml:space="preserve"><value>Parallel connections for one HTTP download (1–32). Fluxer lowers it automatically if the server pushes back.</value></data>
-  <data name="ConnRange" xml:space="preserve"><value>Byte range</value></data>
   <data name="ConnWaiting" xml:space="preserve"><value>waiting</value></data>
   <data name="Copy" xml:space="preserve"><value>Copy</value></data>
   <data name="CopyUrl" xml:space="preserve"><value>Copy address</value></data>
@@ -139,7 +135,7 @@
   <data name="KindMedia" xml:space="preserve"><value>Media</value></data>
   <data name="LangSystem" xml:space="preserve"><value>System language</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
-  <data name="LayoutTip" xml:space="preserve"><value>Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.</value></data>
+  <data name="LayoutTip" xml:space="preserve"><value>Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Ctrl+K lists every command. Window size, columns and panels are remembered.</value></data>
   <data name="LinkMatchAttach" xml:space="preserve"><value>Attach and resume</value></data>
   <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" is waiting for a new link. Use this download to resume it?</value></data>
   <data name="LinkMatchNew" xml:space="preserve"><value>Start a new download</value></data>
@@ -153,12 +149,6 @@
   <data name="MediaProbing" xml:space="preserve"><value>Reading video information…</value></data>
   <data name="MediaTitle" xml:space="preserve"><value>Save video</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video tools</value></data>
-  <data name="BackdropSetting" xml:space="preserve"><value>Style</value></data>
-  <data name="BackdropDesc" xml:space="preserve"><value>Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.</value></data>
-  <data name="BackdropNeu" xml:space="preserve"><value>Neumorphic (soft, raised)</value></data>
-  <data name="BackdropGlass" xml:space="preserve"><value>Glass (blurred, translucent)</value></data>
-  <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
-  <data name="BackdropNone" xml:space="preserve"><value>Navy (default)</value></data>
   <data name="RestartFromScratch" xml:space="preserve"><value>Restart from the beginning</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Select</value></data>
@@ -240,7 +230,6 @@
   <data name="SeedOverrideDesc" xml:space="preserve"><value>Ratio and minutes for this torrent only; off = global setting.</value></data>
   <data name="SeedRatio" xml:space="preserve"><value>Seeding ratio</value></data>
   <data name="SeedRatioDesc" xml:space="preserve"><value>Stop seeding when uploaded ÷ size reaches this ratio (0 = no limit).</value></data>
-  <data name="SegmentMap" xml:space="preserve"><value>Connections</value></data>
   <data name="SelectNone" xml:space="preserve"><value>Select none</value></data>
   <data name="Sequential" xml:space="preserve"><value>Download in order (for previewing media)</value></data>
   <data name="Settings" xml:space="preserve"><value>Settings</value></data>
@@ -282,10 +271,11 @@
   <data name="Theme" xml:space="preserve"><value>Theme</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
-  <data name="ThemeSystem" xml:space="preserve"><value>Follow system</value></data>
+  <data name="PaletteLightTheme" xml:space="preserve"><value>Switch to light theme</value></data>
+  <data name="PaletteDarkTheme" xml:space="preserve"><value>Switch to dark theme</value></data>
   <data name="ToggleDetail" xml:space="preserve"><value>Show or hide the detail panel</value></data>
   <data name="TookIs" xml:space="preserve"><value>took {0}</value></data>
-  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Show text next to toolbar icons.</value></data>
+  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Show text next to the title bar's command icons.</value></data>
   <data name="ToolbarLabelsSetting" xml:space="preserve"><value>Toolbar labels</value></data>
   <data name="ToolsConsent" xml:space="preserve"><value>To save videos, Fluxer needs yt-dlp, deno and ffmpeg (about 150 MB). They will be downloaded once from their official GitHub releases and verified with the publishers' SHA-256 checksums.</value></data>
   <data name="ToolsDownloading" xml:space="preserve"><value>Downloading video tools…</value></data>
@@ -329,7 +319,6 @@
   <data name="Maximize" xml:space="preserve"><value>Maximize</value></data>
   <data name="CloseWindow" xml:space="preserve"><value>Close</value></data>
   <data name="EtaDays" xml:space="preserve"><value>{0}d {1}h</value></data>
-  <data name="AccentNames" xml:space="preserve"><value>Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite</value></data>
   <data name="BackToDownloads" xml:space="preserve"><value>Back to downloads</value></data>
   <data name="Concurrent" xml:space="preserve"><value>{0} at once</value></data>
   <data name="DayNames" xml:space="preserve"><value>Mon|Tue|Wed|Thu|Fri|Sat|Sun</value></data>
@@ -359,7 +348,6 @@
   <data name="Manual" xml:space="preserve"><value>manual</value></data>
   <data name="MaxPeers" xml:space="preserve"><value>Max peers per torrent</value></data>
   <data name="MoveToNight" xml:space="preserve"><value>Move to night queue</value></data>
-  <data name="NightQueue" xml:space="preserve"><value>Night queue</value></data>
   <data name="NightQueueAt" xml:space="preserve"><value>Night queue · {0}</value></data>
   <data name="NightQueueManual" xml:space="preserve"><value>Night queue · manual start</value></data>
   <data name="NightQueueStart" xml:space="preserve"><value>Start the night queue at</value></data>
@@ -373,7 +361,6 @@
   <data name="ProfileSlots" xml:space="preserve"><value>At once</value></data>
   <data name="ProfileTip" xml:space="preserve"><value>Switch speed profile</value></data>
   <data name="ProfileUp" xml:space="preserve"><value>Upload</value></data>
-  <data name="Queues" xml:space="preserve"><value>QUEUES</value></data>
   <data name="RemovedToast" xml:space="preserve"><value>{0} removed from the list · files stay on disk</value></data>
   <data name="Retry" xml:space="preserve"><value>Retry</value></data>
   <data name="ScheduleStopShort" xml:space="preserve"><value>Pause everything at</value></data>
@@ -383,8 +370,6 @@
   <data name="SeedAndNetwork" xml:space="preserve"><value>Seeding and network</value></data>
   <data name="SeedRatioFormat" xml:space="preserve"><value>Seeding · ratio {0}</value></data>
   <data name="SelectedCount" xml:space="preserve"><value>{0} selected</value></data>
-  <data name="SidebarCollapsedDesc" xml:space="preserve"><value>Icons only; Ctrl+B toggles it any time.</value></data>
-  <data name="SidebarCollapsedSetting" xml:space="preserve"><value>Narrow sidebar</value></data>
   <data name="SpeedProfiles" xml:space="preserve"><value>Speed profiles</value></data>
   <data name="SpeedProfilesDesc" xml:space="preserve"><value>Switch with the button in the status bar or by the scheduler. 0 MB/s means unlimited.</value></data>
   <data name="Start" xml:space="preserve"><value>Start</value></data>
@@ -456,4 +441,97 @@
   <data name="ExtensionConnected" xml:space="preserve"><value>Browser extension connected</value></data>
   <data name="ExtensionConnectedBody" xml:space="preserve"><value>Downloads started in the browser now come to Fluxer.</value></data>
   <data name="StartInBrowser" xml:space="preserve"><value>Start in browser</value></data>
+  <data name="NewShort" xml:space="preserve"><value>New</value></data>
+  <data name="MoreWaysToAdd" xml:space="preserve"><value>More ways to add</value></data>
+  <data name="PasteLinks" xml:space="preserve"><value>Paste links</value></data>
+  <data name="MoreActions" xml:space="preserve"><value>More actions</value></data>
+  <data name="PaletteTip" xml:space="preserve"><value>Commands (Ctrl+K)</value></data>
+  <data name="PaletteTitle" xml:space="preserve"><value>Command palette</value></data>
+  <data name="PalettePlaceholder" xml:space="preserve"><value>Type a command or a filter…</value></data>
+  <data name="PaletteHint" xml:space="preserve"><value>↑ ↓ to move · Enter to run · Esc to close</value></data>
+  <data name="PaletteEmpty" xml:space="preserve"><value>No matching command</value></data>
+  <data name="PaletteGroupDownloads" xml:space="preserve"><value>Downloads</value></data>
+  <data name="PaletteGroupSelected" xml:space="preserve"><value>Selected</value></data>
+  <data name="PaletteGroupView" xml:space="preserve"><value>View</value></data>
+  <data name="PaletteGroupSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="PaletteShow" xml:space="preserve"><value>Show: {0}</value></data>
+  <data name="PaletteProfile" xml:space="preserve"><value>Speed profile: {0}</value></data>
+  <data name="SettingsTip" xml:space="preserve"><value>Settings (Ctrl+,)</value></data>
+  <data name="FilterByState" xml:space="preserve"><value>Filter by state</value></data>
+  <data name="SpeedNow" xml:space="preserve"><value>Now</value></data>
+  <data name="SpeedAverage" xml:space="preserve"><value>Average</value></data>
+  <data name="SpeedPeak" xml:space="preserve"><value>Peak</value></data>
+  <data name="TabSpeed" xml:space="preserve"><value>Speed</value></data>
+  <data name="QueueStatus" xml:space="preserve"><value>{0} at once · night {1}</value></data>
+  <data name="EditProfiles" xml:space="preserve"><value>Speed profiles and schedule…</value></data>
+  <data name="PinOnTop" xml:space="preserve"><value>Keep on top of other windows</value></data>
+  <data name="SecAutomation" xml:space="preserve"><value>Automation</value></data>
+  <data name="SecNotifications" xml:space="preserve"><value>Notifications and sounds</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
+  <data name="StartWithWindowsDesc" xml:space="preserve"><value>Starts in the tray when you sign in, so the browser extension and the night queue always find Fluxer.</value></data>
+  <data name="ConfirmExit" xml:space="preserve"><value>Ask before exiting</value></data>
+  <data name="ConfirmExitDesc" xml:space="preserve"><value>When downloads are running or waiting. They pause and continue at the next start.</value></data>
+  <data name="ExitTitle" xml:space="preserve"><value>Exit Fluxer?</value></data>
+  <data name="ExitBody" xml:space="preserve"><value>{0} download(s) are running or waiting. They pause now and continue the next time Fluxer starts.</value></data>
+  <data name="EventCompleted" xml:space="preserve"><value>Finished</value></data>
+  <data name="EventFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="EventQueueDone" xml:space="preserve"><value>Queue finished</value></data>
+  <data name="EventAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="Notification" xml:space="preserve"><value>Notification</value></data>
+  <data name="Sound" xml:space="preserve"><value>Sound</value></data>
+  <data name="SoundWindows" xml:space="preserve"><value>Windows sound</value></data>
+  <data name="PlaySound" xml:space="preserve"><value>Play</value></data>
+  <data name="PickSound" xml:space="preserve"><value>Choose a sound (.wav)</value></data>
+  <data name="NotifyQueueDone" xml:space="preserve"><value>Queue finished</value></data>
+  <data name="NotifyQueueDoneBody" xml:space="preserve"><value>Nothing is downloading or waiting any more.</value></data>
+  <data name="AfterDownload" xml:space="preserve"><value>When a download finishes</value></data>
+  <data name="HookProgram" xml:space="preserve"><value>Run a program</value></data>
+  <data name="HookProgramDesc" xml:space="preserve"><value>After the antivirus check. Move the file, refresh a media library, send a message.</value></data>
+  <data name="HookEnvHelp" xml:space="preserve"><value>The same values are in the FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL and FLUXER_EVENT environment variables. Batch files (.bat, .cmd) should read those: an argument with &amp;, | or % is not passed to them.</value></data>
+  <data name="HookAlsoFailed" xml:space="preserve"><value>Also for failed downloads</value></data>
+  <data name="PlaceholderNames" xml:space="preserve"><value>path|name|folder|category|size|address|event|id</value></data>
+  <data name="Programs" xml:space="preserve"><value>Programs</value></data>
+  <data name="Webhook" xml:space="preserve"><value>Send a webhook</value></data>
+  <data name="WebhookDesc" xml:space="preserve"><value>A JSON POST with name, path, size, address and event, for Home Assistant, n8n, Discord bridges and the like.</value></data>
+  <data name="WebhookEvents" xml:space="preserve"><value>Events:</value></data>
+  <data name="WebhookInvalid" xml:space="preserve"><value>Enter an http(s) address.</value></data>
+  <data name="WebhookSending" xml:space="preserve"><value>Sending…</value></data>
+  <data name="WebhookResult" xml:space="preserve"><value>Answered HTTP {0} in {1} ms.</value></data>
+  <data name="Test" xml:space="preserve"><value>Test</value></data>
+  <data name="SecData" xml:space="preserve"><value>Data</value></data>
+  <data name="DataFolder" xml:space="preserve"><value>Data folder</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>Portable mode</value></data>
+  <data name="PortableModeDesc" xml:space="preserve"><value>Keeps the database, logs and tools in a "data" folder next to Fluxer, so it runs from a USB stick.</value></data>
+  <data name="PortableOn" xml:space="preserve"><value>Make portable…</value></data>
+  <data name="PortableOff" xml:space="preserve"><value>Move back to this PC…</value></data>
+  <data name="PortableOnConfirm" xml:space="preserve"><value>Your downloads and settings are copied to {0} and Fluxer restarts. Running downloads pause and continue after the restart.</value></data>
+  <data name="PortableOffConfirm" xml:space="preserve"><value>Your downloads and settings are copied to {0} and Fluxer restarts. The portable "data" folder stays as it is.</value></data>
+  <data name="RestartNow" xml:space="preserve"><value>Restart</value></data>
+  <data name="DownloadList" xml:space="preserve"><value>Download list</value></data>
+  <data name="DownloadListDesc" xml:space="preserve"><value>A .json file keeps everything needed to add the list again on another PC (no cookies); a .txt file is one link per line.</value></data>
+  <data name="SettingsFile" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsFileDesc" xml:space="preserve"><value>Speed profiles, schedule, RSS feeds, automation, everything on these pages.</value></data>
+  <data name="ImportEllipsis" xml:space="preserve"><value>Import…</value></data>
+  <data name="ExportEllipsis" xml:space="preserve"><value>Export…</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Fluxer list (.json)</value></data>
+  <data name="ExportText" xml:space="preserve"><value>Links (.txt)</value></data>
+  <data name="ExportDone" xml:space="preserve"><value>{0} downloads written to {1}.</value></data>
+  <data name="ImportList" xml:space="preserve"><value>Import downloads</value></data>
+  <data name="ImportDone" xml:space="preserve"><value>{0} downloads added, {1} were already in the list or not readable.</value></data>
+  <data name="ImportNothing" xml:space="preserve"><value>No links found in that file.</value></data>
+  <data name="SettingsExported" xml:space="preserve"><value>Settings written to {0}.</value></data>
+  <data name="ImportSettings" xml:space="preserve"><value>Import settings</value></data>
+  <data name="ImportSettingsConfirm" xml:space="preserve"><value>Replace all settings with the ones in this file?</value></data>
+  <data name="ImportSettingsInvalid" xml:space="preserve"><value>That file does not hold Fluxer settings.</value></data>
+  <data name="AutoBackup" xml:space="preserve"><value>Automatic backup</value></data>
+  <data name="BackupOff" xml:space="preserve"><value>Off</value></data>
+  <data name="BackupDaily" xml:space="preserve"><value>Daily</value></data>
+  <data name="BackupWeekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="BackupNone" xml:space="preserve"><value>No backup yet. The last 5 are kept in the data folder.</value></data>
+  <data name="BackupLast" xml:space="preserve"><value>Last backup {0} · {1} kept</value></data>
+  <data name="BackupRunning" xml:space="preserve"><value>Backing up…</value></data>
+  <data name="BackupNow" xml:space="preserve"><value>Back up now</value></data>
+  <data name="BackupRestoreEllipsis" xml:space="preserve"><value>Restore…</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Restore a backup</value></data>
+  <data name="BackupRestoreConfirm" xml:space="preserve"><value>The download list and settings go back to {0}. Fluxer restarts; the current database is kept as fluxer.db.before-restore.</value></data>
 </root>

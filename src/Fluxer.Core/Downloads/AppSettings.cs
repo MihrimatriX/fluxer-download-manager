@@ -19,7 +19,7 @@ public sealed class AppSettings
     public ConflictPolicy Conflict { get; set; } = ConflictPolicy.Rename;
     public string? Proxy { get; set; }             // "http://host:port", null = system
     public string Language { get; set; } = "";     // "" = system, "tr", "en"
-    public string Theme { get; set; } = "Dark";    // System | Light | Dark
+    public string Theme { get; set; } = "Dark";    // Light | Dark
     public bool UseCategoryFolders { get; set; } = true;
     public string? ScheduleStart { get; set; } = "01:00"; // night queue start, "HH:mm" or null = manual only
     public string? ScheduleStop { get; set; }
@@ -78,7 +78,15 @@ public sealed class AppSettings
     public bool ShowProgressWindow { get; set; } = true;
     public bool ShowCompletedCard { get; set; } = true;
     public List<string> RecentFolders { get; set; } = [];
-    public bool Notifications { get; set; } = true;
+    public bool Notifications { get; set; } = true;  // master switch for the per-event notifications below
+    public EventFeedback OnCompleted { get; set; } = new();
+    public EventFeedback OnFailed { get; set; } = new() { Sound = true };
+    public EventFeedback OnQueueDone { get; set; } = new() { Notify = false };
+    /// "Exit" from the tray asks first while downloads are running or waiting.
+    public bool ConfirmExit { get; set; } = true;
+    public AutomationSettings Automation { get; set; } = new();
+    public string BackupInterval { get; set; } = "daily";   // off | daily | weekly
+    public long LastBackupAt { get; set; }                   // Unix seconds
     public bool RegisterFileAssociations { get; set; } = true;
     public const string DefaultUpdateFeed = "https://github.com/MihrimatriX/fluxer-download-manager";
     public string? UpdateFeed { get; set; }        // Velopack feed URL or folder; null = DefaultUpdateFeed
@@ -111,22 +119,48 @@ public sealed class AppSettings
         return null;
     }
 
-    /// Settings saved by an older version get the 0.8 design defaults once (dark navy, orange, gradient,
-    /// fresh column layout). Returns true when something changed and should be saved.
+    /// Settings saved by an older version get the current design's defaults once. Revision 1 (0.8): dark theme,
+    /// compact rows, night queue at 01:00. Revision 2 (the compact redesign): light or dark only ("follow system"
+    /// becomes dark), the toolbar shows icons only, and columns and the detail panel start fresh.
+    /// Returns true when something changed and should be saved.
     public bool UpgradeDesign()
     {
-        if (Ui.DesignRevision >= 1) return false;
-        Ui.DesignRevision = 1;
-        Theme = "Dark";
-        Ui.Accent = null;
-        Ui.Backdrop = "none";
-        Ui.Compact = true;
+        if (Ui.DesignRevision >= 2) return false;
+        if (Ui.DesignRevision < 1)
+        {
+            Theme = "Dark";
+            Ui.Compact = true;
+            ScheduleStart ??= "01:00";
+        }
+        Ui.DesignRevision = 2;
+        if (Theme != "Light") Theme = "Dark";
+        Ui.ToolbarLabels = false;
+        Ui.DetailHeight = new UiSettings().DetailHeight;
         Ui.ColumnOrder.Clear();
         Ui.ColumnWidths.Clear();
         Ui.HiddenColumns.Clear();
-        ScheduleStart ??= "01:00";
         return true;
     }
+}
+
+/// A Windows notification and/or a sound for one kind of event. SoundFile null = the Windows sound for it.
+public sealed class EventFeedback
+{
+    public bool Notify { get; set; } = true;
+    public bool Sound { get; set; }
+    public string? SoundFile { get; set; }
+}
+
+/// What runs when a download finishes or fails.
+public sealed class AutomationSettings
+{
+    /// Command line; %F path, %N name, %D folder, %K category, %Z size, %U address, %E event, %I id.
+    public string? Program { get; set; }
+    public bool ProgramOnFailed { get; set; }
+    public string? WebhookUrl { get; set; }
+    public bool WebhookOnAdded { get; set; }
+    public bool WebhookOnCompleted { get; set; } = true;
+    public bool WebhookOnFailed { get; set; } = true;
 }
 
 /// One speed profile; 0 = unlimited.
@@ -140,15 +174,12 @@ public sealed class SpeedProfile
 /// Look and layout the user can change; remembered between sessions.
 public sealed class UiSettings
 {
-    public string? Accent { get; set; }                 // "#RRGGBB", null = Fluxer orange
-    public string Backdrop { get; set; } = "none";      // "none" (navy gradient), "glass" (acrylic blur), "mica", "neu" (neumorphic)
-    public bool Compact { get; set; } = true;           // 44 px rows (design "sıkı"); off = 54 px
+    public bool Compact { get; set; } = true;           // 32 px rows; off = 40 px
     public double Scale { get; set; } = 1.0;            // 0.85 – 1.3
     public bool Animations { get; set; } = true;
-    public bool ToolbarLabels { get; set; } = true;
-    public bool SidebarCollapsed { get; set; }
+    public bool ToolbarLabels { get; set; }             // text next to the title bar's command icons
     public bool DetailVisible { get; set; }
-    public double DetailHeight { get; set; } = 300;     // the detail panel sits under the list
+    public double DetailHeight { get; set; } = 210;     // the detail panel sits under the list
     public int DesignRevision { get; set; }
     public List<string> HiddenColumns { get; set; } = [];
     public Dictionary<string, double> ColumnWidths { get; set; } = [];

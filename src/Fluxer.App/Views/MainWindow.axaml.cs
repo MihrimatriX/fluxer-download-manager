@@ -27,7 +27,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         var list = List;
         // Check boxes mirror the selection both ways; the header box selects all / none.
-        var all = new CheckBox { MinWidth = 0, Padding = new Thickness(0), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
+        var all = new CheckBox { MinWidth = 0, MinHeight = 0, Padding = new Thickness(0), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center };
         Avalonia.Automation.AutomationProperties.SetName(all, Strings.SelectAll);
         ToolTip.SetTip(all, Strings.SelectAll);
         all.Click += (_, _) =>
@@ -36,7 +36,7 @@ public sealed partial class MainWindow : Window
             else list.SelectAll();
         };
         list.Columns[0].Header = all;
-        // A 40 px header has no room for the default padding and sort glyph.
+        // A 32 px header has no room for the default padding and sort glyph.
         all.AttachedToVisualTree += (_, _) =>
         {
             if (all.FindAncestorOfType<DataGridColumnHeader>() is not { } h) return;
@@ -108,7 +108,7 @@ public sealed partial class MainWindow : Window
     /// Column keys in XAML order. The check box and name columns cannot be hidden.
     private static readonly string[] ColumnKeys = ["check", "name", "size", "progress", "speed", "status", "added"];
     private static readonly HashSet<string> Fixed = ["check", "name"];
-    private static readonly int[] DefaultWidths = [40, 0, 90, 170, 96, 160, 100];
+    private static readonly int[] DefaultWidths = [32, 0, 84, 150, 90, 156, 96];
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
@@ -163,7 +163,7 @@ public sealed partial class MainWindow : Window
         for (var i = 0; i < cols.Count && i < ColumnKeys.Length; i++)
             if (ColumnKeys[i] is not ("name" or "check")) ui.ColumnWidths[ColumnKeys[i]] = cols[i].ActualWidth;
         ui.ColumnOrder = [.. Enumerable.Range(0, Math.Min(cols.Count, ColumnKeys.Length)).OrderBy(i => cols[i].DisplayIndex).Select(i => ColumnKeys[i])];
-        if (ListArea.RowDefinitions[2].Height.IsAbsolute && ListArea.RowDefinitions[2].Height.Value > 150)
+        if (ListArea.RowDefinitions[2].Height.IsAbsolute && ListArea.RowDefinitions[2].Height.Value > MinDetail)
             ui.DetailHeight = ListArea.RowDefinitions[2].Height.Value;
     }
 
@@ -171,20 +171,23 @@ public sealed partial class MainWindow : Window
     {
         var i = Array.IndexOf(ColumnKeys, "added");
         if (CurrentUi is null || i >= List.Columns.Count) return;
-        List.Columns[i].IsVisible = !CurrentUi.HiddenColumns.Contains("added") && width >= 900;
+        List.Columns[i].IsVisible = !CurrentUi.HiddenColumns.Contains("added") && width >= 820;
     }
+
+    /// The detail panel's smallest height: headline, progress strip, tabs and a few lines.
+    private const double MinDetail = 150;
 
     /// The detail row under the list has a remembered pixel height while visible, and no height when hidden.
     private void ApplyDetailRow()
     {
         if (DataContext is not MainViewModel vm || CurrentUi is null) return;
         var row = ListArea.RowDefinitions[2];
-        // At most 60 % of the list area, so a remembered tall panel can't squeeze the list to nothing.
-        var max = ListArea.Bounds.Height > 0 ? Math.Max(280, ListArea.Bounds.Height * 0.6) : 520;
-        if (vm.ShowDetail) row.Height = new GridLength(Math.Clamp(CurrentUi!.DetailHeight, 280, max));
+        // At most half the list area, so a remembered tall panel can't squeeze the list to nothing.
+        var max = ListArea.Bounds.Height > 0 ? Math.Max(MinDetail, ListArea.Bounds.Height * 0.5) : 400;
+        if (vm.ShowDetail) row.Height = new GridLength(Math.Clamp(CurrentUi!.DetailHeight, MinDetail, max));
         else
         {
-            if (row.Height.IsAbsolute && row.Height.Value > 150) CurrentUi!.DetailHeight = row.Height.Value;
+            if (row.Height.IsAbsolute && row.Height.Value > MinDetail) CurrentUi!.DetailHeight = row.Height.Value;
             row.Height = GridLength.Auto;
         }
     }

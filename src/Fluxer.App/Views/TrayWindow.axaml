@@ -5,101 +5,92 @@
         xmlns:app="using:Fluxer.App"
         x:Class="Fluxer.App.Views.TrayWindow"
         x:DataType="vm:MainViewModel"
-        Title="Fluxer" Width="380" SizeToContent="Height" MaxHeight="620"
+        Title="Fluxer" Width="320" SizeToContent="Height" MaxHeight="560"
         WindowDecorations="None" CanResize="False" ShowInTaskbar="False" Topmost="True"
         TransparencyLevelHint="Transparent" Background="Transparent">
 
   <Window.Styles>
-    <Style Selector="Border.card">
-      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PanelEdgeBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="6" />
-    </Style>
     <Style Selector="Button.wide">
-      <Setter Property="Height" Value="40" />
-      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Height" Value="30" />
+      <Setter Property="MinHeight" Value="30" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="12.5" />
     </Style>
   </Window.Styles>
 
-  <Border Background="{DynamicResource NavyGradient}" BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
-    <StackPanel Margin="16" Spacing="12">
-      <!-- header -->
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Margin="2,2,2,4">
-        <Image Source="avares://Fluxer/Assets/fluxer.png" Width="20" Height="20" />
+  <Border Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+    <StackPanel Margin="12" Spacing="10">
+      <!-- header: brand · state -->
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+        <Image Source="avares://Fluxer/Assets/fluxer.png" Width="16" Height="16" />
         <TextBlock Grid.Column="1" Text="Fluxer" FontWeight="SemiBold" VerticalAlignment="Center" />
-        <TextBlock Grid.Column="2" Text="{Binding TrayHeader}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="2" Text="{Binding TrayHeader}" FontSize="11.5" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
       </Grid>
 
-      <!-- speeds -->
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-        <Border Classes="card" Padding="12,10">
-          <StackPanel>
-            <TextBlock Text="{x:Static app:Strings.ProfileDown}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" />
-            <TextBlock FontSize="18" FontWeight="SemiBold">
-              <Run Text="{Binding DownNumber}" /><Run Text=" " /><Run Text="{Binding DownUnit}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource SubtleBrush}" />
+      <!-- speeds: both numbers over one graph -->
+      <Border Classes="card" Padding="10,8">
+        <StackPanel Spacing="4">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <TextBlock FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource SystemControlHighlightAccentBrush}">
+              <Run Text="↓ " /><Run Text="{Binding DownNumber}" /><Run Text=" " /><Run Text="{Binding DownUnit}" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource SubtleBrush}" />
             </TextBlock>
-            <c:SpeedGraph Height="20" Margin="0,4,0,0" ShowScale="False" Capacity="30" Values="{Binding TrayDownHistory}" />
-          </StackPanel>
-        </Border>
-        <Border Grid.Column="1" Classes="card" Padding="12,10">
-          <StackPanel>
-            <TextBlock Text="{x:Static app:Strings.ProfileUp}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" />
-            <TextBlock FontSize="18" FontWeight="SemiBold">
-              <Run Text="{Binding UpNumber}" /><Run Text=" " /><Run Text="{Binding UpUnit}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource SubtleBrush}" />
+            <TextBlock Grid.Column="2" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource InfoTextBrush}" VerticalAlignment="Bottom">
+              <Run Text="↑ " /><Run Text="{Binding UpNumber}" /><Run Text=" " /><Run Text="{Binding UpUnit}" FontSize="11" FontWeight="Normal" Foreground="{DynamicResource SubtleBrush}" />
             </TextBlock>
-            <c:SpeedGraph Height="20" Margin="0,4,0,0" ShowScale="False" Capacity="30" Values="{Binding TrayUpHistory}" LineBrush="{DynamicResource InfoBrush}" />
-          </StackPanel>
-        </Border>
-      </Grid>
-
-      <!-- quick add -->
-      <Border Classes="field" Height="38" Padding="4,0,4,0" CornerRadius="6">
-        <Grid ColumnDefinitions="*,Auto">
-          <TextBox x:Name="QuickBox" Text="{Binding QuickAddText}" PlaceholderText="{x:Static app:Strings.PasteLink}" Background="Transparent" BorderThickness="0"
-                   MinHeight="30" AutomationProperties.Name="{x:Static app:Strings.QuickAdd}" />
-          <Button Grid.Column="1" Classes="accent" Height="30" Padding="12,0" CornerRadius="5" Content="{x:Static app:Strings.Add}" Command="{Binding QuickAddCommand}" />
-        </Grid>
-      </Border>
-
-      <!-- active downloads -->
-      <Border Background="{DynamicResource ChipBrush}" BorderBrush="{DynamicResource PanelEdgeBrush}" BorderThickness="1" CornerRadius="6" MinHeight="120">
-        <StackPanel>
-          <ItemsControl ItemsSource="{Binding TrayItems}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:DownloadItemViewModel">
-                <Border Padding="12" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
-                  <StackPanel Spacing="7">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                      <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Grid.Column="1" Text="{Binding PercentText}" Foreground="{DynamicResource Text2Brush}" IsVisible="{Binding !IsSeeding}" />
-                      <TextBlock Grid.Column="1" Text="{Binding SpeedText}" Foreground="{DynamicResource InfoTextBrush}" IsVisible="{Binding IsSeeding}" />
-                    </Grid>
-                    <ProgressBar Value="{Binding Progress}" IsIndeterminate="{Binding Indeterminate}" MinHeight="4" Height="4" CornerRadius="2"
-                                 Classes.seed="{Binding IsSeeding}" Classes.error="{Binding IsError}" />
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                      <TextBlock Text="{Binding MetaText}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
-                    </Grid>
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <TextBlock Text="{x:Static app:Strings.TrayIdle}" Classes="subtle" Margin="12,14" IsVisible="{Binding !TrayItems.Count}" />
-          <Button Classes="link" FontWeight="Normal" FontSize="12" Margin="12" Foreground="{DynamicResource ErrTextBrush}" HorizontalAlignment="Left"
-                  Content="{Binding TrayErrorText}" Command="{Binding ShowErrorsCommand}"
-                  IsVisible="{Binding TrayErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </Grid>
+          <c:SpeedGraph Height="26" ShowScale="False" Capacity="30" Values="{Binding TrayDownHistory}" UpValues="{Binding TrayUpHistory}" />
         </StackPanel>
       </Border>
 
-      <!-- footer -->
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-        <Button Classes="wide" Content="{x:Static app:Strings.PauseAll}" Command="{Binding PauseAllCommand}" />
-        <Button Grid.Column="1" Classes="wide" Content="{x:Static app:Strings.OpenWindow}" Command="{Binding ShowWindowCommand}" />
+      <!-- quick add -->
+      <Border Classes="field" Height="32" Padding="2,0,3,0">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox x:Name="QuickBox" Classes="bare" Text="{Binding QuickAddText}" PlaceholderText="{x:Static app:Strings.PasteLink}"
+                   MinHeight="28" FontSize="12.5" AutomationProperties.Name="{x:Static app:Strings.QuickAdd}" />
+          <Button Grid.Column="1" Classes="accent" Height="24" MinHeight="24" Padding="10,0" FontSize="12" Content="{x:Static app:Strings.Add}" Command="{Binding QuickAddCommand}" />
+        </Grid>
+      </Border>
+
+      <!-- running downloads -->
+      <StackPanel>
+        <ItemsControl ItemsSource="{Binding TrayItems}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:DownloadItemViewModel">
+              <Border Padding="2,7" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+                <StackPanel Spacing="5">
+                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <c:Icon Data="{Binding Icon}" Size="13" Foreground="{Binding IconBrush}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="2" Text="{Binding PercentText}" FontSize="12" Foreground="{DynamicResource Text2Brush}" IsVisible="{Binding !IsSeeding}" />
+                    <TextBlock Grid.Column="2" Text="{Binding SpeedText}" FontSize="12" Foreground="{DynamicResource InfoTextBrush}" IsVisible="{Binding IsSeeding}" />
+                  </Grid>
+                  <c:Bar Value="{Binding Progress}" Indeterminate="{Binding Indeterminate}" Height="3"
+                         Classes.seed="{Binding IsSeeding}" Classes.error="{Binding IsError}" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <TextBlock Text="{Binding MetaText}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource SubtleBrush}" />
+                  </Grid>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock Text="{x:Static app:Strings.TrayIdle}" Classes="subtle" Margin="2,6" IsVisible="{Binding !TrayItems.Count}" />
+        <Button Classes="link" FontSize="12" Margin="2,8,0,0" Foreground="{DynamicResource ErrTextBrush}" HorizontalAlignment="Left"
+                Content="{Binding TrayErrorText}" Command="{Binding ShowErrorsCommand}"
+                IsVisible="{Binding TrayErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+
+      <!-- footer: one button that pauses or resumes everything, and the window -->
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+        <Button Classes="wide" Command="{Binding ToggleAllCommand}" AutomationProperties.Name="{Binding ToggleAllTip}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <c:Icon Data="{Binding ToggleAllIcon}" Size="12" StrokeThickness="2" />
+            <TextBlock Text="{Binding ToggleAllLabel}" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Grid.Column="1" Classes="wide accent" Content="{x:Static app:Strings.OpenWindow}" Command="{Binding ShowWindowCommand}" />
       </Grid>
     </StackPanel>
   </Border>

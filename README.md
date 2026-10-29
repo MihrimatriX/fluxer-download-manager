@@ -7,10 +7,11 @@ Fluxer is a download manager for Windows. It splits HTTP downloads across severa
 - Multi-connection HTTP downloads with resume. When a link expires, Fluxer marks the download as needing a new link and lets you refresh it from the page.
 - BitTorrent through MonoTorrent: magnet links, `.torrent` files, DHT, peer exchange, local peer discovery, UPnP/NAT-PMP and encryption settings.
 - Video downloads through yt-dlp. On first use Fluxer fetches yt-dlp, deno and ffmpeg from their official GitHub releases and checks each one against its SHA-256 sum.
-- Browser integration for Chrome, Edge, Brave, Opera, Vivaldi and Firefox (128 or later). The extension hands downloads to Fluxer, can collect every file or image on a page, and shows a small card with a 3-second countdown before it takes a download, so you can leave it in the browser instead.
+- Browser integration for Chrome, Edge, Brave, Opera, Vivaldi and Firefox (128 or later). The extension hands downloads to Fluxer, can collect every file or image on a page, and shows a small card with a 3-second countdown before it takes a download, so you can leave it in the browser instead (hover the card or press its pause button to stop the countdown). Its popup pauses or resumes everything in Fluxer with one button, can pause capturing for an hour, and takes a typed or pasted link.
 - Speed profiles (Unlimited, Balanced, Background), each with its own download, upload and concurrency limits, plus a weekly 7 × 24 schedule that switches between them.
 - A night queue that starts at a time you choose (01:00 by default).
-- A tray window with live speed, a mini graph, running downloads and a box for pasting links.
+- A compact main window: commands in the title bar, state and file-type filters in one row, a small detail panel under the list, and a command palette (Ctrl+K) that reaches every action, filter, speed profile and settings page.
+- A tray window with live speed, a mini graph, running downloads, a box for pasting links and one button that pauses or resumes everything.
 - Deleting is undoable for 6 seconds, and files stay on disk unless you pick "Delete with files…" from the context menu.
 - Optional clipboard monitoring for copied file links and magnets, and a watch folder that adds any `.torrent` saved into it.
 - Torrent RSS feeds: new items in RSS or Atom feeds are added on a timer, with per-feed include/exclude filters (regex). Items already in a feed when you add it are skipped.
@@ -42,8 +43,8 @@ Windows 10 version 1809 or later, x64.
 | Space / Delete / Enter | Pause or resume / delete / open file |
 | Ctrl+Shift+P / Ctrl+Shift+R | Pause all / resume all |
 | Ctrl+↑ / Ctrl+↓ | Move the selected rows in the queue |
+| Ctrl+K | Command palette: every action, filter, speed profile and settings page |
 | Ctrl+I | Toggle the details panel |
-| Ctrl+B | Toggle the narrow sidebar |
 | Ctrl+, | Settings |
 
 Closing the window sends Fluxer to the tray. Quit from the tray menu. Settings save as soon as you change them.

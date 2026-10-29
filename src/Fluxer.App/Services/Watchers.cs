@@ -97,18 +97,16 @@ public sealed partial class AppHost
     }
 
     /// Finished HTTP and video downloads go through Attachment Services so the antivirus sees them.
+    /// Runs on a worker thread (OnFinished), before the user's program sees the file.
     private void ScanCompleted(IDownload d)
     {
         if (!Engine.Settings.ScanDownloads || d.Kind == DownloadKind.Torrent) return;
         var path = d.Record.FullPath;
         var source = d.Record.Http?.FinalUrl ?? d.Record.Http?.Url ?? d.Record.Media?.PageUrl;
         var referrer = d.Record.Http?.Referrer ?? d.Record.Media?.Referrer;
-        _ = Task.Run(() =>
-        {
-            var result = AttachmentScanner.Scan(path, source, referrer);
-            Log.Information("Scan {Id}: {Result}", d.Id, result);
-            if (result == ScanResult.Blocked)
-                Notifier.Show(Strings.ScanBlockedTitle, string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.ScanBlockedBody, d.FileName));
-        });
+        var result = AttachmentScanner.Scan(path, source, referrer);
+        Log.Information("Scan {Id}: {Result}", d.Id, result);
+        if (result == ScanResult.Blocked)
+            Notifier.Show(Strings.ScanBlockedTitle, string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.ScanBlockedBody, d.FileName));
     }
 }

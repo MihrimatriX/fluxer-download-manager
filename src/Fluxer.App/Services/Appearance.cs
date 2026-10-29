@@ -8,72 +8,12 @@ using Fluxer.Core.Downloads;
 
 namespace Fluxer.App.Services;
 
-/// Applies the user's look settings (accent, density, backdrop, motion, scale) to the app and every
-/// open window, live — no restart, no window rebuild.
+/// Applies the user's look settings (density, motion, scale) to the app and every open window, live: no
+/// restart, no window rebuild. Light or dark is the app's theme variant (AppHost); the accent is fixed.
 public static partial class Appearance
 {
-    /// False once a window opened without the requested backdrop (Windows 10, effects off): stay opaque.
-    private static bool _backdropWorks = true;
-
-    /// Design default: the navy gradient (MainBrush "gradient" = NavyGradient) with translucent panels.
-    private static readonly Dictionary<string, (string Light, string Dark)> Solid = new()
-    {
-        ["MainBrush"] = ("gradient", "gradient"),
-        ["CardBrush"] = ("#B8FFFFFF", "#0BFFFFFF"),
-        ["WellBrush"] = ("#0D000000", "#33000000"),
-    };
-
-    private static readonly Dictionary<string, (string Light, string Dark)> OnMica = new()
-    {
-        ["MainBrush"] = ("#B3FFFFFF", "#661C2235"),
-        ["CardBrush"] = ("#B3FFFFFF", "#0FFFFFFF"),
-        ["WellBrush"] = ("#0D000000", "#33000000"),
-    };
-
-    /// Frosted glass: the blurred desktop shows through a navy tint, so layers carry more of the colour.
-    private static readonly Dictionary<string, (string Light, string Dark)> OnGlass = new()
-    {
-        ["MainBrush"] = ("#80FBFBFD", "#8C1C2235"),
-        ["CardBrush"] = ("#99FFFFFF", "#0FFFFFFF"),
-        ["WellBrush"] = ("#0D000000", "#33000000"),
-    };
-
-    /// Neumorphism: one opaque base colour everywhere; depth comes only from paired soft shadows.
-    private static readonly Dictionary<string, (string Light, string Dark)> Neu = new()
-    {
-        ["MainBrush"] = ("#E6E9EF", "#1D2333"),
-        ["CardBrush"] = ("#E6E9EF", "#1D2333"),
-        ["WellBrush"] = ("#DDE1E8", "#1A1F2E"),
-    };
-
-    /// Raised: light from the top left, shade to the bottom right. Sunken: the same, inset. (Dark: the design's values.)
-    private static readonly (string Light, string Dark) NeuRaised =
-        ("-5 -5 12 0 #FFFFFFFF, 5 5 12 0 #8CA3B1C6", "7 7 16 0 #8C060912, -6 -6 14 0 #09FFFFFF");
-    private static readonly (string Light, string Dark) NeuRaisedSmall =
-        ("-3 -3 7 0 #FFFFFFFF, 3 3 8 0 #8CA3B1C6", "3 3 8 0 #8C060912, -3 -3 7 0 #09FFFFFF");
-    private static readonly (string Light, string Dark) NeuSunken =
-        ("inset 3 3 6 0 #8CA3B1C6, inset -3 -3 6 0 #FFFFFFFF", "inset 3 3 7 0 #99060912, inset -3 -3 7 0 #08FFFFFF");
-    /// The flat style's only shadow: a soft drop under panels.
-    private static readonly (string Light, string Dark) PanelDrop = ("0 4 18 0 #14000000", "0 4 18 0 #29000000");
-
-    /// Fluxer orange; the accent when the user has not picked one.
-    public const string DefaultAccent = "#F5A623";
-
-    /// Fluent control fills that would otherwise draw their own (darker/lighter) boxes on the neumorphic base.
-    private static readonly string[] NeuFills =
-    [
-        "ButtonBackground", "ButtonBackgroundPointerOver", "ButtonBackgroundPressed",
-        "TextControlBackground", "TextControlBackgroundPointerOver", "TextControlBackgroundFocused",
-        "ComboBoxBackground", "ComboBoxBackgroundPointerOver", "ComboBoxBackgroundPressed",
-        "TimePickerButtonBackground", "TimePickerButtonBackgroundPointerOver", "TimePickerButtonBackgroundPressed",
-    ];
-    private static readonly string[] NeuNoBorders =
-    [
-        "ButtonBorderBrush", "ButtonBorderBrushPointerOver", "ButtonBorderBrushPressed",
-        "TextControlBorderBrush", "TextControlBorderBrushPointerOver", "TextControlBorderBrushFocused",
-        "ComboBoxBorderBrush", "ComboBoxBorderBrushPointerOver", "ComboBoxBorderBrushPressed",
-        "TimePickerButtonBorderBrush", "TimePickerButtonBorderBrushPointerOver", "TimePickerButtonBorderBrushPressed",
-    ];
+    /// The logo blue: buttons, progress, selection.
+    public const string Accent = "#2563EB";
 
     /// Fluent brushes drawn on top of the accent colour.
     private static readonly string[] OnAccentKeys =
@@ -85,60 +25,39 @@ public static partial class Appearance
         "RadioButtonCheckGlyphFill", "RadioButtonCheckGlyphFillPointerOver", "RadioButtonCheckGlyphFillPressed",
     ];
 
-    private static bool Translucent(UiSettings ui) => ui.Backdrop is "glass" or "mica" && _backdropWorks;
-
     public static void Apply(Application app, UiSettings ui)
     {
         var fluent = app.Styles.OfType<FluentTheme>().First();
         fluent.DensityStyle = DensityStyle.Normal;
 
+        var accent = Color.Parse(Accent);
         fluent.Palettes.Clear();
-        var accent = Color.TryParse(ui.Accent ?? DefaultAccent, out var a) ? a : Color.Parse(DefaultAccent);
         fluent.Palettes[ThemeVariant.Light] = new ColorPaletteResources { Accent = accent };
         fluent.Palettes[ThemeVariant.Dark] = new ColorPaletteResources { Accent = accent };
-        // Text on the accent: dark on light accents (orange, green), white on deep ones.
-        var luminance = (0.2126 * accent.R + 0.7152 * accent.G + 0.0722 * accent.B) / 255;
-        var onAccent = new SolidColorBrush(luminance > 0.55 ? Color.Parse("#1D1607") : Colors.White);
+        var onAccent = new SolidColorBrush(Colors.White);
         app.Resources["OnAccentBrush"] = onAccent;
         foreach (var key in OnAccentKeys) app.Resources[key] = onAccent;
-        // Selected nav item / settings section: a 3 px accent bar on the left edge.
-        app.Resources["AccentBarShadow"] = BoxShadows.Parse($"inset 3 0 0 0 {accent}");
+        app.Resources["AccentSoftBrush"] = new SolidColorBrush(accent, 0.14);
+        // Selected settings section: a bar on the left edge; selected tab: a line under it.
+        app.Resources["AccentBarShadow"] = BoxShadows.Parse($"inset 2 0 0 0 {accent}");
+        app.Resources["UnderlineShadow"] = BoxShadows.Parse($"inset 0 -2 0 0 {accent}");
 
-        app.Resources["RowHeight"] = ui.Compact ? 44.0 : 54.0;
-        ApplyLayers(app, ui.Backdrop == "neu" ? Neu : Translucent(ui) ? ui.Backdrop == "mica" ? OnMica : OnGlass : Solid,
-            neu: ui.Backdrop == "neu", glass: ui.Backdrop == "glass" && Translucent(ui));
+        app.Resources["RowHeight"] = ui.Compact ? 32.0 : 40.0;
 
+        // Only windows set up by ApplyTo; the tray popup and the palette draw their own frame.
         if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            foreach (var w in desktop.Windows) ApplyTo(w, ui);
+            foreach (var w in desktop.Windows)
+                if (w.Content is Panel { Tag: TitleTag }) ApplyTo(w, ui);
     }
 
-    /// Per-window part: backdrop, motion class, UI scale. Call once after a window is created.
+    /// Per-window part: motion class, title area, UI scale. Call once after a window is created.
     public static void ApplyTo(Window w, UiSettings ui)
     {
         w.Classes.Set("motion", ui.Animations);
-        // Both translucent modes start as Mica (Avalonia then sets the window up for a Windows 11 system
-        // backdrop, title area included); glass switches that backdrop to the system acrylic.
-        w.TransparencyLevelHint = Translucent(ui)
-            ? [WindowTransparencyLevel.Mica, WindowTransparencyLevel.AcrylicBlur, WindowTransparencyLevel.None]
-            : [WindowTransparencyLevel.None];
-        // Clear (not null) to get MainBrush back from the Window style: a local null means no background at all.
-        if (Translucent(ui)) w.Background = Brushes.Transparent; else w.ClearValue(Window.BackgroundProperty);
-        if (Translucent(ui))
-        {
-            var kind = ui.Backdrop == "glass" ? DwmsbtTransientWindow : DwmsbtMainWindow;
-            // After Avalonia has applied its own Mica setup.
-            void Later() => Avalonia.Threading.Dispatcher.UIThread.Post(() => SetSystemBackdrop(w, kind), Avalonia.Threading.DispatcherPriority.Background);
-            if (w.IsVisible) Later();
-            else
-            {
-                w.Opened += CheckBackdrop;
-                w.Opened += (_, _) => Later();
-            }
-        }
 
-        // Content runs up to the top edge. The system caption is dropped (Windows paints its strip opaque, which
-        // hides the backdrop there); we draw the caption buttons ourselves and tag them so Windows still treats
-        // them as caption buttons (Snap Layouts on maximize).
+        // Content runs up to the top edge. The system caption is dropped (Windows paints its own strip, in a
+        // colour that does not match ours); we draw the caption buttons ourselves and tag them so Windows still
+        // treats them as caption buttons (Snap Layouts on maximize).
         w.ExtendClientAreaToDecorationsHint = true;
         w.ExtendClientAreaTitleBarHeightHint = TitleBarHeight;
         w.WindowDecorations = WindowDecorations.BorderOnly;
@@ -163,12 +82,12 @@ public static partial class Appearance
             ltc.LayoutTransform = Math.Abs(ui.Scale - 1) < 0.01 ? null : new ScaleTransform(ui.Scale, ui.Scale);
     }
 
-    public const double TitleBarHeight = 48;
+    public const double TitleBarHeight = 40;
     private const string TitleTag = "fluxer-titlebar";
 
     private static Control WithTop(Control c)
     {
-        c.Margin = new Thickness(0, TitleBarHeight - 8, 0, 0);
+        c.Margin = new Thickness(0, TitleBarHeight - 6, 0, 0);
         return c;
     }
 
@@ -184,13 +103,13 @@ public static partial class Appearance
             {
                 Orientation = Avalonia.Layout.Orientation.Horizontal,
                 Spacing = 8,
-                Margin = new Thickness(14, 0, 0, 0),
+                Margin = new Thickness(12, 0, 0, 0),
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                 IsHitTestVisible = false,
                 Children =
                 {
-                    new Image { Source = new Avalonia.Media.Imaging.Bitmap(Avalonia.Platform.AssetLoader.Open(new Uri("avares://Fluxer/Assets/fluxer.png"))), Width = 16, Height = 16 },
-                    new TextBlock { Text = "Fluxer", FontSize = 12, Opacity = 0.7, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
+                    new Image { Source = new Avalonia.Media.Imaging.Bitmap(Avalonia.Platform.AssetLoader.Open(new Uri("avares://Fluxer/Assets/fluxer.png"))), Width = 14, Height = 14 },
+                    new TextBlock { Text = "Fluxer", FontSize = 12, Opacity = 0.65, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
                 },
             },
         };
@@ -246,7 +165,7 @@ public static partial class Appearance
     private static void NativeChrome(Window w)
     {
         const int GwlStyle = -16, WsMinimizeBox = 0x20000, WsMaximizeBox = 0x10000, DwmwaBorderColor = 34;
-        if (w.TryGetPlatformHandle()?.Handle is not { } hwnd) return;
+        if (!OperatingSystem.IsWindows() || w.TryGetPlatformHandle()?.Handle is not { } hwnd) return;
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
         {
             var none = unchecked((int)0xFFFFFFFE); // DWMWA_COLOR_NONE
@@ -256,76 +175,6 @@ public static partial class Appearance
             _ = SetWindowLongPtr(hwnd, GwlStyle, GetWindowLongPtr(hwnd, GwlStyle) | WsMinimizeBox | WsMaximizeBox);
     }
 
-    private const int DwmwaSystemBackdropType = 38, DwmsbtMainWindow = 2, DwmsbtTransientWindow = 3;
-
     [System.Runtime.InteropServices.LibraryImport("dwmapi.dll")]
     private static partial int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);
-
-    private struct Margins { public int Left, Right, Top, Bottom; }
-
-    [System.Runtime.InteropServices.LibraryImport("dwmapi.dll")]
-    private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins margins);
-
-    /// Windows 11 22H2+: Mica (2) or acrylic (3). Older systems ignore it and keep Avalonia's fallback.
-    private static void SetSystemBackdrop(Window w, int kind)
-    {
-        if (w.TryGetPlatformHandle()?.Handle is not { } hwnd || !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22621)) return;
-        // "Sheet of glass": the backdrop shows wherever we paint nothing, title area included.
-        var all = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
-        _ = DwmExtendFrameIntoClientArea(hwnd, ref all);
-        _ = DwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, ref kind, sizeof(int));
-    }
-
-    /// Windows 10 (or a disabled effect) has no Mica: fall back to opaque colours once, app-wide.
-    private static void CheckBackdrop(object? sender, EventArgs e)
-    {
-        if (sender is not Window w) return;
-        w.Opened -= CheckBackdrop;
-        if (w.ActualTransparencyLevel != WindowTransparencyLevel.None || !_backdropWorks) return;
-        _backdropWorks = false;
-        if (Application.Current is { } app) ApplyLayers(app, Solid, neu: false);
-        w.ClearValue(Window.BackgroundProperty);
-    }
-
-    private static void ApplyLayers(Application app, Dictionary<string, (string Light, string Dark)> table, bool neu, bool glass = false)
-    {
-        foreach (var (variant, light) in new[] { (ThemeVariant.Light, true), (ThemeVariant.Dark, false) })
-        {
-            if (app.Resources.ThemeDictionaries.TryGetValue(variant, out var provider) && provider is IResourceDictionary dict)
-            {
-                foreach (var (key, (l, d)) in table)
-                {
-                    var v = light ? l : d;
-                    dict[key] = v == "gradient" ? dict["NavyGradient"]! : new SolidColorBrush(Color.Parse(v));
-                }
-                dict["SidebarBrush"] = Brushes.Transparent;
-
-                // Card edge: the glass highlight, a hairline on flat panels, nothing when shadows do the work.
-                dict["CardEdgeBrush"] = glass ? dict["GlassBorderBrush"] : neu ? Brushes.Transparent : dict["PanelEdgeBrush"];
-                dict["ExpanderHeaderBorderBrush"] = Brushes.Transparent;
-                dict["ExpanderContentBorderBrush"] = Brushes.Transparent;
-                dict["CardShadow"] = BoxShadows.Parse(neu ? light ? NeuRaised.Light : NeuRaised.Dark : light ? PanelDrop.Light : PanelDrop.Dark);
-                dict["RaisedShadow"] = neu ? BoxShadows.Parse(light ? NeuRaisedSmall.Light : NeuRaisedSmall.Dark) : default(BoxShadows);
-                // Shadows need air between cards, or neighbouring shades read as lines.
-                dict["CardGap"] = new Thickness(0, 0, 0, neu ? 12 : 4);
-                dict["SunkenShadow"] = neu ? BoxShadows.Parse(light ? NeuSunken.Light : NeuSunken.Dark) : default(BoxShadows);
-                // Neumorphic controls take the base colour; other styles get App.axaml's values back.
-                foreach (var key in NeuFills.Concat(NeuNoBorders))
-                {
-                    if (!Original.ContainsKey((light, key))) Original[(light, key)] = dict.TryGetValue(key, out var o) ? o : null;
-                    var orig = Original[(light, key)];
-                    if (neu) dict[key] = NeuFills.Contains(key) ? dict["CardBrush"] : Brushes.Transparent;
-                    else if (orig is not null) dict[key] = orig;
-                    else dict.Remove(key);
-                }
-            }
-        }
-    }
-
-    /// App.axaml's control colours, kept so leaving the neumorphic style restores them.
-    private static readonly Dictionary<(bool Light, string Key), object?> Original = [];
-
-    /// Fluxer orange first (also what "no choice" means), then the rest.
-    public static readonly string[] AccentChoices =
-        [DefaultAccent, "#0A84FF", "#5E5CE6", "#BF5AF2", "#FF375F", "#30D158", "#40C8E0", "#8E8E93"];
 }

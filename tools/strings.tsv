@@ -1,6 +1,3 @@
-AccentColor	Accent colour	Vurgu rengi
-AccentColorDesc	Buttons, progress and highlights. The first one is Fluxer orange.	Butonlar, ilerleme ve vurgular. İlki Fluxer turuncusu.
-AccentSystem	Windows accent	Windows vurgu rengi
 Accept	Accept	Kabul et
 AddPaused	Add paused	Duraklatılmış ekle
 AddToQueue	Add to queue	Kuyruğa ekle
@@ -48,7 +45,7 @@ ColSize	Size	Boyut
 ColSpeed	Speed	Hız
 ColStatus	Status	Durum
 CompactMode	Compact rows	Sıkı satırlar
-CompactModeDesc	44 px list rows; off gives roomier 54 px rows.	44 px liste satırları; kapalıyken daha ferah 54 px.
+CompactModeDesc	32 px list rows; off gives roomier 40 px rows.	32 px liste satırları; kapalıyken daha ferah 40 px.
 CompactTip	Show or hide details	Ayrıntıları göster/gizle
 Conflict	If a file with the same name exists	Aynı adda dosya varsa
 ConflictOverwrite	Overwrite it	Üzerine yaz
@@ -142,7 +139,7 @@ KindMagnet	Magnet link — opens as a torrent	Magnet bağlantısı — torrent o
 KindMedia	Media	Medya
 LangSystem	System language	Sistem dili
 Language	Language	Dil
-LayoutTip	Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Window size, columns, panels and the sidebar are remembered.	İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Pencere boyutu, sütunlar, paneller ve kenar çubuğu hatırlanır.
+LayoutTip	Tip: right-click a column header to show or hide columns; drag headers to reorder or resize them. Ctrl+K lists every command. Window size, columns and panels are remembered.	İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Ctrl+K tüm komutları listeler. Pencere boyutu, sütunlar ve paneller hatırlanır.
 LimitHttp	HTTP downloads	HTTP indirmeleri
 LimitHttpDesc	Shared by all HTTP and video downloads.	Tüm HTTP ve video indirmeleri arasında paylaşılır.
 LimitTorrentDown	Torrent download	Torrent indirme
@@ -160,12 +157,6 @@ MediaDisclaimer	Fluxer uses yt-dlp to save videos from websites. You are respons
 MediaProbing	Reading video information…	Video bilgileri okunuyor…
 MediaTitle	Save video	Videoyu kaydet
 MediaTools	Video tools	Video araçları
-BackdropSetting	Style	Görünüm stili
-BackdropDesc	Navy is the standard look; glass blurs what is behind the window; Mica tints with your wallpaper; neumorphic uses soft raised surfaces.	Lacivert standart görünüm; cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdınla renklenir; neumorfik yumuşak kabartmalı yüzeyler kullanır.
-BackdropNeu	Neumorphic (soft, raised)	Neumorfik (yumuşak kabartma)
-BackdropGlass	Glass (blurred, translucent)	Cam (bulanık, saydam)
-BackdropMica	Mica (Windows 11)	Mica (Windows 11)
-BackdropNone	Navy (default)	Lacivert (varsayılan)
 RestartFromScratch	Restart from the beginning	Baştan başlat
 SelectAll	Select all	Tümünü seç
 SelectRow	Select	Seç
@@ -304,11 +295,12 @@ TabTorrentOptions	Options	Seçenekler
 Theme	Theme	Tema
 ThemeDark	Dark	Koyu
 ThemeLight	Light	Açık
-ThemeSystem	Follow system	Sistemi izle
+PaletteLightTheme	Switch to light theme	Açık temaya geç
+PaletteDarkTheme	Switch to dark theme	Koyu temaya geç
 ToggleDetail	Show or hide the detail panel	Ayrıntı panelini göster/gizle
 ToggleSidebar	Collapse or expand the sidebar	Kenar çubuğunu daralt/genişlet
 TookIs	took {0}	{0} sürdü
-ToolbarLabelsDesc	Show text next to toolbar icons.	Araç çubuğu ikonlarının yanında yazı göster.
+ToolbarLabelsDesc	Show text next to the title bar's command icons.	Başlık çubuğundaki komut ikonlarının yanında yazı göster.
 ToolbarLabelsSetting	Toolbar labels	Araç çubuğu etiketleri
 ToolsConsent	To save videos, Fluxer needs yt-dlp, deno and ffmpeg (about 150 MB). They will be downloaded once from their official GitHub releases and verified with the publishers' SHA-256 checksums.	Video kaydetmek için Fluxer'ın yt-dlp, deno ve ffmpeg araçlarına ihtiyacı var (yaklaşık 150 MB). Resmi GitHub sürümlerinden bir kez indirilip yayıncıların SHA-256 özetleriyle doğrulanacaklar.
 ToolsDownloading	Downloading video tools…	Video araçları indiriliyor…
@@ -354,7 +346,6 @@ Minimize	Minimize	Simge durumuna küçült
 Maximize	Maximize	Ekranı kapla
 CloseWindow	Close	Kapat
 EtaDays	{0}d {1}h	{0}g {1}sa
-AccentNames	Orange|Blue|Indigo|Purple|Pink|Green|Teal|Graphite	Turuncu|Mavi|Çivit|Mor|Pembe|Yeşil|Turkuaz|Grafit
 BackToDownloads	Back to downloads	İndirmelere dön
 Concurrent	{0} at once	{0} eşzamanlı
 DayNames	Mon|Tue|Wed|Thu|Fri|Sat|Sun	Pzt|Sal|Çar|Per|Cum|Cmt|Paz
@@ -482,3 +473,96 @@ ExtensionNotSeen	No word from the extension since Fluxer started. Already instal
 ExtensionConnected	Browser extension connected	Tarayıcı eklentisi bağlandı
 ExtensionConnectedBody	Downloads started in the browser now come to Fluxer.	Tarayıcıda başlayan indirmeler artık Fluxer'a gelir.
 StartInBrowser	Start in browser	Tarayıcıda başlat
+NewShort	New	Yeni
+MoreWaysToAdd	More ways to add	Diğer ekleme yolları
+PasteLinks	Paste links	Bağlantıları yapıştır
+MoreActions	More actions	Diğer işlemler
+PaletteTip	Commands (Ctrl+K)	Komutlar (Ctrl+K)
+PaletteTitle	Command palette	Komut paleti
+PalettePlaceholder	Type a command or a filter…	Bir komut ya da filtre yazın…
+PaletteHint	↑ ↓ to move · Enter to run · Esc to close	↑ ↓ ile gezin · Enter ile çalıştırın · Esc ile kapatın
+PaletteEmpty	No matching command	Eşleşen komut yok
+PaletteGroupDownloads	Downloads	İndirmeler
+PaletteGroupSelected	Selected	Seçili
+PaletteGroupView	View	Görünüm
+PaletteGroupSpeed	Speed	Hız
+PaletteShow	Show: {0}	Göster: {0}
+PaletteProfile	Speed profile: {0}	Hız profili: {0}
+SettingsTip	Settings (Ctrl+,)	Ayarlar (Ctrl+,)
+FilterByState	Filter by state	Duruma göre süz
+SpeedNow	Now	Şu an
+SpeedAverage	Average	Ortalama
+SpeedPeak	Peak	Tepe
+TabSpeed	Speed	Hız
+QueueStatus	{0} at once · night {1}	{0} eşzamanlı · gece {1}
+EditProfiles	Speed profiles and schedule…	Hız profilleri ve zamanlama…
+PinOnTop	Keep on top of other windows	Diğer pencerelerin üstünde tut
+SecAutomation	Automation	Otomasyon
+SecNotifications	Notifications and sounds	Bildirimler ve sesler
+StartWithWindows	Start with Windows	Windows ile başlat
+StartWithWindowsDesc	Starts in the tray when you sign in, so the browser extension and the night queue always find Fluxer.	Oturum açılınca tepside başlar; tarayıcı eklentisi ve gece kuyruğu Fluxer'ı her zaman bulur.
+ConfirmExit	Ask before exiting	Çıkmadan önce sor
+ConfirmExitDesc	When downloads are running or waiting. They pause and continue at the next start.	İndirme sürerken ya da beklerken. İndirmeler duraklar, sonraki açılışta kaldığı yerden sürer.
+ExitTitle	Exit Fluxer?	Fluxer'dan çıkılsın mı?
+ExitBody	{0} download(s) are running or waiting. They pause now and continue the next time Fluxer starts.	{0} indirme sürüyor ya da bekliyor. Şimdi duraklar, Fluxer bir sonraki açılışta kaldığı yerden sürdürür.
+EventCompleted	Finished	Biten
+EventFailed	Failed	Hata veren
+EventQueueDone	Queue finished	Kuyruk bitince
+EventAdded	Added	Eklenen
+Notification	Notification	Bildirim
+Sound	Sound	Ses
+SoundWindows	Windows sound	Windows sesi
+PlaySound	Play	Çal
+PickSound	Choose a sound (.wav)	Ses seç (.wav)
+NotifyQueueDone	Queue finished	Kuyruk bitti
+NotifyQueueDoneBody	Nothing is downloading or waiting any more.	İnen ya da bekleyen indirme kalmadı.
+AfterDownload	When a download finishes	İndirme bitince
+HookProgram	Run a program	Program çalıştır
+HookProgramDesc	After the antivirus check. Move the file, refresh a media library, send a message.	Virüs taramasından sonra. Dosyayı taşıyın, medya kütüphanesini tazeleyin, mesaj gönderin.
+HookEnvHelp	The same values are in the FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL and FLUXER_EVENT environment variables. Batch files (.bat, .cmd) should read those: an argument with &, | or % is not passed to them.	Aynı değerler FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL ve FLUXER_EVENT ortam değişkenlerinde de var. Toplu iş dosyaları (.bat, .cmd) bunları okumalı: &, | veya % içeren bir argüman onlara verilmez.
+HookAlsoFailed	Also for failed downloads	Hata veren indirmelerde de
+PlaceholderNames	path|name|folder|category|size|address|event|id	yol|ad|klasör|kategori|boyut|adres|olay|no
+Programs	Programs	Programlar
+Webhook	Send a webhook	Webhook gönder
+WebhookDesc	A JSON POST with name, path, size, address and event, for Home Assistant, n8n, Discord bridges and the like.	Ad, yol, boyut, adres ve olay bilgisiyle JSON POST; Home Assistant, n8n, Discord köprüleri gibi araçlar için.
+WebhookEvents	Events:	Olaylar:
+WebhookInvalid	Enter an http(s) address.	Bir http(s) adresi girin.
+WebhookSending	Sending…	Gönderiliyor…
+WebhookResult	Answered HTTP {0} in {1} ms.	HTTP {0} ile {1} ms'de yanıt verdi.
+Test	Test	Dene
+SecData	Data	Veri
+DataFolder	Data folder	Veri klasörü
+PortableMode	Portable mode	Taşınabilir mod
+PortableModeDesc	Keeps the database, logs and tools in a "data" folder next to Fluxer, so it runs from a USB stick.	Veritabanı, günlükler ve araçlar Fluxer'ın yanındaki "data" klasöründe durur; USB bellekten çalışır.
+PortableOn	Make portable…	Taşınabilir yap…
+PortableOff	Move back to this PC…	Bu bilgisayara geri taşı…
+PortableOnConfirm	Your downloads and settings are copied to {0} and Fluxer restarts. Running downloads pause and continue after the restart.	İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Süren indirmeler duraklar, yeniden başlayınca devam eder.
+PortableOffConfirm	Your downloads and settings are copied to {0} and Fluxer restarts. The portable "data" folder stays as it is.	İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Taşınabilir "data" klasörü olduğu gibi kalır.
+RestartNow	Restart	Yeniden başlat
+DownloadList	Download list	İndirme listesi
+DownloadListDesc	A .json file keeps everything needed to add the list again on another PC (no cookies); a .txt file is one link per line.	.json dosyası listeyi başka bir bilgisayarda yeniden eklemek için gereken her şeyi tutar (çerezler hariç); .txt dosyası satır başına bir bağlantıdır.
+SettingsFile	Settings	Ayarlar
+SettingsFileDesc	Speed profiles, schedule, RSS feeds, automation, everything on these pages.	Hız profilleri, takvim, RSS beslemeleri, otomasyon; bu sayfalardaki her şey.
+ImportEllipsis	Import…	İçe aktar…
+ExportEllipsis	Export…	Dışa aktar…
+ExportJson	Fluxer list (.json)	Fluxer listesi (.json)
+ExportText	Links (.txt)	Bağlantılar (.txt)
+ExportDone	{0} downloads written to {1}.	{0} indirme {1} dosyasına yazıldı.
+ImportList	Import downloads	İndirmeleri içe aktar
+ImportDone	{0} downloads added, {1} were already in the list or not readable.	{0} indirme eklendi, {1} tanesi zaten listedeydi ya da okunamadı.
+ImportNothing	No links found in that file.	Dosyada bağlantı bulunamadı.
+SettingsExported	Settings written to {0}.	Ayarlar {0} dosyasına yazıldı.
+ImportSettings	Import settings	Ayarları içe aktar
+ImportSettingsConfirm	Replace all settings with the ones in this file?	Tüm ayarlar bu dosyadakilerle değiştirilsin mi?
+ImportSettingsInvalid	That file does not hold Fluxer settings.	Bu dosyada Fluxer ayarları yok.
+AutoBackup	Automatic backup	Otomatik yedek
+BackupOff	Off	Kapalı
+BackupDaily	Daily	Her gün
+BackupWeekly	Weekly	Her hafta
+BackupNone	No backup yet. The last 5 are kept in the data folder.	Henüz yedek yok. Son 5 yedek veri klasöründe tutulur.
+BackupLast	Last backup {0} · {1} kept	Son yedek {0} · {1} yedek tutuluyor
+BackupRunning	Backing up…	Yedekleniyor…
+BackupNow	Back up now	Şimdi yedekle
+BackupRestoreEllipsis	Restore…	Geri yükle…
+BackupRestore	Restore a backup	Yedekten geri yükle
+BackupRestoreConfirm	The download list and settings go back to {0}. Fluxer restarts; the current database is kept as fluxer.db.before-restore.	İndirme listesi ve ayarlar {0} yedeğine döner. Fluxer yeniden başlar; şimdiki veritabanı fluxer.db.before-restore olarak saklanır.

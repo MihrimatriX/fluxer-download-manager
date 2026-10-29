@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fluxer.App.Services;
 using Fluxer.App.Views;
+using Fluxer.Core;
 using Fluxer.Core.Downloads;
 using Fluxer.Core.Platform.Windows;
 using Fluxer.Core.Torrent;
@@ -17,20 +18,27 @@ using Fluxer.Ipc;
 
 namespace Fluxer.App.ViewModels;
 
-public sealed record AccentSwatch(int Index, string Hex, string Name)
+public sealed record ThemeChoice(string Label, string IconKey)
 {
-    public Avalonia.Media.IBrush Brush => new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(Hex));
-    public override string ToString() => Name;
+    public Avalonia.Media.Geometry? Icon => Theme.Geometry(IconKey);
+    public override string ToString() => Label;
 }
 
 public sealed record BrowserRow(string Browser, bool Ok)
 {
-    public string Glyph => Ok ? "" : "";
+    public Avalonia.Media.Geometry? Icon => Theme.Geometry(Ok ? "IcCheck" : "IcClose");
+    public Avalonia.Media.IBrush Brush => Theme.Brush(Ok ? "OkBrush" : "ErrBrush");
     public string Text => Ok ? Strings.IntegrationOk : Strings.IntegrationMissing;
 }
 
 public sealed record SettingsSection(string Key, string Label)
 {
+    public Avalonia.Media.Geometry? Icon => Theme.Geometry(Key switch
+    {
+        "downloads" => "IcLogo", "speed" => "IcGauge", "torrent" => "IcTorrent", "browser" => "IcGlobe", "automation" => "IcBolt",
+        "advanced" => "IcSliders", _ => "IcGear",
+    });
+
     public override string ToString() => Label;
 }
 
@@ -102,6 +110,33 @@ public sealed partial class RssFeedRow(string url, Action changed) : ObservableO
     };
 }
 
+/// Notification and sound for one event (finished, failed, queue done) in Settings → General.
+public sealed partial class EventRow(string key, string label, Action changed) : ObservableObject
+{
+    public string Key { get; } = key;
+    public string Label { get; } = label;
+    [ObservableProperty] private bool _notify;
+    [ObservableProperty] private bool _sound;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(SoundName))] private string? _soundFile;
+    public string SoundName => SoundFile is { Length: > 0 } f ? Path.GetFileNameWithoutExtension(f) : Strings.SoundWindows;
+    public bool Loading { get; set; }
+
+    partial void OnNotifyChanged(bool value) { if (!Loading) changed(); }
+    partial void OnSoundChanged(bool value) { if (!Loading) changed(); }
+    partial void OnSoundFileChanged(string? value) { if (!Loading) changed(); }
+
+    public void Load(EventFeedback f)
+    {
+        Loading = true;
+        Notify = f.Notify;
+        Sound = f.Sound;
+        SoundFile = f.SoundFile;
+        Loading = false;
+    }
+
+    public EventFeedback ToFeedback() => new() { Notify = Notify, Sound = Sound, SoundFile = SoundFile is { Length: > 0 } ? SoundFile : null };
+}
+
 /// Settings page. Every change is saved automatically (debounced); there is no Save button.
 public sealed partial class SettingsViewModel : ObservableObject
 {
@@ -120,17 +155,23 @@ public sealed partial class SettingsViewModel : ObservableObject
             await SaveAsync();
         });
         Profiles = [.. Enumerable.Range(0, 3).Select(i => new ProfileCard(i, QueueSave))];
+        Events =
+        [
+            new("completed", Strings.EventCompleted, QueueSave), new("failed", Strings.EventFailed, QueueSave),
+            new("queue", Strings.EventQueueDone, QueueSave),
+        ];
         Sections =
         [
             new("general", Strings.SecGeneral), new("downloads", Strings.SecDownloads), new("speed", Strings.SecSpeedSchedule),
-            new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("advanced", Strings.TabAdvanced),
+            new("torrent", Strings.SecTorrent), new("browser", Strings.SecBrowserIntegration), new("automation", Strings.SecAutomation),
+            new("advanced", Strings.TabAdvanced),
         ];
         _selectedSection = Sections[0];
         host.Engine.Rss.Checked += () => Dispatcher.UIThread.Post(RefreshRssStatus);
     }
 
     public string[] Languages => [Strings.LangSystem, "Türkçe", "English"];
-    public string[] Themes => [Strings.ThemeSystem, Strings.ThemeLight, Strings.ThemeDark];
+    public ThemeChoice[] Themes => [new(Strings.ThemeLight, "IcSun"), new(Strings.ThemeDark, "IcMoon")];
     public string[] Conflicts => [Strings.ConflictRename, Strings.ConflictOverwrite];
     public string[] AfterQueueOptions => [Strings.AfterNothing, Strings.AfterSleep, Strings.AfterShutdown];
     public string[] Encryptions => [Strings.EncPrefer, Strings.EncRequire, Strings.EncOff];
@@ -152,16 +193,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnSelectedSectionChanged(SettingsSection value) => OnPropertyChanged(nameof(Section));
 
     // Appearance
-    public IReadOnlyList<AccentSwatch> Accents { get; } =
-        [.. Appearance.AccentChoices.Select((h, i) => new AccentSwatch(i, h, Strings.AccentNames.Split('|').ElementAtOrDefault(i) ?? h))];
-    [ObservableProperty] private int _accentIndex;
-    [ObservableProperty] private int _backdropIndex;
-    public string[] Backdrops => [Strings.BackdropNone, Strings.BackdropGlass, Strings.BackdropMica, Strings.BackdropNeu];
     [ObservableProperty] private bool _compact;
     [ObservableProperty] private double _scalePercent = 100;
     [ObservableProperty] private bool _animations;
     [ObservableProperty] private bool _toolbarLabelsOn;
-    [ObservableProperty] private bool _sidebarCollapsedOn;
     public string ScaleText => Loc.Percent(ScalePercent / 100);
     partial void OnScalePercentChanged(double value) => OnPropertyChanged(nameof(ScaleText));
 
@@ -172,6 +207,21 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _showAddDialog;
     [ObservableProperty] private bool _showProgressWindow;
     [ObservableProperty] private bool _showCompletedCard;
+    [ObservableProperty] private bool _startWithWindows;
+    [ObservableProperty] private bool _confirmExit;
+    public IReadOnlyList<EventRow> Events { get; }
+    // Automation
+    [ObservableProperty] private bool _programOn;
+    [ObservableProperty] private string _programLine = "";
+    [ObservableProperty] private bool _programOnFailed;
+    [ObservableProperty] private bool _webhookOn;
+    [ObservableProperty] private string _webhookUrl = "";
+    [ObservableProperty] private bool _webhookOnAdded;
+    [ObservableProperty] private bool _webhookOnCompleted;
+    [ObservableProperty] private bool _webhookOnFailed;
+    [ObservableProperty] private string _webhookStatus = "";
+    public string PlaceholderHelp => string.Join("   ", Fluxer.Core.Automation.DownloadHooks.Placeholders
+        .Zip(Strings.PlaceholderNames.Split('|'), (p, name) => $"{p.Token} {name}"));
     // Downloads
     [ObservableProperty] private string _downloadDirectory = "";
     [ObservableProperty] private bool _useCategoryFolders;
@@ -229,6 +279,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(ScaleText), nameof(SelectedSection), nameof(Section), nameof(BrushIndex), nameof(BrushName),
         nameof(ToolsText), nameof(ToolsBusy), nameof(CanUpdateTools), nameof(HasPendingUpdate), nameof(SavedText),
         nameof(NewRssUrl), nameof(HasRssFeeds), nameof(FirewallOpen), nameof(FirewallText), nameof(ExtensionStatus),
+        nameof(WebhookStatus), nameof(BackupText), nameof(DataText),
     ];
 
     public void Load()
@@ -236,18 +287,29 @@ public sealed partial class SettingsViewModel : ObservableObject
         _loading = true;
         var s = _host.Engine.Settings;
         LanguageIndex = s.Language switch { "tr" => 1, "en" => 2, _ => 0 };
-        AccentIndex = Math.Max(0, Array.IndexOf(Appearance.AccentChoices, s.Ui.Accent ?? Appearance.DefaultAccent));
-        BackdropIndex = s.Ui.Backdrop switch { "glass" => 1, "mica" => 2, "neu" => 3, _ => 0 };
         Compact = s.Ui.Compact;
         ScalePercent = Math.Round(s.Ui.Scale * 100);
         Animations = s.Ui.Animations;
         ToolbarLabelsOn = s.Ui.ToolbarLabels;
-        SidebarCollapsedOn = s.Ui.SidebarCollapsed;
-        ThemeIndex = s.Theme switch { "Light" => 1, "Dark" => 2, _ => 0 };
+        ThemeIndex = s.Theme == "Light" ? 0 : 1;
         Notifications = s.Notifications;
         ShowAddDialog = s.ShowAddDialog;
         ShowProgressWindow = s.ShowProgressWindow;
         ShowCompletedCard = s.ShowCompletedCard;
+        StartWithWindows = OperatingSystem.IsWindows() && Autostart.IsEnabled();
+        ConfirmExit = s.ConfirmExit;
+        Events[0].Load(s.OnCompleted);
+        Events[1].Load(s.OnFailed);
+        Events[2].Load(s.OnQueueDone);
+        ProgramOn = s.Automation.Program is { Length: > 0 };
+        ProgramLine = s.Automation.Program ?? _lastProgram;
+        ProgramOnFailed = s.Automation.ProgramOnFailed;
+        WebhookOn = s.Automation.WebhookUrl is { Length: > 0 };
+        WebhookUrl = s.Automation.WebhookUrl ?? _lastWebhook;
+        WebhookOnAdded = s.Automation.WebhookOnAdded;
+        WebhookOnCompleted = s.Automation.WebhookOnCompleted;
+        WebhookOnFailed = s.Automation.WebhookOnFailed;
+        WebhookStatus = "";
         DownloadDirectory = s.DownloadDirectory;
         UseCategoryFolders = s.UseCategoryFolders;
         ConflictIndex = s.Conflict == ConflictPolicy.Overwrite ? 1 : 0;
@@ -294,6 +356,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         WatchFolderOn = s.WatchFolder is not null;
         WatchFolder = s.WatchFolder ?? "";
         HasPendingUpdate = _host.HasPendingUpdate;
+        LoadData(s);
         SavedText = "";
         _loading = false;
     }
@@ -358,24 +421,43 @@ public sealed partial class SettingsViewModel : ObservableObject
         _saveTimer.Start();
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private async Task SaveAsync()
     {
         var engine = _host.Engine;
         var old = engine.Settings;
         var s = JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(old))!;
         s.Language = LanguageIndex switch { 1 => "tr", 2 => "en", _ => "" };
-        s.Ui.Accent = AccentIndex > 0 ? Appearance.AccentChoices[AccentIndex] : null;
-        s.Ui.Backdrop = BackdropIndex switch { 1 => "glass", 2 => "mica", 3 => "neu", _ => "none" };
         s.Ui.Compact = Compact;
         s.Ui.Scale = Math.Clamp(ScalePercent / 100, 0.85, 1.3);
         s.Ui.Animations = Animations;
         s.Ui.ToolbarLabels = ToolbarLabelsOn;
-        s.Ui.SidebarCollapsed = SidebarCollapsedOn;
-        s.Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" };
+        s.Theme = ThemeIndex == 0 ? "Light" : "Dark";
         s.Notifications = Notifications;
         s.ShowAddDialog = ShowAddDialog;
         s.ShowProgressWindow = ShowProgressWindow;
         s.ShowCompletedCard = ShowCompletedCard;
+        s.ConfirmExit = ConfirmExit;
+        s.OnCompleted = Events[0].ToFeedback();
+        s.OnFailed = Events[1].ToFeedback();
+        s.OnQueueDone = Events[2].ToFeedback();
+        // Switched off, the text stays in the box for this session so turning it back on keeps it.
+        _lastProgram = ProgramLine;
+        _lastWebhook = WebhookUrl;
+        s.Automation = new AutomationSettings
+        {
+            Program = ProgramOn && !string.IsNullOrWhiteSpace(ProgramLine) ? ProgramLine.Trim() : null,
+            ProgramOnFailed = ProgramOnFailed,
+            WebhookUrl = WebhookOn && !string.IsNullOrWhiteSpace(WebhookUrl) ? WebhookUrl.Trim() : null,
+            WebhookOnAdded = WebhookOnAdded,
+            WebhookOnCompleted = WebhookOnCompleted,
+            WebhookOnFailed = WebhookOnFailed,
+        };
+        if (OperatingSystem.IsWindows() && Protocol.Instance.Length == 0 && StartWithWindows != Autostart.IsEnabled())
+        {
+            try { Autostart.Set(StartWithWindows, Program.ExePath); }
+            catch (Exception e) { Serilog.Log.Warning(e, "Start with Windows could not be changed"); }
+        }
         if (!string.IsNullOrWhiteSpace(DownloadDirectory)) s.DownloadDirectory = DownloadDirectory.Trim();
         s.UseCategoryFolders = UseCategoryFolders;
         s.Conflict = ConflictIndex == 1 ? ConflictPolicy.Overwrite : ConflictPolicy.Rename;
@@ -412,6 +494,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         s.ScanDownloads = ScanDownloads;
         s.WatchClipboard = WatchClipboard;
         s.WatchFolder = WatchFolderOn && !string.IsNullOrWhiteSpace(WatchFolder) ? WatchFolder.Trim() : null;
+        s.BackupInterval = BackupSetting(BackupIndex);
         var updatesChanged = s.AutoUpdate != old.AutoUpdate || s.BetaUpdates != old.BetaUpdates || s.UpdateFeed != old.UpdateFeed;
         var watchChanged = s.WatchFolder != old.WatchFolder || s.WatchClipboard != old.WatchClipboard;
         var rssChanged = s.RssIntervalMinutes != old.RssIntervalMinutes || JsonSerializer.Serialize(s.RssFeeds) != JsonSerializer.Serialize(old.RssFeeds);
@@ -432,6 +515,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         Avalonia.Threading.DispatcherTimer.RunOnce(() => { if (stamp == _savedStamp) SavedText = ""; }, TimeSpan.FromSeconds(2.5));
         if (uiChanged) _host.ReloadUi();
     }
+
+    private string _lastProgram = "", _lastWebhook = "";
 
     private static TimeSpan? ParseTime(string? t) =>
         TimeOnly.TryParseExact(t, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var v) ? v.ToTimeSpan() : null;
@@ -504,6 +589,53 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task PickSound(EventRow row)
+    {
+        if (_host.Owner is not { } w) return;
+        var media = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media");
+        var files = await w.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Strings.PickSound,
+            FileTypeFilter = [new FilePickerFileType("WAV") { Patterns = ["*.wav"] }],
+            SuggestedStartLocation = await w.StorageProvider.TryGetFolderFromPathAsync(Path.GetDirectoryName(row.SoundFile) ?? media),
+        });
+        if (files.FirstOrDefault()?.TryGetLocalPath() is { } path)
+        {
+            row.SoundFile = path;
+            row.Sound = true;
+        }
+    }
+
+    [RelayCommand]
+    private static void PlaySound(EventRow row) => Sounds.Play(row.SoundFile, row.Key);
+
+    [RelayCommand]
+    private static void ResetSound(EventRow row) => row.SoundFile = null;
+
+    [RelayCommand]
+    private async Task BrowseProgram()
+    {
+        if (_host.Owner is not { } w) return;
+        var files = await w.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Strings.HookProgram,
+            FileTypeFilter = [new FilePickerFileType(Strings.Programs) { Patterns = ["*.exe", "*.cmd", "*.bat", "*.ps1"] }],
+        });
+        if (files.FirstOrDefault()?.TryGetLocalPath() is { } path)
+        {
+            ProgramLine = $"\"{path}\" \"%F\"";
+            ProgramOn = true;
+        }
+    }
+
+    [RelayCommand]
+    private async Task TestWebhook()
+    {
+        WebhookStatus = Strings.WebhookSending;
+        WebhookStatus = await _host.TestWebhookAsync(WebhookUrl);
+    }
+
+    [RelayCommand]
     private void OpenDownloadFolder()
     {
         if (Directory.Exists(DownloadDirectory)) Process.Start("explorer.exe", $"\"{DownloadDirectory}\"");
@@ -563,7 +695,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             MediaDisclaimerAccepted = old.MediaDisclaimerAccepted,
             LastYtDlpCheck = old.LastYtDlpCheck,
             RecentFolders = old.RecentFolders,
-            Ui = new UiSettings { DesignRevision = 1 },
+            Ui = new UiSettings { DesignRevision = 2 },
         };
         await _host.Engine.SaveSettingsAsync(fresh);
         Load();
@@ -610,6 +742,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// Logs + settings (proxy credentials stripped) — never the database (cookies) or download URLs.
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private static void WriteDiagnostics(AppSettings settings, string zipPath)
     {
         File.Delete(zipPath);
@@ -628,6 +761,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         copy.RecentFolders = [];
         // Feed URLs often carry a tracker passkey; keep only the host.
         foreach (var f in copy.RssFeeds) f.Url = Uri.TryCreate(f.Url, UriKind.Absolute, out var fu) ? fu.Host : "?";
+        if (copy.Automation.WebhookUrl is { } hook) copy.Automation.WebhookUrl = Uri.TryCreate(hook, UriKind.Absolute, out var hu) ? hu.Host : "?";
         using (var w = new StreamWriter(zip.CreateEntry("settings.json").Open()))
             w.Write(JsonSerializer.Serialize(copy, new JsonSerializerOptions { WriteIndented = true }));
         using (var w = new StreamWriter(zip.CreateEntry("system.txt").Open()))

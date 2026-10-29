@@ -2,8 +2,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <!-- No Windows SDK version: a versioned TFM ships the 55 MB WinRT projection (toasts call WinRT directly, Notifier). -->
+    <TargetFramework>net10.0-windows</TargetFramework>
     <AssemblyName>Fluxer</AssemblyName>
     <RootNamespace>Fluxer.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -12,7 +12,22 @@
     <SatelliteResourceLanguages>en;tr</SatelliteResourceLanguages>
     <!-- Precompiled code for release builds: no JIT pause at start-up or when a window opens. -->
     <PublishReadyToRun>true</PublishReadyToRun>
+    <!-- Smaller package: the framework and the libraries that opt in are trimmed to what is used. Partial mode keeps
+         Fluxer's own assemblies whole, so the reflection JSON serializer and DataGrid sorting still see every member. -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Reviewed: MonoTorrent and DataGrid reflect over their own and our (untrimmed) types; DesignerSupport never runs.
+         Our own code still fails the build on any trim warning. -->
+    <NoWarn>$(NoWarn);IL2104</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Only the OpenPGP signature check uses it: 5 MB of IL trimmed to ~1 MB. -->
+    <TrimmableAssembly Include="BouncyCastle.Cryptography" />
+    <!-- Rarely used (tool signature check, RSS parsing): left as IL instead of doubling in size as precompiled code. -->
+    <PublishReadyToRunExclude Include="BouncyCastle.Cryptography.dll;System.Private.Xml.dll;System.Private.Xml.Linq.dll;System.Linq.Expressions.dll" />
+  </ItemGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
@@ -22,9 +37,11 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
-    <PackageReference Include="Avalonia.Desktop" />
+    <!-- Windows backend only (Avalonia.Desktop would also bring X11, macOS and Linux accessibility); the UI font is Segoe UI. -->
+    <PackageReference Include="Avalonia.Win32" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.HarfBuzz" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Serilog" />
@@ -36,6 +53,14 @@
     <ProjectReference Include="..\Fluxer.Core\Fluxer.Core.csproj" />
     <ProjectReference Include="..\Fluxer.Ipc\Fluxer.Ipc.csproj" />
   </ItemGroup>
+
+  <!-- Runtime parts an end user never needs: debugger and dump support, the standalone GCs, HTTP/3 (QUIC). -->
+  <Target Name="DropDebugRuntimeFiles" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Filename)' == 'Microsoft.DiaSymReader.Native.amd64' Or '%(Filename)' == 'mscordbi' Or $([System.String]::Copy('%(Filename)').StartsWith('mscordaccore')) Or '%(Filename)' == 'createdump' Or '%(Filename)' == 'clrgc' Or '%(Filename)' == 'clrgcexp' Or '%(Filename)' == 'msquic'" />
+    </ItemGroup>
+  </Target>
 
   <!-- Dev builds: put the native messaging host next to Fluxer.exe (release uses the AOT publish). -->
   <Target Name="CopyNativeHost" AfterTargets="Build" Condition="'$(_IsPublishing)' != 'true'">

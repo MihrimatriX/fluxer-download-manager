@@ -1,5 +1,38 @@
 # Changelog
 
+## Yayımlanmamış
+
+### Yeni arayüz
+- **Fluxer'ın kendi görünümü:** başka bir uygulamadan uyarlanmış önceki tasarım (lacivert degrade, turuncu vurgu, büyük kenar çubuğu) bırakıldı. Düz grafit (koyu) ya da kâğıt beyazı (açık) yüzeyler, ince çizgiler ve logodaki mavi vurgu.
+- **Tema yalnızca Açık / Koyu:** "Görünüm stili" (Neumorfik, Mica, Akrilik) ve vurgu rengi seçimi kaldırıldı; vurgu her zaman logo mavisi. Tema, Ayarlar → Genel'deki iki düğmeli anahtarla ya da komut paletinde "Açık/Koyu temaya geç" ile değişiyor. "Sistemi izle" seçeneği yok; daha önce seçiliyse koyu tema açılıyor.
+- **Kompakt ana pencere:** kenar çubuğu yok. Yeni indirme, devam/duraklat/sil ve sıra düğmeleri başlık çubuğunda; durum sekmeleri ve dosya türü ikonları listenin üstünde tek satırda. Satırlar 32 px (ferah seçenek 40 px), dosya türleri renkli ikonlarla ayrılıyor. Disk boşluğu, kuyruk, hızlar ve hız profili durum çubuğunda.
+- **Daha küçük bilgi ekranları:** ayrıntı paneli tek satırlık özet (ad, yüzde, boyut, hız, kalan süre ve eylemler), ince ilerleme şeridi (HTTP'de bağlantı haritası) ve sekmelerden oluşuyor; varsayılan yüksekliği 300 yerine 210 px, liste ekranın çoğunu koruyor. İndirme penceresi 640 px'ten 440 px'e indi: istatistik kartları ve sekme kutusu yerine iki sütunluk kısa özet, küçük hız grafiği ve bağlantı/eş listesi. Tepsi penceresi 320 px.
+- **Ayarlar** ikonlu bölüm listesi ve gruplanmış kartlarla sadeleşti; yeni indirme penceresi (560 px) ve diyaloglar aynı ölçülere çekildi.
+
+### Yeni özellikler (FluxDown'dan esinlenen)
+- **Komut paleti (Ctrl+K):** tüm komutlar, filtreler, hız profilleri ve ayar sayfaları tek arama kutusunda; ↑↓ ile gezilip Enter ile çalıştırılıyor, kısayollar yanında yazıyor.
+- **Hız menüsü:** durum çubuğundaki profil düğmesi profilleri sırayla değiştirmek yerine limitleriyle bir menü açıyor; zamanlama sayfası da oradan.
+- **Tek düğmeyle hepsini duraklat/sürdür** (durum çubuğu ve tepsi penceresi): bir şey çalışıyor ya da sırada bekliyorsa duraklatır, yoksa sürdürür.
+- Ayrıntı panelinde **Hız** sekmesi: son dakikanın grafiği, anlık, ortalama ve tepe hız.
+- İndirme penceresinde **üstte tut** (raptiye) düğmesi.
+
+### Tarayıcı eklentisi
+- **Duraklatma düğmeleri:** açılır pencerenin başlığında Fluxer'daki her şeyi duraklatan/sürdüren düğme; yakalamayı bir saatliğine durduran "1 sa duraklat" (indirmeler bu sürede tarayıcıda kalır, "Sürdür" erken bitirir).
+- **Yakalama kartında geri sayımı durdurma:** kartın üzerine gelince geri sayım bekliyor, duraklat düğmesi onu tamamen durduruyor; kart seçim yapılana kadar (en fazla 4 dk) açık kalıyor.
+- **Hızlı ekleme kutusu:** bağlantı yazılıp ya da yapıştırılıp "İndir" ile Fluxer'a gönderiliyor; pano izni gerekmiyor.
+- Yeni görünüm: uygulamayla aynı renkler, açık/koyu tema sistem ayarını izliyor; 360 × 520.
+
+### Boyut
+- **Kurulum ve taşınabilir paket ~%58 küçüldü** (açılmış 190 MB → 74 MB, zip 80 MB → 33 MB):
+  - Bildirimler WinRT'yi doğrudan çağırıyor; yalnızca bunun için taşınan 55 MB'lık Windows SDK projeksiyonu (`Microsoft.Windows.SDK.NET.dll`) çıktı. Hedef çerçeve `net10.0-windows`.
+  - Yalnızca Windows arka ucu (`Avalonia.Win32`, `Avalonia.Skia`, `Avalonia.HarfBuzz`): X11, macOS, Linux erişilebilirlik kitaplıkları ve gömülü Inter yazı tipi pakete girmiyor (arayüz Segoe UI kullanıyor).
+  - Yayın derlemesi kırpılıyor (`PublishTrimmed`, `TrimMode=partial`): .NET ve BouncyCastle kullanılan kısma iniyor, Fluxer'ın kendi derlemeleri bütün kalıyor. Seyrek kullanılan derlemeler ReadyToRun dışında; hata ayıklayıcı/dump DLL'leri, ayrı GC'ler ve msquic pakete girmiyor.
+  - `AttachmentScanner` COM'u vtable üzerinden çağırıyor (kırpılmış derlemede yerleşik COM kapalı).
+
+### Değişti
+- Kenar çubuğu, Ctrl+B ve "Dar kenar çubuğu" ayarı kaldırıldı.
+- Ayarlar bir kez yeni tasarıma geçiriliyor (`DesignRevision` 2): "Sistemi izle" teması koyuya dönüyor; araç çubuğu etiketleri kapanıyor; sütun genişlikleri ve panel yüksekliği sıfırlanıyor. Açık/koyu seçimi, dil ve diğer ayarlar korunuyor. Kayıtlı `Ui.Accent` ve `Ui.Backdrop` değerleri artık okunmuyor.
+
 ## 0.9.4 — 2026-10-29
 
 ### Yeni

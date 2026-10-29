@@ -9,6 +9,8 @@ public sealed class DownloadRecord
     public string FileName { get; set; } = "";
     public string SaveDirectory { get; set; } = "";
     public string? Category { get; set; }
+    /// Free labels the user gives downloads (filter in the list); stored as a JSON array.
+    public List<string> Tags { get; set; } = [];
     public long? TotalBytes { get; set; }
     public long DoneBytes { get; set; }
     public long SpeedLimit { get; set; }

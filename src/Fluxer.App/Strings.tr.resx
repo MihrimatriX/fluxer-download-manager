@@ -4,8 +4,6 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="AccentColor" xml:space="preserve"><value>Vurgu rengi</value></data>
-  <data name="AccentColorDesc" xml:space="preserve"><value>Butonlar, ilerleme ve vurgular. İlki Fluxer turuncusu.</value></data>
   <data name="Accept" xml:space="preserve"><value>Kabul et</value></data>
   <data name="AddPaused" xml:space="preserve"><value>Duraklatılmış ekle</value></data>
   <data name="AddToQueue" xml:space="preserve"><value>Kuyruğa ekle</value></data>
@@ -49,17 +47,15 @@
   <data name="ColSpeed" xml:space="preserve"><value>Hız</value></data>
   <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
   <data name="CompactMode" xml:space="preserve"><value>Sıkı satırlar</value></data>
-  <data name="CompactModeDesc" xml:space="preserve"><value>44 px liste satırları; kapalıyken daha ferah 54 px.</value></data>
+  <data name="CompactModeDesc" xml:space="preserve"><value>32 px liste satırları; kapalıyken daha ferah 40 px.</value></data>
   <data name="CompactTip" xml:space="preserve"><value>Ayrıntıları göster/gizle</value></data>
   <data name="Conflict" xml:space="preserve"><value>Aynı adda dosya varsa</value></data>
   <data name="ConflictOverwrite" xml:space="preserve"><value>Üzerine yaz</value></data>
   <data name="ConflictRename" xml:space="preserve"><value>İkisini de tut: "ad (1).uzantı"</value></data>
   <data name="ConnActive" xml:space="preserve"><value>alınıyor</value></data>
   <data name="ConnDone" xml:space="preserve"><value>tamam</value></data>
-  <data name="ConnDownloaded" xml:space="preserve"><value>Alınan</value></data>
   <data name="Connections" xml:space="preserve"><value>İndirme başına bağlantı</value></data>
   <data name="ConnectionsDesc" xml:space="preserve"><value>Tek bir HTTP indirmesi için paralel bağlantı (1–32). Sunucu itiraz ederse Fluxer otomatik düşürür.</value></data>
-  <data name="ConnRange" xml:space="preserve"><value>Bayt aralığı</value></data>
   <data name="ConnWaiting" xml:space="preserve"><value>bekliyor</value></data>
   <data name="Copy" xml:space="preserve"><value>Kopyala</value></data>
   <data name="CopyUrl" xml:space="preserve"><value>Adresi kopyala</value></data>
@@ -139,7 +135,7 @@
   <data name="KindMedia" xml:space="preserve"><value>Medya</value></data>
   <data name="LangSystem" xml:space="preserve"><value>Sistem dili</value></data>
   <data name="Language" xml:space="preserve"><value>Dil</value></data>
-  <data name="LayoutTip" xml:space="preserve"><value>İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Pencere boyutu, sütunlar, paneller ve kenar çubuğu hatırlanır.</value></data>
+  <data name="LayoutTip" xml:space="preserve"><value>İpucu: sütunları göstermek/gizlemek için başlığa sağ tıklayın; sıralamak veya genişletmek için başlıkları sürükleyin. Ctrl+K tüm komutları listeler. Pencere boyutu, sütunlar ve paneller hatırlanır.</value></data>
   <data name="LinkMatchAttach" xml:space="preserve"><value>Bağla ve devam et</value></data>
   <data name="LinkMatchBody" xml:space="preserve"><value>"{0}" yeni bir bağlantı bekliyor. Kaldığı yerden devam etmek için bu indirme kullanılsın mı?</value></data>
   <data name="LinkMatchNew" xml:space="preserve"><value>Yeni indirme başlat</value></data>
@@ -153,12 +149,6 @@
   <data name="MediaProbing" xml:space="preserve"><value>Video bilgileri okunuyor…</value></data>
   <data name="MediaTitle" xml:space="preserve"><value>Videoyu kaydet</value></data>
   <data name="MediaTools" xml:space="preserve"><value>Video araçları</value></data>
-  <data name="BackdropSetting" xml:space="preserve"><value>Görünüm stili</value></data>
-  <data name="BackdropDesc" xml:space="preserve"><value>Lacivert standart görünüm; cam pencerenin arkasını bulanık gösterir; Mica duvar kâğıdınla renklenir; neumorfik yumuşak kabartmalı yüzeyler kullanır.</value></data>
-  <data name="BackdropNeu" xml:space="preserve"><value>Neumorfik (yumuşak kabartma)</value></data>
-  <data name="BackdropGlass" xml:space="preserve"><value>Cam (bulanık, saydam)</value></data>
-  <data name="BackdropMica" xml:space="preserve"><value>Mica (Windows 11)</value></data>
-  <data name="BackdropNone" xml:space="preserve"><value>Lacivert (varsayılan)</value></data>
   <data name="RestartFromScratch" xml:space="preserve"><value>Baştan başlat</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Seç</value></data>
@@ -240,7 +230,6 @@
   <data name="SeedOverrideDesc" xml:space="preserve"><value>Yalnızca bu torrent için oran ve dakika; kapalı = genel ayar.</value></data>
   <data name="SeedRatio" xml:space="preserve"><value>Paylaşım oranı</value></data>
   <data name="SeedRatioDesc" xml:space="preserve"><value>Gönderilen ÷ boyut bu orana ulaşınca paylaşımı durdur (0 = sınırsız).</value></data>
-  <data name="SegmentMap" xml:space="preserve"><value>Bağlantılar</value></data>
   <data name="SelectNone" xml:space="preserve"><value>Hiçbirini seçme</value></data>
   <data name="Sequential" xml:space="preserve"><value>Sıralı indir (medya önizlemesi için)</value></data>
   <data name="Settings" xml:space="preserve"><value>Ayarlar</value></data>
@@ -282,10 +271,11 @@
   <data name="Theme" xml:space="preserve"><value>Tema</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>Koyu</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Açık</value></data>
-  <data name="ThemeSystem" xml:space="preserve"><value>Sistemi izle</value></data>
+  <data name="PaletteLightTheme" xml:space="preserve"><value>Açık temaya geç</value></data>
+  <data name="PaletteDarkTheme" xml:space="preserve"><value>Koyu temaya geç</value></data>
   <data name="ToggleDetail" xml:space="preserve"><value>Ayrıntı panelini göster/gizle</value></data>
   <data name="TookIs" xml:space="preserve"><value>{0} sürdü</value></data>
-  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Araç çubuğu ikonlarının yanında yazı göster.</value></data>
+  <data name="ToolbarLabelsDesc" xml:space="preserve"><value>Başlık çubuğundaki komut ikonlarının yanında yazı göster.</value></data>
   <data name="ToolbarLabelsSetting" xml:space="preserve"><value>Araç çubuğu etiketleri</value></data>
   <data name="ToolsConsent" xml:space="preserve"><value>Video kaydetmek için Fluxer'ın yt-dlp, deno ve ffmpeg araçlarına ihtiyacı var (yaklaşık 150 MB). Resmi GitHub sürümlerinden bir kez indirilip yayıncıların SHA-256 özetleriyle doğrulanacaklar.</value></data>
   <data name="ToolsDownloading" xml:space="preserve"><value>Video araçları indiriliyor…</value></data>
@@ -329,7 +319,6 @@
   <data name="Maximize" xml:space="preserve"><value>Ekranı kapla</value></data>
   <data name="CloseWindow" xml:space="preserve"><value>Kapat</value></data>
   <data name="EtaDays" xml:space="preserve"><value>{0}g {1}sa</value></data>
-  <data name="AccentNames" xml:space="preserve"><value>Turuncu|Mavi|Çivit|Mor|Pembe|Yeşil|Turkuaz|Grafit</value></data>
   <data name="BackToDownloads" xml:space="preserve"><value>İndirmelere dön</value></data>
   <data name="Concurrent" xml:space="preserve"><value>{0} eşzamanlı</value></data>
   <data name="DayNames" xml:space="preserve"><value>Pzt|Sal|Çar|Per|Cum|Cmt|Paz</value></data>
@@ -359,7 +348,6 @@
   <data name="Manual" xml:space="preserve"><value>elle</value></data>
   <data name="MaxPeers" xml:space="preserve"><value>En fazla eş (torrent başına)</value></data>
   <data name="MoveToNight" xml:space="preserve"><value>Gece kuyruğuna taşı</value></data>
-  <data name="NightQueue" xml:space="preserve"><value>Gece kuyruğu</value></data>
   <data name="NightQueueAt" xml:space="preserve"><value>Gece kuyruğu · {0}</value></data>
   <data name="NightQueueManual" xml:space="preserve"><value>Gece kuyruğu · elle başlar</value></data>
   <data name="NightQueueStart" xml:space="preserve"><value>Gece kuyruğunu şu saatte başlat</value></data>
@@ -373,7 +361,6 @@
   <data name="ProfileSlots" xml:space="preserve"><value>Eşzamanlı</value></data>
   <data name="ProfileTip" xml:space="preserve"><value>Hız profilini değiştir</value></data>
   <data name="ProfileUp" xml:space="preserve"><value>Yükleme</value></data>
-  <data name="Queues" xml:space="preserve"><value>KUYRUKLAR</value></data>
   <data name="RemovedToast" xml:space="preserve"><value>{0} indirme listeden kaldırıldı · dosyalar diskte duruyor</value></data>
   <data name="Retry" xml:space="preserve"><value>Yeniden dene</value></data>
   <data name="ScheduleStopShort" xml:space="preserve"><value>Her şeyi şu saatte duraklat</value></data>
@@ -383,8 +370,6 @@
   <data name="SeedAndNetwork" xml:space="preserve"><value>Seed ve ağ</value></data>
   <data name="SeedRatioFormat" xml:space="preserve"><value>Seed · oran {0}</value></data>
   <data name="SelectedCount" xml:space="preserve"><value>{0} seçili</value></data>
-  <data name="SidebarCollapsedDesc" xml:space="preserve"><value>Yalnızca simgeler; Ctrl+B ile her an açılıp kapanır.</value></data>
-  <data name="SidebarCollapsedSetting" xml:space="preserve"><value>Dar kenar çubuğu</value></data>
   <data name="SpeedProfiles" xml:space="preserve"><value>Hız profilleri</value></data>
   <data name="SpeedProfilesDesc" xml:space="preserve"><value>Durum çubuğundaki düğmeyle ya da zamanlayıcıyla geçiş yapılır. 0 MB/s sınırsız demektir.</value></data>
   <data name="Start" xml:space="preserve"><value>Başlat</value></data>
@@ -456,4 +441,97 @@
   <data name="ExtensionConnected" xml:space="preserve"><value>Tarayıcı eklentisi bağlandı</value></data>
   <data name="ExtensionConnectedBody" xml:space="preserve"><value>Tarayıcıda başlayan indirmeler artık Fluxer'a gelir.</value></data>
   <data name="StartInBrowser" xml:space="preserve"><value>Tarayıcıda başlat</value></data>
+  <data name="NewShort" xml:space="preserve"><value>Yeni</value></data>
+  <data name="MoreWaysToAdd" xml:space="preserve"><value>Diğer ekleme yolları</value></data>
+  <data name="PasteLinks" xml:space="preserve"><value>Bağlantıları yapıştır</value></data>
+  <data name="MoreActions" xml:space="preserve"><value>Diğer işlemler</value></data>
+  <data name="PaletteTip" xml:space="preserve"><value>Komutlar (Ctrl+K)</value></data>
+  <data name="PaletteTitle" xml:space="preserve"><value>Komut paleti</value></data>
+  <data name="PalettePlaceholder" xml:space="preserve"><value>Bir komut ya da filtre yazın…</value></data>
+  <data name="PaletteHint" xml:space="preserve"><value>↑ ↓ ile gezin · Enter ile çalıştırın · Esc ile kapatın</value></data>
+  <data name="PaletteEmpty" xml:space="preserve"><value>Eşleşen komut yok</value></data>
+  <data name="PaletteGroupDownloads" xml:space="preserve"><value>İndirmeler</value></data>
+  <data name="PaletteGroupSelected" xml:space="preserve"><value>Seçili</value></data>
+  <data name="PaletteGroupView" xml:space="preserve"><value>Görünüm</value></data>
+  <data name="PaletteGroupSpeed" xml:space="preserve"><value>Hız</value></data>
+  <data name="PaletteShow" xml:space="preserve"><value>Göster: {0}</value></data>
+  <data name="PaletteProfile" xml:space="preserve"><value>Hız profili: {0}</value></data>
+  <data name="SettingsTip" xml:space="preserve"><value>Ayarlar (Ctrl+,)</value></data>
+  <data name="FilterByState" xml:space="preserve"><value>Duruma göre süz</value></data>
+  <data name="SpeedNow" xml:space="preserve"><value>Şu an</value></data>
+  <data name="SpeedAverage" xml:space="preserve"><value>Ortalama</value></data>
+  <data name="SpeedPeak" xml:space="preserve"><value>Tepe</value></data>
+  <data name="TabSpeed" xml:space="preserve"><value>Hız</value></data>
+  <data name="QueueStatus" xml:space="preserve"><value>{0} eşzamanlı · gece {1}</value></data>
+  <data name="EditProfiles" xml:space="preserve"><value>Hız profilleri ve zamanlama…</value></data>
+  <data name="PinOnTop" xml:space="preserve"><value>Diğer pencerelerin üstünde tut</value></data>
+  <data name="SecAutomation" xml:space="preserve"><value>Otomasyon</value></data>
+  <data name="SecNotifications" xml:space="preserve"><value>Bildirimler ve sesler</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Windows ile başlat</value></data>
+  <data name="StartWithWindowsDesc" xml:space="preserve"><value>Oturum açılınca tepside başlar; tarayıcı eklentisi ve gece kuyruğu Fluxer'ı her zaman bulur.</value></data>
+  <data name="ConfirmExit" xml:space="preserve"><value>Çıkmadan önce sor</value></data>
+  <data name="ConfirmExitDesc" xml:space="preserve"><value>İndirme sürerken ya da beklerken. İndirmeler duraklar, sonraki açılışta kaldığı yerden sürer.</value></data>
+  <data name="ExitTitle" xml:space="preserve"><value>Fluxer'dan çıkılsın mı?</value></data>
+  <data name="ExitBody" xml:space="preserve"><value>{0} indirme sürüyor ya da bekliyor. Şimdi duraklar, Fluxer bir sonraki açılışta kaldığı yerden sürdürür.</value></data>
+  <data name="EventCompleted" xml:space="preserve"><value>Biten</value></data>
+  <data name="EventFailed" xml:space="preserve"><value>Hata veren</value></data>
+  <data name="EventQueueDone" xml:space="preserve"><value>Kuyruk bitince</value></data>
+  <data name="EventAdded" xml:space="preserve"><value>Eklenen</value></data>
+  <data name="Notification" xml:space="preserve"><value>Bildirim</value></data>
+  <data name="Sound" xml:space="preserve"><value>Ses</value></data>
+  <data name="SoundWindows" xml:space="preserve"><value>Windows sesi</value></data>
+  <data name="PlaySound" xml:space="preserve"><value>Çal</value></data>
+  <data name="PickSound" xml:space="preserve"><value>Ses seç (.wav)</value></data>
+  <data name="NotifyQueueDone" xml:space="preserve"><value>Kuyruk bitti</value></data>
+  <data name="NotifyQueueDoneBody" xml:space="preserve"><value>İnen ya da bekleyen indirme kalmadı.</value></data>
+  <data name="AfterDownload" xml:space="preserve"><value>İndirme bitince</value></data>
+  <data name="HookProgram" xml:space="preserve"><value>Program çalıştır</value></data>
+  <data name="HookProgramDesc" xml:space="preserve"><value>Virüs taramasından sonra. Dosyayı taşıyın, medya kütüphanesini tazeleyin, mesaj gönderin.</value></data>
+  <data name="HookEnvHelp" xml:space="preserve"><value>Aynı değerler FLUXER_FILE, FLUXER_NAME, FLUXER_DIR, FLUXER_CATEGORY, FLUXER_SIZE, FLUXER_URL ve FLUXER_EVENT ortam değişkenlerinde de var. Toplu iş dosyaları (.bat, .cmd) bunları okumalı: &amp;, | veya % içeren bir argüman onlara verilmez.</value></data>
+  <data name="HookAlsoFailed" xml:space="preserve"><value>Hata veren indirmelerde de</value></data>
+  <data name="PlaceholderNames" xml:space="preserve"><value>yol|ad|klasör|kategori|boyut|adres|olay|no</value></data>
+  <data name="Programs" xml:space="preserve"><value>Programlar</value></data>
+  <data name="Webhook" xml:space="preserve"><value>Webhook gönder</value></data>
+  <data name="WebhookDesc" xml:space="preserve"><value>Ad, yol, boyut, adres ve olay bilgisiyle JSON POST; Home Assistant, n8n, Discord köprüleri gibi araçlar için.</value></data>
+  <data name="WebhookEvents" xml:space="preserve"><value>Olaylar:</value></data>
+  <data name="WebhookInvalid" xml:space="preserve"><value>Bir http(s) adresi girin.</value></data>
+  <data name="WebhookSending" xml:space="preserve"><value>Gönderiliyor…</value></data>
+  <data name="WebhookResult" xml:space="preserve"><value>HTTP {0} ile {1} ms'de yanıt verdi.</value></data>
+  <data name="Test" xml:space="preserve"><value>Dene</value></data>
+  <data name="SecData" xml:space="preserve"><value>Veri</value></data>
+  <data name="DataFolder" xml:space="preserve"><value>Veri klasörü</value></data>
+  <data name="PortableMode" xml:space="preserve"><value>Taşınabilir mod</value></data>
+  <data name="PortableModeDesc" xml:space="preserve"><value>Veritabanı, günlükler ve araçlar Fluxer'ın yanındaki "data" klasöründe durur; USB bellekten çalışır.</value></data>
+  <data name="PortableOn" xml:space="preserve"><value>Taşınabilir yap…</value></data>
+  <data name="PortableOff" xml:space="preserve"><value>Bu bilgisayara geri taşı…</value></data>
+  <data name="PortableOnConfirm" xml:space="preserve"><value>İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Süren indirmeler duraklar, yeniden başlayınca devam eder.</value></data>
+  <data name="PortableOffConfirm" xml:space="preserve"><value>İndirmeleriniz ve ayarlarınız {0} klasörüne kopyalanır ve Fluxer yeniden başlar. Taşınabilir "data" klasörü olduğu gibi kalır.</value></data>
+  <data name="RestartNow" xml:space="preserve"><value>Yeniden başlat</value></data>
+  <data name="DownloadList" xml:space="preserve"><value>İndirme listesi</value></data>
+  <data name="DownloadListDesc" xml:space="preserve"><value>.json dosyası listeyi başka bir bilgisayarda yeniden eklemek için gereken her şeyi tutar (çerezler hariç); .txt dosyası satır başına bir bağlantıdır.</value></data>
+  <data name="SettingsFile" xml:space="preserve"><value>Ayarlar</value></data>
+  <data name="SettingsFileDesc" xml:space="preserve"><value>Hız profilleri, takvim, RSS beslemeleri, otomasyon; bu sayfalardaki her şey.</value></data>
+  <data name="ImportEllipsis" xml:space="preserve"><value>İçe aktar…</value></data>
+  <data name="ExportEllipsis" xml:space="preserve"><value>Dışa aktar…</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Fluxer listesi (.json)</value></data>
+  <data name="ExportText" xml:space="preserve"><value>Bağlantılar (.txt)</value></data>
+  <data name="ExportDone" xml:space="preserve"><value>{0} indirme {1} dosyasına yazıldı.</value></data>
+  <data name="ImportList" xml:space="preserve"><value>İndirmeleri içe aktar</value></data>
+  <data name="ImportDone" xml:space="preserve"><value>{0} indirme eklendi, {1} tanesi zaten listedeydi ya da okunamadı.</value></data>
+  <data name="ImportNothing" xml:space="preserve"><value>Dosyada bağlantı bulunamadı.</value></data>
+  <data name="SettingsExported" xml:space="preserve"><value>Ayarlar {0} dosyasına yazıldı.</value></data>
+  <data name="ImportSettings" xml:space="preserve"><value>Ayarları içe aktar</value></data>
+  <data name="ImportSettingsConfirm" xml:space="preserve"><value>Tüm ayarlar bu dosyadakilerle değiştirilsin mi?</value></data>
+  <data name="ImportSettingsInvalid" xml:space="preserve"><value>Bu dosyada Fluxer ayarları yok.</value></data>
+  <data name="AutoBackup" xml:space="preserve"><value>Otomatik yedek</value></data>
+  <data name="BackupOff" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="BackupDaily" xml:space="preserve"><value>Her gün</value></data>
+  <data name="BackupWeekly" xml:space="preserve"><value>Her hafta</value></data>
+  <data name="BackupNone" xml:space="preserve"><value>Henüz yedek yok. Son 5 yedek veri klasöründe tutulur.</value></data>
+  <data name="BackupLast" xml:space="preserve"><value>Son yedek {0} · {1} yedek tutuluyor</value></data>
+  <data name="BackupRunning" xml:space="preserve"><value>Yedekleniyor…</value></data>
+  <data name="BackupNow" xml:space="preserve"><value>Şimdi yedekle</value></data>
+  <data name="BackupRestoreEllipsis" xml:space="preserve"><value>Geri yükle…</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Yedekten geri yükle</value></data>
+  <data name="BackupRestoreConfirm" xml:space="preserve"><value>İndirme listesi ve ayarlar {0} yedeğine döner. Fluxer yeniden başlar; şimdiki veritabanı fluxer.db.before-restore olarak saklanır.</value></data>
 </root>

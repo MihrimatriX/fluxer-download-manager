@@ -116,6 +116,24 @@ public sealed class FluxerEngine : IAsyncDisposable
         return Queue.Add(r);
     }
 
+    /// Adds what an export file lists, skipping what is already here (same link, torrent or page).
+    public (int Added, int Skipped) Import(IEnumerable<DownloadRecord> records)
+    {
+        var items = Queue.Items;
+        var links = items.Select(d => d.Record.Http?.Url ?? d.Record.Media?.PageUrl).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        var hashes = items.Select(d => d.Record.Torrent?.InfoHash).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        int added = 0, skipped = 0;
+        foreach (var r in records)
+        {
+            var dup = r.Torrent is { } t ? !hashes.Add(t.InfoHash) : !links.Add(r.Http?.Url ?? r.Media?.PageUrl ?? "");
+            if (dup) { skipped++; continue; }
+            if (string.IsNullOrEmpty(r.SaveDirectory)) r.SaveDirectory = Settings.DownloadDirectory;
+            Queue.AddImported(r);
+            added++;
+        }
+        return (added, skipped);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await Rss.DisposeAsync();     // before the queue stops, so nothing is added mid-shutdown

@@ -53,6 +53,8 @@ public sealed class Database : IDisposable
         "ALTER TABLE media_downloads ADD COLUMN referrer TEXT;",
         // 4: mirror addresses of an HTTP download (JSON array)
         "ALTER TABLE http_downloads ADD COLUMN mirrors TEXT;",
+        // 5: user tags (JSON array)
+        "ALTER TABLE downloads ADD COLUMN tags TEXT;",
     ];
 
     public Database(string path)
@@ -80,8 +82,8 @@ public sealed class Database : IDisposable
             r.QueueOrder = Convert.ToInt64(Scalar("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM downloads", tx), CultureInfo.InvariantCulture);
             r.Id = Convert.ToInt64(Scalar("""
                 INSERT INTO downloads (kind, state, file_name, save_dir, category, total_bytes, done_bytes,
-                  speed_limit, queue_order, error, created_at, completed_at)
-                VALUES ($kind, $state, $file, $dir, $cat, $total, $done, $limit, $order, $err, $created, $completed);
+                  speed_limit, queue_order, error, created_at, completed_at, tags)
+                VALUES ($kind, $state, $file, $dir, $cat, $total, $done, $limit, $order, $err, $created, $completed, $tags);
                 SELECT last_insert_rowid();
                 """, tx, CommonParams(r)), CultureInfo.InvariantCulture);
             WriteDetails(r, tx);
@@ -97,7 +99,7 @@ public sealed class Database : IDisposable
             Exec("""
                 UPDATE downloads SET kind=$kind, state=$state, file_name=$file, save_dir=$dir, category=$cat,
                   total_bytes=$total, done_bytes=$done, speed_limit=$limit, queue_order=$order, error=$err,
-                  created_at=$created, completed_at=$completed WHERE id=$id
+                  created_at=$created, completed_at=$completed, tags=$tags WHERE id=$id
                 """, tx, [.. CommonParams(r), ("$id", r.Id)]);
             WriteDetails(r, tx);
             tx.Commit();
@@ -109,6 +111,7 @@ public sealed class Database : IDisposable
         lock (_lock) Exec("DELETE FROM downloads WHERE id=$id", null, ("$id", id));
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public List<DownloadRecord> LoadAll()
     {
         lock (_lock)
@@ -132,6 +135,7 @@ public sealed class Database : IDisposable
                         Error = Str(rd, "error"),
                         CreatedAt = rd.GetInt64(rd.GetOrdinal("created_at")),
                         CompletedAt = Long(rd, "completed_at"),
+                        Tags = Str(rd, "tags") is { } tg ? JsonSerializer.Deserialize<List<string>>(tg) ?? [] : [],
                     };
                     list[r.Id] = r;
                 }
@@ -230,6 +234,7 @@ public sealed class Database : IDisposable
 
     // ---------- settings ----------
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public T GetSetting<T>(string key) where T : new()
     {
         lock (_lock)
@@ -238,6 +243,7 @@ public sealed class Database : IDisposable
                 : new T();
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     public void SetSetting<T>(string key, T value)
     {
         lock (_lock)
@@ -245,10 +251,22 @@ public sealed class Database : IDisposable
                 null, ("$k", key), ("$v", JsonSerializer.Serialize(value)));
     }
 
+    /// A consistent copy of the whole database while it stays open (SQLite online backup).
+    public void BackupTo(string path)
+    {
+        lock (_lock)
+        {
+            using var dest = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString());
+            dest.Open();
+            _conn.BackupDatabase(dest);
+        }
+    }
+
     public void Dispose() => _conn.Dispose();
 
     // ---------- helpers ----------
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private void WriteDetails(DownloadRecord r, SqliteTransaction tx)
     {
         if (r.Http is { } h)
@@ -296,6 +314,7 @@ public sealed class Database : IDisposable
         ("$kind", (int)r.Kind), ("$state", (int)r.State), ("$file", r.FileName), ("$dir", r.SaveDirectory),
         ("$cat", r.Category), ("$total", r.TotalBytes), ("$done", r.DoneBytes), ("$limit", r.SpeedLimit),
         ("$order", r.QueueOrder), ("$err", r.Error), ("$created", r.CreatedAt), ("$completed", r.CompletedAt),
+        ("$tags", r.Tags.Count == 0 ? null : JsonSerializer.Serialize(r.Tags)),
     ];
 
     private SqliteCommand Command(string sql, SqliteTransaction? tx, (string, object?)[] ps)

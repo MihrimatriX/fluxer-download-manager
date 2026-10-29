@@ -152,7 +152,7 @@ public static class Flows
 
     // ================= firewall (torrent peers connecting to us) =================
 
-    private static string FirewallRuleName => $"{Path.GetFileName(Program.DataDirectory)} (torrent)";
+    private static string FirewallRuleName => $"{Path.GetFileName(PortableData.LocalDirectory)} (torrent)";
     public static bool FirewallOpen() => FirewallRule.Exists(FirewallRuleName);
     public static bool AllowFirewall() => FirewallRule.TryAdd(FirewallRuleName, Environment.ProcessPath!);
 

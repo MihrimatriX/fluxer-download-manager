@@ -48,17 +48,12 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         Download = download;
         IsCard = card;
         _lastState = download.State;
-        var cat = download.Kind == DownloadKind.Torrent ? "Torrent" : download.Record.Category;
-        Glyph = cat switch
+        Icon = Theme.Geometry((download.Kind == DownloadKind.Torrent ? "Torrent" : download.Record.Category) switch
         {
-            "Video" => "", "Music" => "", "Documents" => "", "Archives" => "",
-            "Programs" => "", "Torrent" => "", _ => "",
-        };
-        TileBrush = new SolidColorBrush(Color.Parse(cat switch
-        {
-            "Video" => "#8B5CF6", "Music" => "#EC4899", "Documents" => "#3B82F6", "Archives" => "#F59E0B",
-            "Programs" => "#10B981", "Torrent" => "#06B6D4", _ => "#64748B",
-        }));
+            "Video" => "IcVideo", "Music" => "IcMusic", "Documents" => "IcDoc", "Archives" => "IcArchive",
+            "Programs" => "IcApp", "Torrent" => "IcTorrent", _ => "IcFile",
+        });
+        IconBrush = Theme.Brush(DownloadItemViewModel.TintKey(download));
         Host = download.Record.Http?.Url is { } u && Uri.TryCreate(u, UriKind.Absolute, out var uri) ? uri.Host
             : download.Record.Media?.PageUrl is { } p && Uri.TryCreate(p, UriKind.Absolute, out var puri) ? puri.Host
             : download.Kind == DownloadKind.Torrent ? "BitTorrent" : "";
@@ -70,15 +65,13 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
 
     public IDownload Download { get; }
     public bool IsCard { get; }
-    public double ContentWidth => IsCard ? 396 : 596;
-    public string Glyph { get; }
-    public IBrush TileBrush { get; }
+    public double ContentWidth => IsCard ? 340 : 420;
+    public Geometry? Icon { get; }
+    public IBrush IconBrush { get; }
     public string Host { get; }
     public bool IsHttp { get; }
     public bool IsTorrent { get; }
     public bool IsMedia { get; }
-    /// First visible tab: connections (HTTP), peers (torrent), else the speed graph. A hidden tab stays selectable.
-    public int FirstTab => IsHttp ? 0 : IsTorrent ? 1 : 2;
 
     public ObservableCollection<ConnectionRow> Connections { get; } = [];
     public ObservableCollection<PeerRow> Peers { get; } = [];
@@ -112,8 +105,10 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
     [ObservableProperty] private string _errorText = "";
     [ObservableProperty] private bool _canRefreshLink;
     [ObservableProperty] private string _toggleText = "";
-    [ObservableProperty] private string _toggleGlyph = "";
+    [ObservableProperty] private Geometry? _toggleIcon;
     [ObservableProperty] private bool _compact = true; // details hidden until asked for
+    /// Keeps the window above others (the pin in its header).
+    [ObservableProperty] private bool _pinned;
     [ObservableProperty] private bool _openFileWhenDone;
     [ObservableProperty] private bool _openFolderWhenDone;
     [ObservableProperty] private bool _closeWhenDone;
@@ -134,10 +129,10 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         ErrorText = Loc.Error(r.Error);
         StatusText = Loc.State(state);
         StatusBrush = IsRunning && state != DownloadState.Seeding ? AccentBrush()
-            : new SolidColorBrush(Color.Parse(IsFailed ? "#E5484D" : IsCompleted ? "#30A46C" : state == DownloadState.Seeding ? "#8E4EC6" : "#8A8A8E"));
+            : Theme.Brush(IsFailed ? "ErrBrush" : IsCompleted ? "OkBrush" : state == DownloadState.Seeding ? "InfoBrush" : "IdleBrush");
         var canPause = IsRunning || state == DownloadState.Queued;
         ToggleText = canPause ? Strings.Pause : Strings.Resume;
-        ToggleGlyph = canPause ? "" : "";
+        ToggleIcon = Theme.Geometry(canPause ? "IcPause" : "IcPlay");
 
         var fraction = IsCompleted ? 1 : p.Fraction;
         Percent = fraction * 100;
@@ -202,10 +197,7 @@ public sealed partial class DownloadWindowViewModel : ObservableObject
         _lastState = state;
     }
 
-    /// Follows the accent colour the user picked (or the Windows one).
-    private static IBrush AccentBrush() =>
-        Avalonia.Application.Current?.TryFindResource("SystemAccentColor", Avalonia.Application.Current.ActualThemeVariant, out var c) == true && c is Color col
-            ? new SolidColorBrush(col) : new SolidColorBrush(Color.Parse("#3B82F6"));
+    private static IBrush AccentBrush() => new SolidColorBrush(Color.Parse(Appearance.Accent));
 
     private void UpdateConnections(HttpDownload hd)
     {

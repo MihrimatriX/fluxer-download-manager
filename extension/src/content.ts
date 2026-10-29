@@ -66,17 +66,17 @@ const CSS = `
   button {
     all: initial; box-sizing: border-box; display: flex; align-items: center; gap: 6px;
     padding: 7px 13px 7px 10px; border-radius: 999px; cursor: pointer;
-    background: rgba(10, 132, 255, .92); color: #fff;
+    background: rgba(37, 99, 235, .94); color: #fff;
     font: 600 12.5px/1 system-ui, "Segoe UI", sans-serif; white-space: nowrap;
     box-shadow: 0 4px 18px rgba(0, 0, 0, .35); backdrop-filter: blur(8px);
     transition: transform .12s ease, background-color .15s ease, opacity .15s ease;
   }
-  button:hover { background: #0a84ff; transform: translateY(-1px); }
+  button:hover { background: #2563eb; transform: translateY(-1px); }
   button:active { transform: scale(.96); }
   button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   button[data-state="busy"] { opacity: .8; cursor: progress; }
-  button[data-state="ok"] { background: #30a46c; }
-  button[data-state="fail"] { background: #e5484d; }
+  button[data-state="ok"] { background: #16875a; }
+  button[data-state="fail"] { background: #d33a3a; }
   svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 `;
 
@@ -217,42 +217,46 @@ async function send(): Promise<void> {
 const TOAST_CSS = `
   :host { all: initial; }
   .card {
-    box-sizing: border-box; width: 360px; border-radius: 8px; overflow: hidden;
-    background: rgba(36, 42, 62, .92); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, .1);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, .35); color: #E8EBF2;
+    box-sizing: border-box; width: 340px; border-radius: 10px; overflow: hidden;
+    background: rgba(25, 28, 33, .96); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, .1);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .35); color: #E6E8EC;
     font: 13px/1.35 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; font-variant-numeric: tabular-nums;
     animation: in .18s ease;
   }
   @keyframes in { from { opacity: 0; transform: translateY(8px); } }
-  .body { padding: 14px 14px 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .row { display: flex; align-items: center; gap: 8px; }
-  .logo { width: 18px; height: 18px; border-radius: 5px; background: #3B82F6; display: grid; place-items: center; flex: none; }
-  .logo svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 3; }
-  .title { flex: 1; font-size: 12px; color: #A3AABB; }
+  .body { padding: 10px 10px 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 6px; }
+  .logo { width: 16px; height: 16px; border-radius: 4px; background: #2563EB; display: grid; place-items: center; flex: none; }
+  .logo svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 3; }
+  .title { flex: 1; font-size: 11.5px; color: #8E95A2; }
   button {
     all: initial; box-sizing: border-box; cursor: pointer; font: inherit; color: inherit;
     display: grid; place-items: center; border-radius: 5px; transition: background-color .15s ease;
   }
-  button:focus-visible { outline: 2px solid #9CC3FF; outline-offset: 1px; }
-  .close { width: 28px; height: 28px; }
-  .close svg { width: 10px; height: 10px; stroke: #C9CEDA; stroke-width: 1.5; }
-  .close:hover, .keep:hover { background: rgba(255, 255, 255, .08); }
-  .file { display: flex; align-items: center; gap: 12px; }
-  .tile { width: 36px; height: 36px; border-radius: 6px; background: rgba(255, 255, 255, .06); display: grid; place-items: center; flex: none; }
-  .tile svg { width: 18px; height: 18px; stroke: #C9CEDA; stroke-width: 1.7; }
-  .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  button:focus-visible { outline: 2px solid #8CC2FA; outline-offset: 1px; }
+  .close, .hold { width: 24px; height: 24px; }
+  .close svg { width: 10px; height: 10px; stroke: #C2C7D0; stroke-width: 1.5; }
+  .hold svg { width: 12px; height: 12px; stroke: #C2C7D0; stroke-width: 2; }
+  .close:hover, .hold:hover, .keep:hover { background: rgba(255, 255, 255, .08); }
+  .file { display: flex; align-items: center; gap: 10px; }
+  .tile { width: 30px; height: 30px; border-radius: 7px; background: rgba(255, 255, 255, .06); display: grid; place-items: center; flex: none; }
+  .tile svg { width: 16px; height: 16px; stroke: #C2C7D0; stroke-width: 1.7; }
+  .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sub { font-size: 12px; color: #A3AABB; }
-  .acts { display: flex; gap: 8px; }
-  .send { flex: 1; height: 34px; background: #F5A623; color: #1D1607; font-weight: 600; }
-  .send:hover { background: #FFB840; }
-  .keep { height: 34px; padding: 0 12px; border: 1px solid rgba(255, 255, 255, .1); background: rgba(255, 255, 255, .05); }
-  .hint { font-size: 11px; color: #8790A3; }
+  .sub { font-size: 11.5px; color: #8E95A2; }
+  .acts { display: flex; gap: 6px; }
+  .send { flex: 1; height: 30px; background: #2563EB; color: #fff; font-weight: 600; }
+  .send:hover { background: #1D4ED8; }
+  .keep { height: 30px; padding: 0 10px; border: 1px solid rgba(255, 255, 255, .12); background: rgba(255, 255, 255, .04); }
+  .hint { font-size: 11px; color: #6A717E; }
   .track { height: 2px; background: rgba(255, 255, 255, .08); }
-  .bar { height: 2px; background: #F5A623; transform-origin: left; }
+  .bar { height: 2px; background: #2563EB; transform-origin: left; }
+  [hidden] { display: none !important; }
   svg { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 `;
 let toastSheet: CSSStyleSheet | undefined;
+/** A paused card waits this long for a choice (background.ts waits a little longer). */
+const HOLD_MS = 4 * 60 * 1000;
 let closeToast: ((answer: 'send' | 'browser') => void) | undefined;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: string): HTMLElementTagNameMap[K] {
@@ -288,8 +292,13 @@ function askToast(
   close.type = 'button';
   close.title = close.ariaLabel = t('toastClose');
   close.append(svgIcon('M2 2l8 8M10 2l-8 8', '0 0 12 12'));
+  // Stops the countdown for good: the card then waits for a choice.
+  const hold = el('button', 'hold');
+  hold.type = 'button';
+  hold.title = hold.ariaLabel = t('toastHold');
+  hold.append(svgIcon('M9 5v14M15 5v14'));
   const head = el('div', 'row');
-  head.append(logo, el('span', 'title', t('toastTitle')), close);
+  head.append(logo, el('span', 'title', t('toastTitle')), hold, close);
 
   const tile = el('span', 'tile');
   tile.append(svgIcon('M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10'));
@@ -307,8 +316,9 @@ function askToast(
   const acts = el('div', 'acts');
   acts.append(send, keep);
 
+  const hint = el('div', 'hint', t('toastHint', String(msg.seconds)));
   const body = el('div', 'body');
-  body.append(head, file, acts, el('div', 'hint', t('toastHint', String(msg.seconds))));
+  body.append(head, file, acts, hint);
   const bar = el('div', 'bar');
   const track = el('div', 'track');
   track.append(bar);
@@ -316,12 +326,51 @@ function askToast(
   root.append(card);
   overlayParent().append(host);
 
-  bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: msg.seconds * 1000, easing: 'linear', fill: 'forwards' });
-  const timer = setTimeout(() => finish('send'), msg.seconds * 1000);
+  // The countdown runs while the pointer is away; hovering pauses it, the pause button stops it.
+  const countdown = bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: msg.seconds * 1000, easing: 'linear', fill: 'forwards' });
+  let left = msg.seconds * 1000;
+  let startedAt = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let held = false;
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  // The service worker gives up waiting after a few seconds unless told the card is paused. Nobody picks for
+  // ever, though: a forgotten card still ends the way the countdown would have.
+  const tellHeld = () => {
+    if (deadline !== undefined) return;
+    deadline = setTimeout(() => finish('send'), HOLD_MS);
+    chrome.runtime.sendMessage({ type: 'capture-held' }).catch(() => {});
+  };
+  const run = () => {
+    if (held || timer !== undefined) return;
+    startedAt = performance.now();
+    timer = setTimeout(() => finish('send'), left);
+    countdown.play();
+  };
+  const stop = () => {
+    if (timer === undefined) return;
+    clearTimeout(timer);
+    timer = undefined;
+    left = Math.max(0, left - (performance.now() - startedAt));
+    countdown.pause();
+    tellHeld();
+  };
+  run();
+  card.addEventListener('mouseenter', stop);
+  card.addEventListener('mouseleave', run);
+  hold.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    stop();
+    held = true;
+    hold.hidden = true;
+    track.hidden = true;
+    hint.textContent = t('toastHeld');
+  });
   function finish(answer: 'send' | 'browser'): void {
     if (closeToast !== finish) return;
     closeToast = undefined;
     clearTimeout(timer);
+    clearTimeout(deadline);
     host.remove();
     reply(answer);
   }

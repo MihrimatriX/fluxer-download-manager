@@ -71,7 +71,7 @@ flowchart LR
                                FileNameSanitizer, DiskSpace
   Fluxer.Ipc/                  net10.0 — Envelope, mesaj kayıtları, JsonSerializerContext,
                                Framing (4B LE), PipeClient, PipeName
-  Fluxer.App/                  net10.0-windows10.0.19041.0 — Avalonia, ViewModels, Views,
+  Fluxer.App/                  net10.0-windows — Avalonia (Win32 + Skia), ViewModels, Views,
                                PipeServer, SingleInstance, Tray, Strings.resx / Strings.tr.resx
   Fluxer.NativeHost/           net10.0, PublishAot=true — yalnızca Fluxer.Ipc'ye bağımlı
   Fluxer.Cli/                  Aşama 1 konsol test aracı (dağıtılmaz)
@@ -559,3 +559,6 @@ Kabul kriterleri prompt'taki gibidir; her aşama sonunda `CHANGELOG.md` girdisi 
 | Gece kuyruğu (0.8) | Ayrı kuyruk motoru yok: `DownloadState.Scheduled` (10); `ScheduleStart` saatinde `Queue.StartNight()` hepsini `Queued` yapar; eklentiden `download.add` + `queue: "night"` | Mevcut kuyruk ve slot mantığı aynen kullanılır |
 | Silme (0.8) | Araç çubuğu/Delete: listeden kaldır + 6 sn "Geri al"; motor kaydı süre dolunca (ya da çıkışta) siler; dosyalarıyla silme bağlam menüsünde | Yanlışlıkla silmeye karşı onay penceresinden daha hızlı |
 | Liste çubukları (0.8) | Satırlarda `ProgressBar` yerine hafif `Controls/Bar` | DataGrid hücresinde ProgressBar ızgara sütununa uymuyor, bir de şablonu ağır |
+| Kompakt tasarım | Kendi kimliği: düz grafit/kâğıt yüzeyler (`MainBrush` krom, `SurfaceBrush` içerik, `CardBrush` gruplar), logo mavisi (#2563EB) vurgu, kenar çubuğu yok; komutlar başlık çubuğunda, durum sekmeleri + dosya türü ikonları tek satırda, ayrıntı paneli 150–210 px. Tema yalnızca açık/koyu (`AppSettings.Theme`, `RequestedThemeVariant`); vurgu sabit `Appearance.Accent`, Mica/akrilik ve vurgu seçimi kaldırıldı, pencereler hep opak. `UpgradeDesign` revizyon 2 "System" temasını koyuya çevirir | Önceki görünüm başka bir uygulamadan uyarlanmıştı; aynı işlevler daha az alanda, daha az ayarla |
+| Komut paleti | `CommandPaletteViewModel` komut listesini açılışta kurar (dil, profiller, filtreler o anki hâliyle); kelimeler başlıkta ya da grupta geçmeli, başlığı sorguyla başlayanlar öne | Araç çubuğu küçük kalırken hiçbir işlev menülerin derinine gömülmez |
+| Paket boyutu | `net10.0-windows` (sürümsüz: 55 MB'lık WinRT projeksiyonu gelmez; toast ve Attachment Services ABI üzerinden, function pointer ile çağrılır), yalnızca `Avalonia.Win32`/`Skia`/`HarfBuzz`, `PublishTrimmed` + `TrimMode=partial` (Fluxer derlemeleri bütün kalır, yansımalı JSON açık), BouncyCastle kırpılabilir sayılır, seyrek derlemeler R2R dışı, hata ayıklama/dump/QUIC dosyaları atılır | 190 MB → 74 MB açılmış, 80 → 33 MB zip; açılış R2R ile aynı |

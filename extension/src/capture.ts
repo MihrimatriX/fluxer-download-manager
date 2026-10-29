@@ -13,10 +13,18 @@ export interface Settings {
   disabledSites: string[];
   /** File extensions (lower case, no dot) whose downloads stay in the browser. */
   skipTypes: string[];
+  /** Capture paused until this time (ms since epoch) from the popup; 0 = not paused. */
+  pausedUntil: number;
 }
 export const DEFAULT_SETTINGS: Settings = {
-  captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true, disabledSites: [], skipTypes: [],
+  captureEnabled: true, minSizeMiB: 1, showVideoButton: true, showBadge: true, disabledSites: [], skipTypes: [], pausedUntil: 0,
 };
+
+/** How long the popup's "Pause" button keeps downloads in the browser. */
+export const PAUSE_MS = 60 * 60 * 1000;
+
+/** Is capturing paused right now (the popup's pause button)? */
+export const isPaused = (settings: Pick<Settings, 'pausedUntil'>, now: number): boolean => (settings.pausedUntil ?? 0) > now;
 
 export type DownloadItemLike = Pick<
   chrome.downloads.DownloadItem,
@@ -31,10 +39,12 @@ export interface CaptureContext {
   /** The URL was requested with POST in the last ~30 s. */
   postInitiated: boolean;
   ownExtensionId?: string;
+  /** Clock for the pause check; Date.now() when left out. */
+  now?: number;
 }
 
 export type Decision =
-  | 'capture' | 'torrent' | 'disabled' | 'site' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small' | 'page' | 'type';
+  | 'capture' | 'torrent' | 'disabled' | 'paused' | 'site' | 'alt' | 'bypass' | 'scheme' | 'complete' | 'post' | 'small' | 'page' | 'type';
 
 const TORRENT_RE = /\.torrent(?:[?#]|$)/i;
 
@@ -98,6 +108,7 @@ const PAGE_MIMES = /^(text\/html|application\/xhtml\+xml)\s*(;|$)/i;
 
 export function decide(item: DownloadItemLike, ctx: CaptureContext): Decision {
   if (!ctx.settings.captureEnabled) return 'disabled';
+  if (isPaused(ctx.settings, ctx.now ?? Date.now())) return 'paused';
   const site = siteOf(item);
   if (site && ctx.settings.disabledSites?.includes(site)) return 'site';
   if (ctx.altHeld) return 'alt';

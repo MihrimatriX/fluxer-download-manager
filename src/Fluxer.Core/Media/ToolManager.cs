@@ -254,12 +254,14 @@ public sealed partial class ToolManager(string directory, HttpEngine http)
 
     private sealed record ToolRecord(string Sha256, DateTimeOffset InstalledAt);
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private Dictionary<string, ToolRecord> LoadManifest()
     {
         try { return JsonSerializer.Deserialize<Dictionary<string, ToolRecord>>(File.ReadAllText(ManifestPath)) ?? []; }
         catch (Exception e) when (e is IOException or JsonException) { return []; } // missing or damaged: treated as unknown
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimNotes.OwnTypesKept)]
     private void Record(Tool tool, string sha256)
     {
         var manifest = LoadManifest();

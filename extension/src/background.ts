@@ -224,6 +224,10 @@ async function handBack(item: chrome.downloads.DownloadItem, outcome: Outcome, q
 }
 
 const ASK_SECONDS = 3;
+/** The card's pause button stops its countdown; the page then answers by itself within HOLD_MS (content.ts). */
+const HOLD_MS = 4 * 60 * 1000;
+/** Tabs whose card is waiting on the user: a 'capture-held' message moves the deadline out. */
+const heldWaits = new Map<number, () => void>();
 const sizeFormat = new Intl.NumberFormat(chrome.i18n.getUILanguage(), { maximumFractionDigits: 1 });
 
 /**
@@ -239,12 +243,18 @@ async function askOnPage(tabId: number, item: chrome.downloads.DownloadItem): Pr
     category: categoryOfName(name),
     seconds: ASK_SECONDS,
   };
-  // A page that never answers (frozen, throttled) must not hold the download.
-  const timeout = new Promise((r) => setTimeout(r, (ASK_SECONDS + 10) * 1000));
+  // A page that never answers (frozen, throttled) must not hold the download; one whose card the user
+  // paused (hover, pause button) says so and gets until HOLD_MS.
+  const timeout = new Promise((resolve) => {
+    let t = setTimeout(resolve, (ASK_SECONDS + 10) * 1000);
+    heldWaits.set(tabId, () => { clearTimeout(t); t = setTimeout(resolve, HOLD_MS + 30_000); });
+  });
   try {
     return askAnswer(await Promise.race([chrome.tabs.sendMessage(tabId, ask, { frameId: 0 }), timeout]));
   } catch {
     return 'send';
+  } finally {
+    heldWaits.delete(tabId);
   }
 }
 
@@ -541,7 +551,8 @@ type PanelMessage =
   | { type: 'collect-links'; tabId: number }
   | { type: 'batch'; tabId: number; items: { url: string; fileName?: string }[] }
   | { type: 'add-url'; url: string }
-  | { type: 'video-button'; src?: string };
+  | { type: 'video-button'; src?: string }
+  | { type: 'capture-held' };
 
 chrome.runtime.onMessage.addListener((msg: PanelMessage, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id || !msg || typeof msg !== 'object') return;
@@ -568,6 +579,9 @@ function handlePanel(msg: PanelMessage, sender: chrome.runtime.MessageSender): P
       return sender.tab
         ? sendVideo(sender.tab, msg.src, { frameId: sender.frameId, url: sender.url }).then((outcome) => ({ outcome }))
         : undefined;
+    case 'capture-held':
+      if (sender.tab?.id !== undefined) heldWaits.get(sender.tab.id)?.();
+      return Promise.resolve({ outcome: 'ok' });
     default: return undefined;
   }
 }

@@ -20,7 +20,11 @@ public sealed partial class CategoryItem(string key, string iconKey) : Observabl
 {
     public string Key { get; } = key;
     public Avalonia.Media.Geometry? Icon { get; } = Theme.Geometry(iconKey);
-    [ObservableProperty] private int _count;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(Tip), nameof(HasItems))] private int _count;
+
+    /// The filter row shows only the icon (and the count when there is one); the name is in the tooltip.
+    public string Tip => $"{Title} · {Count}";
+    public bool HasItems => Count > 0 && Key != "all";
 
     public string Title => Key switch
     {
@@ -66,6 +70,9 @@ public sealed partial class StateFilter(string key) : ObservableObject
     };
 }
 
+/// One entry of the status bar's speed menu: a profile to switch to, or the way to the schedule page.
+public sealed record ProfileChoice(string Label, bool IsActive, Avalonia.Controls.MenuItemToggleType ToggleType, System.Windows.Input.ICommand Command);
+
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly AppHost _host;
@@ -90,6 +97,7 @@ public sealed partial class MainViewModel : ObservableObject
         Detail = new DetailViewModel(host);
         Detail.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(DetailViewModel.HasItem)) OnPropertyChanged(nameof(ShowDetail)); };
         Settings = new SettingsViewModel(host);
+        Palette = new CommandPaletteViewModel(this);
     }
 
     public DataGridCollectionView View { get; }
@@ -97,6 +105,7 @@ public sealed partial class MainViewModel : ObservableObject
     public IReadOnlyList<StateFilter> StateFilters { get; private set; }
     public DetailViewModel Detail { get; }
     public SettingsViewModel Settings { get; }
+    public CommandPaletteViewModel Palette { get; }
 
     /// Multi-selection, kept in sync by the view.
     public List<DownloadItemViewModel> Selection { get; } = [];
@@ -116,6 +125,15 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _targetNote = "";
     [ObservableProperty] private string _mainQueueText = "";
     [ObservableProperty] private string _nightQueueText = "";
+    /// Status bar: "5 at once · night 01:00".
+    [ObservableProperty] private string _queueText = "";
+    [ObservableProperty] private bool _hasCompleted;
+    /// Something is running or waiting: the status bar button pauses everything, otherwise it resumes everything.
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ToggleAllIcon), nameof(ToggleAllTip), nameof(ToggleAllLabel))] private bool _anyRunning;
+    public Avalonia.Media.Geometry? ToggleAllIcon => Theme.Geometry(AnyRunning ? "IcPause" : "IcPlay");
+    public string ToggleAllLabel => AnyRunning ? Strings.PauseAll : Strings.ResumeAll;
+    public string ToggleAllTip => AnyRunning ? $"{Strings.PauseAll} (Ctrl+Shift+P)" : $"{Strings.ResumeAll} (Ctrl+Shift+R)";
+    [ObservableProperty] private IReadOnlyList<ProfileChoice> _profileChoices = [];
     [ObservableProperty] private bool _nightQueueOn;
     [ObservableProperty] private string _diskPath = "";
     [ObservableProperty] private string _diskFreeText = "";
@@ -130,18 +148,14 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _toastVisible;
 
     // ---- layout the user can change (remembered in Settings.Ui) ----
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(SidebarWidth), nameof(SidebarExpanded))] private bool _sidebarCollapsed;
-    [ObservableProperty] private bool _toolbarLabels = true;
+    [ObservableProperty] private bool _toolbarLabels;
     [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowDetail))] private bool _detailVisible;
     private bool _loadingUi;
 
-    public double SidebarWidth => SidebarCollapsed ? 72 : 236;
-    public bool SidebarExpanded => !SidebarCollapsed;
     public bool ShowDetail => DetailVisible && Detail.HasItem;
     public bool DownloadsOpen => !IsSettingsOpen;
 
     partial void OnIsSettingsOpenChanged(bool value) => OnPropertyChanged(nameof(DownloadsOpen));
-    partial void OnSidebarCollapsedChanged(bool value) => SaveUi(ui => ui.SidebarCollapsed = value);
     partial void OnToolbarLabelsChanged(bool value) => SaveUi(ui => ui.ToolbarLabels = value);
     partial void OnDetailVisibleChanged(bool value) => SaveUi(ui => ui.DetailVisible = value);
 
@@ -150,7 +164,6 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _loadingUi = true;
         var ui = _host.Engine.Settings.Ui;
-        SidebarCollapsed = ui.SidebarCollapsed;
         ToolbarLabels = ui.ToolbarLabels;
         DetailVisible = ui.DetailVisible;
         _loadingUi = false;
@@ -168,10 +181,19 @@ public sealed partial class MainViewModel : ObservableObject
     private void SaveLayout() => _host.SaveLayout();
 
     [RelayCommand]
-    private void ToggleSidebar() => SidebarCollapsed = !SidebarCollapsed;
-
-    [RelayCommand]
     private void ToggleDetail() => DetailVisible = !DetailVisible;
+
+    public bool IsLight => _host.Engine.Settings.Theme == "Light";
+
+    /// Command palette: light ↔ dark without opening the settings.
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        var s = _host.Engine.Settings;
+        s.Theme = IsLight ? "Dark" : "Light";
+        _ = _host.Engine.SaveSettingsAsync(s);
+        _host.ReloadUi();
+    }
 
     partial void OnSelectedCategoryChanged(CategoryItem value) { IsSettingsOpen = false; Refilter(); }
     partial void OnSelectedStateFilterChanged(StateFilter value) => Refilter();
@@ -269,6 +291,9 @@ public sealed partial class MainViewModel : ObservableObject
         var night = items.Count(d => d.State == DownloadState.Scheduled);
         NightQueueOn = s.ScheduleStart is not null;
         NightQueueText = (s.ScheduleStart ?? Strings.Manual) + (night > 0 ? $" · {night}" : "");
+        QueueText = string.Format(CultureInfo.CurrentCulture, Strings.QueueStatus, s.HttpSlots, NightQueueText);
+        AnyRunning = items.Any(d => d.State is DownloadState.Starting or DownloadState.Downloading or DownloadState.Verifying
+            or DownloadState.Queued or DownloadState.Seeding);
 
         UpdateTray(items, downloading, seeding, down, up);
 
@@ -376,6 +401,7 @@ public sealed partial class MainViewModel : ObservableObject
         var inCategory = visible.Where(vm => InCategory(vm, SelectedCategory.Key)).ToList();
         foreach (var f in StateFilters) f.Count = inCategory.Count(vm => f.Matches(vm.Download.State));
         IsEmpty = View.Count == 0;
+        HasCompleted = visible.Any(vm => vm.Download.State == DownloadState.Completed);
     }
 
     private bool MatchesSearch(DownloadItemViewModel vm) =>
@@ -526,6 +552,15 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ResumeAll() => _host.Engine.Queue.ResumeAll();
 
+    /// Status bar button: one place to stop or restart everything.
+    [RelayCommand]
+    private async Task ToggleAll()
+    {
+        if (AnyRunning) await _host.Engine.Queue.PauseAllAsync();
+        else _host.Engine.Queue.ResumeAll();
+        UpdateTotals();
+    }
+
     /// Sends the selected waiting downloads to the night queue.
     [RelayCommand]
     private async Task MoveToNight()
@@ -638,20 +673,54 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void CloseSettings() => IsSettingsOpen = false;
 
-    // ---- speed profile pill ----
+    // ---- speed profile menu (status bar) ----
 
     [RelayCommand]
-    private Task CycleProfile() => _host.UseProfileAsync((_host.Engine.Settings.ActiveProfile + 1) % _host.Engine.Settings.Profiles.Count);
+    private Task UseProfile(int index) => _host.UseProfileAsync(index);
 
     public void UpdateProfileText()
     {
         var s = _host.Engine.Settings;
-        var p = s.Profiles[Math.Clamp(s.ActiveProfile, 0, s.Profiles.Count - 1)];
-        var name = ProfileName(s.ActiveProfile);
+        ProfileText = ProfileLabel(s, s.ActiveProfile);
+        ProfileChoices =
+        [
+            .. s.Profiles.Select((profile, i) => new ProfileChoice(ProfileLabel(s, i), i == s.ActiveProfile,
+                Avalonia.Controls.MenuItemToggleType.Radio, new RelayCommand(() => _ = UseProfileCommand.ExecuteAsync(i)))),
+            new ProfileChoice(Strings.EditProfiles, false, Avalonia.Controls.MenuItemToggleType.None, OpenScheduleCommand),
+        ];
+    }
+
+    /// "Balanced · ↓5 MB/s ↑1 MB/s"; just the name when it has no limits.
+    private static string ProfileLabel(AppSettings s, int index)
+    {
+        var p = s.Profiles[Math.Clamp(index, 0, s.Profiles.Count - 1)];
         var limits = new List<string>();
         if (p.Down > 0) limits.Add("↓" + Loc.Speed(p.Down));
         if (p.Up > 0) limits.Add("↑" + Loc.Speed(p.Up));
-        ProfileText = limits.Count == 0 ? name : $"{name} · {string.Join(" ", limits)}";
+        var name = ProfileName(index);
+        return limits.Count == 0 ? name : $"{name} · {string.Join(" ", limits)}";
+    }
+
+    // ---- command palette ----
+
+    [RelayCommand]
+    private void OpenPalette()
+    {
+        if (Palette.IsOpen) Palette.Close();
+        else Palette.Open();
+    }
+
+    /// Palette: jump to one of the filters.
+    public void ShowState(string key)
+    {
+        IsSettingsOpen = false;
+        SelectedStateFilter = StateFilters.FirstOrDefault(f => f.Key == key) ?? StateFilters[0];
+    }
+
+    public void ShowCategory(string key)
+    {
+        IsSettingsOpen = false;
+        SelectedCategory = Categories.FirstOrDefault(c => c.Key == key) ?? Categories[0];
     }
 
     public static string ProfileName(int index) => Strings.ProfileNames.Split('|').ElementAtOrDefault(index) ?? $"#{index + 1}";

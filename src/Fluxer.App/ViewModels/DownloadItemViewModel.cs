@@ -72,7 +72,7 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
         var state = d.State;
         Name = d.FileName.Length > 0 ? d.FileName : d.Record.Http?.Url ?? d.Record.Media?.PageUrl ?? "…";
         Icon = Theme.Geometry(IconKey(d));
-        IconBrush = Theme.Brush(IsTorrent ? "InfoTextBrush" : "Text2Brush");
+        IconBrush = Theme.Brush(TintKey(d));
         IsActive = IsRunningState;
         Indeterminate = IsActive && p.TotalBytes is null or 0 && state != DownloadState.Seeding;
         var fraction = state is DownloadState.Completed or DownloadState.Seeding ? 1 : p.Fraction;
@@ -162,6 +162,11 @@ public sealed partial class DownloadItemViewModel(IDownload download, Func<IDown
         Services.AppHost.Current?.Engine?.Settings.ScheduleStart is { } at
             ? string.Format(CultureInfo.CurrentCulture, Strings.NightQueueAt, at)
             : Strings.NightQueueManual;
+
+    /// Each file type has its own tint, so a long list scans by colour as well as by name.
+    public static string TintKey(IDownload d) => d.Kind == DownloadKind.Torrent ? "CatTorrentBrush"
+        : d.Record.Category is "Video" or "Music" or "Documents" or "Archives" or "Programs" ? $"Cat{d.Record.Category}Brush"
+        : "CatOtherBrush";
 
     private static string IconKey(IDownload d)
     {

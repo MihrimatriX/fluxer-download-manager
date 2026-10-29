@@ -7,7 +7,7 @@ public enum ScanResult { Clean, Blocked, Unavailable }
 /// Hands a finished download to Windows Attachment Services, the same path browsers use: it writes the
 /// Mark of the Web and asks the registered antivirus (Defender or a third-party AMSI/IOfficeAntiVirus
 /// provider) to scan the file. A file the antivirus rejects is usually deleted or quarantined by it.
-public static class AttachmentScanner
+public static partial class AttachmentScanner
 {
     // Identifies Fluxer to Attachment Services so its per-client prompts/state are kept apart.
     private static readonly Guid ClientGuid = new("5b0a7f61-8c43-4d0e-9a52-6f1e2c7d9b30");
@@ -26,49 +26,54 @@ public static class AttachmentScanner
         return result;
     }
 
-    private static ScanResult ScanOnSta(string path, string? sourceUrl, string? referrerUrl)
+    private static unsafe ScanResult ScanOnSta(string path, string? sourceUrl, string? referrerUrl)
     {
-        IAttachmentExecute? ae = null;
+        // Called through IAttachmentExecute's vtable (shobjidl_core.h) rather than [ComImport]: built-in COM
+        // interop is switched off in the trimmed build.
+        var init = CoInitializeEx(0, CoinitApartmentThreaded);
+        nint ae = 0;
         try
         {
-            ae = (IAttachmentExecute)new AttachmentServices();
-            ae.SetClientGuid(ClientGuid);
-            ae.SetClientTitle("Fluxer");
-            ae.SetLocalPath(path);
-            // Source must be a URL; without one Attachment Services falls back to the Internet zone anyway.
-            if (!string.IsNullOrEmpty(sourceUrl)) ae.SetSource(sourceUrl);
-            if (!string.IsNullOrEmpty(referrerUrl)) ae.SetReferrer(referrerUrl);
-            var hr = ae.Save();
+            if (CoCreateInstance(ClsidAttachmentServices, 0, ClsctxInprocServer, IidAttachmentExecute, out ae) < 0 || ae == 0)
+                return ScanResult.Unavailable;
+            var guid = ClientGuid;
+            if (((delegate* unmanaged<nint, Guid*, int>)Slot(ae, 4))(ae, &guid) < 0  // SetClientGuid
+                || Call(ae, 3, "Fluxer") < 0                                          // SetClientTitle
+                || Call(ae, 5, path) < 0                                              // SetLocalPath
+                // Source must be a URL; without one Attachment Services falls back to the Internet zone anyway.
+                || !string.IsNullOrEmpty(sourceUrl) && Call(ae, 7, sourceUrl) < 0       // SetSource
+                || !string.IsNullOrEmpty(referrerUrl) && Call(ae, 8, referrerUrl) < 0)  // SetReferrer
+                return ScanResult.Unavailable;
+            var hr = ((delegate* unmanaged<nint, int>)Slot(ae, 11))(ae);                // Save
             return hr >= 0 ? ScanResult.Clean
                 : hr == InetESecurityProblem || !File.Exists(path) ? ScanResult.Blocked
                 : ScanResult.Unavailable;
         }
-        catch (COMException e) when (e.HResult == InetESecurityProblem) { return ScanResult.Blocked; }
-        catch (Exception e) when (e is COMException or InvalidCastException or UnauthorizedAccessException) { return ScanResult.Unavailable; }
         finally
         {
-            if (ae is not null) Marshal.ReleaseComObject(ae);
+            if (ae != 0) Marshal.Release(ae);
+            if (init >= 0) CoUninitialize();
         }
     }
 
-    [ComImport, Guid("4125dd96-e03a-4103-8f70-e0597d803b9c")]
-    private class AttachmentServices;
+    private static unsafe nint Slot(nint obj, int index) => (*(nint**)obj)[index];
 
-    // Vtable order matters: shobjidl_core.h, IAttachmentExecute.
-    [ComImport, Guid("73db1241-1e85-4581-8e4f-a81e1d0f8c57"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IAttachmentExecute
+    /// A method taking one LPCWSTR.
+    private static unsafe int Call(nint obj, int slot, string value)
     {
-        void SetClientTitle([MarshalAs(UnmanagedType.LPWStr)] string title);
-        void SetClientGuid(in Guid guid);
-        void SetLocalPath([MarshalAs(UnmanagedType.LPWStr)] string localPath);
-        void SetFileName([MarshalAs(UnmanagedType.LPWStr)] string fileName);
-        void SetSource([MarshalAs(UnmanagedType.LPWStr)] string source);
-        void SetReferrer([MarshalAs(UnmanagedType.LPWStr)] string referrer);
-        [PreserveSig] int CheckPolicy();
-        [PreserveSig] int Prompt(IntPtr hwnd, int prompt, out int action);
-        [PreserveSig] int Save();
-        [PreserveSig] int Execute(IntPtr hwnd, [MarshalAs(UnmanagedType.LPWStr)] string? verb, out IntPtr process);
-        [PreserveSig] int SaveWithUI(IntPtr hwnd);
-        void ClearClientState();
+        fixed (char* p = value) return ((delegate* unmanaged<nint, char*, int>)Slot(obj, slot))(obj, p);
     }
+
+    private const int CoinitApartmentThreaded = 0x2, ClsctxInprocServer = 0x1;
+    private static readonly Guid ClsidAttachmentServices = new("4125dd96-e03a-4103-8f70-e0597d803b9c");
+    private static readonly Guid IidAttachmentExecute = new("73db1241-1e85-4581-8e4f-a81e1d0f8c57");
+
+    [LibraryImport("ole32.dll")]
+    private static partial int CoInitializeEx(nint reserved, int coInit);
+
+    [LibraryImport("ole32.dll")]
+    private static partial void CoUninitialize();
+
+    [LibraryImport("ole32.dll")]
+    private static partial int CoCreateInstance(in Guid clsid, nint outer, int context, in Guid iid, out nint instance);
 }

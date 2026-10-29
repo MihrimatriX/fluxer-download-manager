@@ -62,7 +62,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Mark("theme+integration");
 
         Main = new MainViewModel(this);
-        Engine.Queue.Added += d => Dispatcher.UIThread.Post(() => Main.OnAdded(d));
+        Engine.Queue.Added += d => { Dispatcher.UIThread.Post(() => Main.OnAdded(d)); OnAddedEvent(d); };
         Engine.Queue.Removed += d => Dispatcher.UIThread.Post(() => { Main.OnRemoved(d); CloseDownloadWindows(d.Id); });
         Engine.Queue.StateChanged += OnStateChanged;
         Engine.Queue.Reordered += () => Dispatcher.UIThread.Post(Main.OnReordered);
@@ -135,12 +135,8 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (wasVisible) ShowMainWindow();
     }
 
-    private void ApplyTheme() => app.RequestedThemeVariant = Engine.Settings.Theme switch
-    {
-        "Light" => ThemeVariant.Light,
-        "Dark" => ThemeVariant.Dark,
-        _ => ThemeVariant.Default,
-    };
+    private void ApplyTheme() =>
+        app.RequestedThemeVariant = Engine.Settings.Theme == "Light" ? ThemeVariant.Light : ThemeVariant.Dark;
 
     /// Left click on the tray icon: the small status window (right click keeps the menu).
     private void ToggleTrayWindow()
@@ -193,8 +189,15 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         _ = Engine.SaveSettingsAsync(Engine.Settings);
     }
 
-    public async Task ExitAsync()
+    /// `ask`: the tray's Exit asks first while something is downloading or waiting (Settings → General).
+    public async Task ExitAsync(bool ask = true)
     {
+        if (_exiting) return;
+        var busy = Engine.Queue.Items.Count(d => d.State is DownloadState.Starting or DownloadState.Downloading
+            or DownloadState.Verifying or DownloadState.Queued);
+        if (ask && busy > 0 && Engine.Settings.ConfirmExit
+            && !await Dialogs.ConfirmAsync(Owner, Strings.ExitTitle, string.Format(CultureInfo.CurrentCulture, Strings.ExitBody, busy), Strings.TrayExit, Strings.Cancel))
+            return;
         if (_exiting) return;
         SaveLayout();
         _exiting = true;
@@ -222,6 +225,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         Main.UpdateTotals();
         RunScheduler();
         RunWeekSchedule();
+        RunBackup();
         PollClipboard();
         if (DateTime.UtcNow - _lastUpdateCheck > UpdateInterval) _ = CheckAppUpdateAsync();
     }
@@ -234,6 +238,42 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
         if (key == _lastScheduleFire) return;
         if (s.ScheduleStart == now) { _lastScheduleFire = key; Engine.Queue.StartNight(); Log.Information("Scheduler: night queue start"); }
         else if (s.ScheduleStop == now) { _lastScheduleFire = key; _ = Engine.Queue.PauseAllAsync(); Log.Information("Scheduler: stop"); }
+    }
+
+    private DateTime _lastBackupCheck;
+    private bool _backingUp;
+
+    /// Daily or weekly copy of the database (Settings → Advanced → Data); checked once a minute.
+    private void RunBackup()
+    {
+        if (_backingUp || DateTime.UtcNow - _lastBackupCheck < TimeSpan.FromMinutes(1)) return;
+        _lastBackupCheck = DateTime.UtcNow;
+        var s = Engine.Settings;
+        if (!Fluxer.Core.Storage.Backups.Due(s.BackupInterval, s.LastBackupAt, DateTimeOffset.UtcNow)) return;
+        _ = BackupNowAsync();
+    }
+
+    public async Task<string?> BackupNowAsync()
+    {
+        if (_backingUp) return null;
+        _backingUp = true;
+        try
+        {
+            var path = await Task.Run(() => Fluxer.Core.Storage.Backups.Create(Engine.Db, Program.DataDirectory, DateTime.Now));
+            Engine.Settings.LastBackupAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            await Engine.SaveSettingsAsync(Engine.Settings);
+            Log.Information("Backup {Path}", path);
+            return path;
+        }
+        catch (Exception e) { Log.Warning(e, "Backup failed"); return null; }
+        finally { _backingUp = false; }
+    }
+
+    /// Portable switch, restored backup: a new process takes over once this one has let go of its files.
+    public async Task RestartAsync()
+    {
+        Process.Start(new ProcessStartInfo(Program.ExePath, Program.RestartArg) { UseShellExecute = false })?.Dispose();
+        await ExitAsync(ask: false);
     }
 
     private int? _lastScheduledProfile;
@@ -267,6 +307,7 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
     private void OnDrained()
     {
         var s = Engine.Settings;
+        Feedback(s.OnQueueDone, "queue", Strings.NotifyQueueDone, Strings.NotifyQueueDoneBody);
         if (s.AfterQueue == "None") return;
         var action = s.AfterQueue;
         s.AfterQueue = "None"; // one-shot: never surprise the user twice
@@ -322,21 +363,19 @@ public sealed partial class AppHost(App app, IClassicDesktopStyleApplicationLife
 
     private void OnStateChanged(IDownload d)
     {
-        if (d.State == DownloadState.Completed)
-        {
-            Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
-            ScanCompleted(d);
-        }
         Log.Information("Download {Id} ({Kind}) → {State} {Error}", d.Id, d.Kind, d.State, d.Record.Error);
         Dispatcher.UIThread.Post(() => Main.OnStateChanged(d));
-        if (!Engine.Settings.Notifications) return;
+        var s = Engine.Settings;
         switch (d.State)
         {
             case DownloadState.Completed:
-                Notifier.Show(Strings.NotifyCompleted, d.FileName);
+                Dispatcher.UIThread.Post(() => ShowCompletedCard(d));
+                Feedback(s.OnCompleted, "completed", Strings.NotifyCompleted, d.FileName);
+                OnFinished(d);
                 break;
             case DownloadState.Failed or DownloadState.DiskFull or DownloadState.NeedsLinkRefresh:
-                Notifier.Show(Loc.State(d.State), $"{d.FileName}\n{Loc.Error(d.Record.Error)}");
+                Feedback(s.OnFailed, "failed", Loc.State(d.State), $"{d.FileName}\n{Loc.Error(d.Record.Error)}");
+                OnFailedEvent(d);
                 break;
         }
     }

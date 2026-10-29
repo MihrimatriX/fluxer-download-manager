@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_SETTINGS, RecentUrls, askAnswer, basename, bumpDaily, buildInterceptMessage, buildTorrentFileMessage, canAsk, countToday,
-  decide, extOfPath, formatBytes, hostOf, isTorrentLike, localDay, outcomeOf, parseTypes, rejectReason, sentCount, toCookieDto, toggleSite,
+  DEFAULT_SETTINGS, PAUSE_MS, RecentUrls, askAnswer, basename, bumpDaily, buildInterceptMessage, buildTorrentFileMessage, canAsk, countToday,
+  decide, extOfPath, formatBytes, hostOf, isPaused, isTorrentLike, localDay, outcomeOf, parseTypes, rejectReason, sentCount, toCookieDto, toggleSite,
   typesOf, versionSkew,
   type CaptureContext, type DownloadItemLike,
 } from './capture';
@@ -54,6 +54,16 @@ describe('decide', () => {
   });
   it('leaves everything when capture is disabled', () => {
     expect(decide(item(), ctx({ settings: { ...DEFAULT_SETTINGS, captureEnabled: false } }))).toBe('disabled');
+  });
+  it('leaves everything while capture is paused, and captures again once the pause ends', () => {
+    const now = 1_700_000_000_000;
+    const paused = { ...DEFAULT_SETTINGS, pausedUntil: now + PAUSE_MS };
+    expect(decide(item(), ctx({ settings: paused, now }))).toBe('paused');
+    expect(decide(item(), ctx({ settings: paused, now: now + PAUSE_MS }))).toBe('capture');
+    expect(isPaused(paused, now + PAUSE_MS - 1)).toBe(true);
+    expect(isPaused(DEFAULT_SETTINGS, now)).toBe(false);
+    // the off switch still wins: it says why the download stayed
+    expect(decide(item(), ctx({ settings: { ...paused, captureEnabled: false }, now }))).toBe('disabled');
   });
   it('leaves while Alt is held', () => {
     expect(decide(item(), ctx({ altHeld: true }))).toBe('alt');

@@ -39,8 +39,9 @@ public sealed partial class AddItem : ObservableObject
     [ObservableProperty, NotifyPropertyChangedFor(nameof(WarningSoft))] private IBrush _warningBrush = Red;
     /// Tinted banner behind the warning (no outline: the app has no lines).
     public IBrush WarningSoft => new SolidColorBrush(WarningBrush is ISolidColorBrush b ? b.Color : Colors.Gray, 0.14);
-    // the app's status colours (list pills, progress window)
-    private static readonly IBrush Red = new SolidColorBrush(Color.Parse("#E5484D")), Gray = new SolidColorBrush(Color.Parse("#64748B"));
+    // the app's status colours, looked up for the current theme
+    private static IBrush Red => Theme.Brush("ErrBrush");
+    private static IBrush Gray => Theme.Brush("CatOtherBrush");
     [ObservableProperty] private bool _probing;
     [ObservableProperty] private string? _category;
     // design tiles and batch rows
@@ -68,7 +69,7 @@ public sealed partial class AddItem : ObservableObject
         if (IsMagnet)
         {
             Name = MonoTorrent.MagnetLink.TryParse(Url, out var m) && m.Name is { } n ? n : "magnet";
-            (Glyph, Tile, Meta, Category) = ("", Brush("#06B6D4"), Strings.KindMagnet, "Torrent");
+            (Glyph, Tile, Meta, Category) = ("", Theme.Brush("CatTorrentBrush"), Strings.KindMagnet, "Torrent");
             (StateText, StateBrush, TypeText) = (Strings.Ready, Theme.Brush("OkBrush"), "Torrent");
             return;
         }
@@ -78,13 +79,13 @@ public sealed partial class AddItem : ObservableObject
         Category = p?.Kind == ProbeKind.Torrent ? "Torrent" : new AppSettings().CategoryFor(Name);
         (Glyph, Tile) = (p?.Kind) switch
         {
-            ProbeKind.Html => ("", Brush("#64748B")),
+            ProbeKind.Html => ("", Gray),
             _ => Category switch
             {
-                "Video" => ("", Brush("#8B5CF6")), "Music" => ("", Brush("#EC4899")),
-                "Documents" => ("", Brush("#3B82F6")), "Archives" => ("", Brush("#F59E0B")),
-                "Programs" => ("", Brush("#10B981")), "Torrent" => ("", Brush("#06B6D4")),
-                _ => ("", Brush("#64748B")),
+                "Video" => ("", Theme.Brush("CatVideoBrush")), "Music" => ("", Theme.Brush("CatMusicBrush")),
+                "Documents" => ("", Theme.Brush("CatDocumentsBrush")), "Archives" => ("", Theme.Brush("CatArchivesBrush")),
+                "Programs" => ("", Theme.Brush("CatProgramsBrush")), "Torrent" => ("", Theme.Brush("CatTorrentBrush")),
+                _ => ("", Gray),
             },
         };
 
@@ -98,7 +99,7 @@ public sealed partial class AddItem : ObservableObject
         (Warning, WarningBrush) = p?.Kind switch
         {
             ProbeKind.Html => (Strings.WarnHtml, Red),
-            ProbeKind.Torrent => (Strings.WarnTorrent, Brush("#8B5CF6")),
+            ProbeKind.Torrent => (Strings.WarnTorrent, Theme.Brush("InfoTextBrush")),
             ProbeKind.Error => (p.Status > 0 ? string.Format(CultureInfo.CurrentCulture, Strings.WarnHttp, p.Status) : Strings.WarnUnreachable, Red),
             _ => ("", Red),
         };
@@ -126,7 +127,9 @@ public sealed partial class AddItem : ObservableObject
     private bool _applying;
     partial void OnNameChanged(string value) { if (!_applying) UserNamed = true; }
 
-    private static IBrush Brush(string hex) => new SolidColorBrush(Color.Parse(hex));
+    /// A theme colour as a faint fill (badges).
+    public static IBrush Soft(string key, double opacity = 0.14) =>
+        new SolidColorBrush(Theme.Brush(key) is ISolidColorBrush b ? b.Color : Colors.Gray, opacity);
 }
 
 public sealed record CategoryChip(string Key, string Title, string Glyph)
@@ -382,8 +385,8 @@ public sealed partial class AddDownloadViewModel : ObservableObject
         (Badge, BadgeBrush, BadgeBackground) = Items.Count switch
         {
             0 => ("", Brushes.Transparent, Brushes.Transparent),
-            > 1 => (Strings.BadgeBatch, Theme.Brush("WarnTextBrush"), new SolidColorBrush(Color.Parse("#1FF5A623"))),
-            _ when torrent => ("TORRENT", Theme.Brush("InfoTextBrush"), new SolidColorBrush(Color.Parse("#246EA8FE"))),
+            > 1 => (Strings.BadgeBatch, Theme.Brush("WarnTextBrush"), AddItem.Soft("WarnBrush")),
+            _ when torrent => ("TORRENT", Theme.Brush("InfoTextBrush"), AddItem.Soft("InfoBrush")),
             _ => ("HTTP", Theme.Brush("TextBrush"), Theme.Brush("SelectedBrush")),
         };
 

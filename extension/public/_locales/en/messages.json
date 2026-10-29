@@ -340,5 +340,35 @@
   },
   "skewAppOld": {
     "message": "This extension is newer than Fluxer. Update Fluxer from Settings → Advanced."
+  },
+  "quickPlaceholder": {
+    "message": "Paste or type a link"
+  },
+  "quickAdd": {
+    "message": "Download"
+  },
+  "quickInvalid": {
+    "message": "Enter a link that starts with http, https or magnet."
+  },
+  "capturePause": {
+    "message": "Pause 1 h"
+  },
+  "capturePauseTip": {
+    "message": "Leave downloads in the browser for an hour"
+  },
+  "captureResume": {
+    "message": "Resume"
+  },
+  "captureResumeTip": {
+    "message": "Hand downloads to Fluxer again now"
+  },
+  "captureHintPaused": {
+    "message": "Paused until $1 · the browser downloads itself"
+  },
+  "toastHold": {
+    "message": "Wait: stop the countdown"
+  },
+  "toastHeld": {
+    "message": "Countdown stopped. Pick where it downloads."
   }
 }
