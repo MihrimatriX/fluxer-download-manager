@@ -1,0 +1,683 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Fluxer.App.ViewModels"
+        xmlns:c="using:Fluxer.App.Controls"
+        xmlns:v="using:Fluxer.App.Views"
+        xmlns:app="using:Fluxer.App"
+        x:Class="Fluxer.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Fluxer" Icon="avares://Fluxer/Assets/fluxer.ico"
+        Width="1180" Height="720" MinWidth="760" MinHeight="460"
+        WindowStartupLocation="CenterScreen"
+        DragDrop.AllowDrop="True">
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding AddUrlCommand}" />
+    <KeyBinding Gesture="Ctrl+O" Command="{Binding AddTorrentCommand}" />
+    <KeyBinding Gesture="Ctrl+V" Command="{Binding PasteCommand}" />
+    <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenPaletteCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+K" Command="{Binding OpenPaletteCommand}" />
+    <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding OpenSettingsCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+P" Command="{Binding PauseAllCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+R" Command="{Binding ResumeAllCommand}" />
+    <KeyBinding Gesture="Ctrl+Up" Command="{Binding MoveUpCommand}" />
+    <KeyBinding Gesture="Ctrl+Down" Command="{Binding MoveDownCommand}" />
+    <KeyBinding Gesture="Ctrl+Home" Command="{Binding MoveTopCommand}" />
+    <KeyBinding Gesture="Ctrl+End" Command="{Binding MoveBottomCommand}" />
+    <KeyBinding Gesture="Ctrl+I" Command="{Binding ToggleDetailCommand}" />
+  </Window.KeyBindings>
+
+  <Window.Styles>
+    <!-- title bar: the brand and the command buttons -->
+    <Style Selector="Grid#TitleBar Button.tool">
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Height" Value="28" />
+    </Style>
+    <Style Selector="TextBlock.lbl">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <!-- type filter: a row of icons -->
+    <Style Selector="ListBox.cats">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox.cats > ListBoxItem">
+      <Setter Property="Padding" Value="7,0" />
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Margin" Value="0,0,1,0" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.cats > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBox.cats > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.cats > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
+    <Style Selector="TextBlock.count">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource FaintBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ListBoxItem:selected TextBlock.count">
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <!-- list -->
+    <Style Selector="DataGrid#List DataGridRow" x:DataType="vm:DownloadItemViewModel">
+      <Setter Property="Height" Value="{DynamicResource RowHeight}" />
+      <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleText}" />
+    </Style>
+    <Style Selector="DataGrid#List DataGridColumnHeader">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="FontSize" Value="11.5" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="DataGrid#List DataGridColumnHeader /template/ Rectangle#VerticalSeparator"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="DataGrid#List Border.selbar"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="DataGrid#List DataGridRow:selected Border.selbar"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="DataGrid#List CheckBox.rowCheck"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="DataGrid#List DataGridRow:pointerover CheckBox.rowCheck, DataGrid#List DataGridRow:selected CheckBox.rowCheck, DataGrid#List.checking CheckBox.rowCheck">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="DataGrid#List DataGridCell">
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="TextBlock.cell">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <!-- title bar search -->
+    <Style Selector="TextBox.search">
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="4,0" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <!-- status bar -->
+    <Style Selector="Grid#StatusBar TextBlock">
+      <Setter Property="FontSize" Value="11.5" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Grid#StatusBar Button.tool">
+      <Setter Property="MinHeight" Value="22" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="Padding" Value="6,0" />
+      <Setter Property="FontSize" Value="11.5" />
+    </Style>
+    <!-- detail panel -->
+    <Style Selector="Border#DetailPanel Button.tool">
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="Height" Value="26" />
+      <Setter Property="MinWidth" Value="26" />
+      <Setter Property="Padding" Value="5,0" />
+    </Style>
+    <Style Selector="TextBlock.k">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="TextBlock.v, SelectableTextBlock.v">
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+  </Window.Styles>
+
+  <Panel>
+    <Grid RowDefinitions="40,*,28">
+      <!-- ============ Title bar: brand, commands, search; caption buttons (Appearance) on the right ============ -->
+      <Grid x:Name="TitleBar" ColumnDefinitions="Auto,Auto,*,Auto,140" Background="Transparent"
+            WindowDecorationProperties.ElementRole="TitleBar">
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="14,0,14,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <Image Source="avares://Fluxer/Assets/fluxer.png" Width="16" Height="16" />
+          <TextBlock Text="Fluxer" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding HeaderNote}" Classes="faint" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <!-- commands opt out of the drag role, otherwise a click on them is a title-bar grab -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" WindowDecorationProperties.ElementRole="User">
+          <Button Classes="accent" Height="28" MinHeight="28" Padding="10,0" CornerRadius="5,0,0,5" Command="{Binding AddUrlCommand}"
+                  ToolTip.Tip="Ctrl+N" AutomationProperties.Name="{x:Static app:Strings.NewDownload}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <c:Icon Data="{StaticResource IcPlus}" Size="14" StrokeThickness="2.2" Foreground="{DynamicResource OnAccentBrush}" />
+              <TextBlock Text="{x:Static app:Strings.NewShort}" VerticalAlignment="Center" FontSize="12.5" />
+            </StackPanel>
+          </Button>
+          <Button Classes="accent" Height="28" MinHeight="28" Width="22" Padding="0" Margin="-1,0,0,0" CornerRadius="0,5,5,0"
+                  ToolTip.Tip="{x:Static app:Strings.MoreWaysToAdd}" AutomationProperties.Name="{x:Static app:Strings.MoreWaysToAdd}">
+            <c:Icon Data="{StaticResource IcDown}" Size="12" StrokeThickness="2.2" Foreground="{DynamicResource OnAccentBrush}" />
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="{x:Static app:Strings.NewDownload}" Command="{Binding AddUrlCommand}" InputGesture="Ctrl+N" />
+                <MenuItem Header="{x:Static app:Strings.AddTorrent}" Command="{Binding AddTorrentCommand}" InputGesture="Ctrl+O" />
+                <MenuItem Header="{x:Static app:Strings.PasteLinks}" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />
+                <MenuItem Header="{x:Static app:Strings.CrawlMenu}" Command="{Binding CrawlSiteCommand}" />
+                <MenuItem Header="{x:Static app:Strings.SearchTorrents}" Command="{Binding SearchTorrentsCommand}" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+          <Border Classes="vsep" Margin="8,0" />
+          <Button Classes="tool" Command="{Binding ResumeCommand}" AutomationProperties.Name="{x:Static app:Strings.Resume}" ToolTip.Tip="{x:Static app:Strings.Resume}">
+            <StackPanel Orientation="Horizontal" Spacing="6"><c:Icon Data="{StaticResource IcPlay}" Size="15" /><TextBlock Classes="lbl" Text="{x:Static app:Strings.Resume}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
+          </Button>
+          <Button Classes="tool" Command="{Binding PauseCommand}" AutomationProperties.Name="{x:Static app:Strings.Pause}" ToolTip.Tip="{x:Static app:Strings.Pause}">
+            <StackPanel Orientation="Horizontal" Spacing="6"><c:Icon Data="{StaticResource IcPause}" Size="15" /><TextBlock Classes="lbl" Text="{x:Static app:Strings.Pause}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
+          </Button>
+          <Button Classes="tool" Command="{Binding DeleteCommand}" AutomationProperties.Name="{x:Static app:Strings.Delete}" ToolTip.Tip="{x:Static app:Strings.DeleteTip}">
+            <StackPanel Orientation="Horizontal" Spacing="6"><c:Icon Data="{StaticResource IcTrash}" Size="15" /><TextBlock Classes="lbl" Text="{x:Static app:Strings.Delete}" IsVisible="{Binding ToolbarLabels}" /></StackPanel>
+          </Button>
+          <Border Classes="vsep" />
+          <Button Classes="tool" Command="{Binding MoveUpCommand}" AutomationProperties.Name="{x:Static app:Strings.MoveUp}" ToolTip.Tip="{x:Static app:Strings.MoveUpTip}">
+            <c:Icon Data="{StaticResource IcUp}" Size="15" />
+          </Button>
+          <Button Classes="tool" Command="{Binding MoveDownCommand}" AutomationProperties.Name="{x:Static app:Strings.MoveDown}" ToolTip.Tip="{x:Static app:Strings.MoveDownTip}">
+            <c:Icon Data="{StaticResource IcDown}" Size="15" />
+          </Button>
+          <Button Classes="tool" AutomationProperties.Name="{x:Static app:Strings.MoreActions}" ToolTip.Tip="{x:Static app:Strings.MoreActions}">
+            <c:Icon Data="{StaticResource IcMore}" Size="15" />
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="{x:Static app:Strings.ResumeAll}" Command="{Binding ResumeAllCommand}" InputGesture="Ctrl+Shift+R" />
+                <MenuItem Header="{x:Static app:Strings.PauseAll}" Command="{Binding PauseAllCommand}" InputGesture="Ctrl+Shift+P" />
+                <Separator />
+                <MenuItem Header="{x:Static app:Strings.MoveTop}" Command="{Binding MoveTopCommand}" InputGesture="Ctrl+Home" />
+                <MenuItem Header="{x:Static app:Strings.MoveBottom}" Command="{Binding MoveBottomCommand}" InputGesture="Ctrl+End" />
+                <MenuItem Header="{x:Static app:Strings.MoveToNight}" Command="{Binding MoveToNightCommand}" />
+                <Separator />
+                <MenuItem Header="{x:Static app:Strings.ClearCompleted}" Command="{Binding ClearCompletedCommand}" />
+                <MenuItem Header="{x:Static app:Strings.Scheduler}" Command="{Binding OpenScheduleCommand}" />
+                <MenuItem Header="{x:Static app:Strings.Statistics}" Command="{Binding OpenStatsCommand}" />
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </StackPanel>
+
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" Margin="0,0,4,0" WindowDecorationProperties.ElementRole="User">
+          <TextBox x:Name="SearchBox" Classes="search" Width="230" VerticalAlignment="Center" Margin="0,0,4,0"
+                   PlaceholderText="{x:Static app:Strings.Search}" Text="{Binding Search}" IsVisible="{Binding DownloadsOpen}"
+                   AutomationProperties.Name="{x:Static app:Strings.Search}">
+            <TextBox.InnerLeftContent>
+              <c:Icon Data="{StaticResource IcSearch}" Size="13" StrokeThickness="2" Foreground="{DynamicResource FaintBrush}" Margin="6,0,2,0" />
+            </TextBox.InnerLeftContent>
+            <TextBox.InnerRightContent>
+              <Border Classes="kbd" Margin="0,0,4,0"><TextBlock Text="Ctrl F" /></Border>
+            </TextBox.InnerRightContent>
+          </TextBox>
+          <Button Classes="tool" Command="{Binding OpenPaletteCommand}" ToolTip.Tip="{x:Static app:Strings.PaletteTip}"
+                  AutomationProperties.Name="{x:Static app:Strings.PaletteTitle}">
+            <c:Icon Data="{StaticResource IcCommand}" Size="15" />
+          </Button>
+          <ToggleButton Classes="tool" Height="28" MinHeight="28" IsChecked="{Binding DetailVisible}" IsVisible="{Binding DownloadsOpen}"
+                        ToolTip.Tip="{x:Static app:Strings.ToggleDetail}" AutomationProperties.Name="{x:Static app:Strings.ToggleDetail}">
+            <c:Icon Data="{StaticResource IcPanel}" Size="15" />
+          </ToggleButton>
+          <Button Classes="tool" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{x:Static app:Strings.SettingsTip}"
+                  AutomationProperties.Name="{x:Static app:Strings.Settings}">
+            <c:Icon Data="{StaticResource IcGear}" Size="15" />
+          </Button>
+        </StackPanel>
+      </Grid>
+
+      <!-- ============ Settings page (replaces the list) ============ -->
+      <!-- created on first use: building it at start-up costs time -->
+      <ContentControl Grid.Row="1" Classes="page" Classes.hidden="{Binding DownloadsOpen}" Content="{Binding SettingsPage}" Margin="8,0">
+        <ContentControl.DataTemplates>
+          <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView /></DataTemplate>
+        </ContentControl.DataTemplates>
+      </ContentControl>
+
+      <!-- ============ Downloads ============ -->
+      <Border Grid.Row="1" Classes="surface page" Classes.hidden="{Binding IsSettingsOpen}" Margin="8,0" ClipToBounds="True">
+        <Grid x:Name="DownloadsPage" RowDefinitions="Auto,Auto,*">
+          <!-- filters: state tabs, file types; bulk action on the right -->
+          <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" Margin="6,3,6,3">
+            <ListBox Classes="tabs" ItemsSource="{Binding StateFilters}" SelectedItem="{Binding SelectedStateFilter}"
+                     AutomationProperties.Name="{x:Static app:Strings.FilterByState}">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:StateFilter">
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                    <TextBlock Classes="count" Text="{Binding Count}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Border Grid.Column="1" Classes="vsep" Margin="8,0" />
+            <ListBox Grid.Column="2" Classes="cats" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                     AutomationProperties.Name="{x:Static app:Strings.Categories}">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CategoryItem">
+                  <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="{Binding Tip}" Background="Transparent">
+                    <c:Icon Data="{Binding Icon}" Size="15" />
+                    <TextBlock Text="{Binding Title}" FontSize="12.5" VerticalAlignment="Center" IsVisible="{Binding ShowName}" MaxWidth="110" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="count" Text="{Binding Count}" IsVisible="{Binding HasItems}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <TextBlock Text="{Binding TargetNote}" Classes="subtle" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <Button Classes="tool" MinHeight="26" Height="26" Padding="8,0" Command="{Binding ClearCompletedCommand}"
+                      ToolTip.Tip="{x:Static app:Strings.ClearCompletedTip}" IsVisible="{Binding HasCompleted}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <c:Icon Data="{StaticResource IcBroom}" Size="14" />
+                  <TextBlock Text="{x:Static app:Strings.ClearCompleted}" FontSize="12" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+          <Border Grid.Row="1" Classes="hline" />
+
+          <!-- list, splitter, detail -->
+          <Grid x:Name="ListArea" Grid.Row="2" RowDefinitions="*,Auto,Auto">
+            <Panel>
+              <DataGrid x:Name="List" ItemsSource="{Binding View}" SelectedItem="{Binding SelectedItem}"
+                        SelectionMode="Extended" IsReadOnly="True" CanUserResizeColumns="True" CanUserSortColumns="True"
+                        CanUserReorderColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                        HorizontalGridLinesBrush="{DynamicResource RowLineBrush}" Background="Transparent">
+                <DataGrid.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="{x:Static app:Strings.ProgressWindow}" Command="{Binding OpenDetailsCommand}" FontWeight="SemiBold" />
+                    <MenuItem Header="{x:Static app:Strings.OpenFile}" Command="{Binding OpenFileCommand}" InputGesture="Enter" />
+                    <MenuItem Header="{x:Static app:Strings.OpenFolder}" Command="{Binding OpenFolderCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.ExtractHere}" Command="{Binding ExtractCommand}" IsVisible="{Binding SelectedIsArchive}" />
+                    <MenuItem Header="{x:Static app:Strings.RecheckTorrent}" Command="{Binding RecheckTorrentCommand}" IsVisible="{Binding SelectedIsTorrent}" />
+                    <MenuItem Header="{x:Static app:Strings.RelocateTorrent}" Command="{Binding RelocateTorrentCommand}" IsVisible="{Binding SelectedIsTorrent}" />
+                    <Separator />
+                    <MenuItem Header="{x:Static app:Strings.Resume}" Command="{Binding ResumeCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.Pause}" Command="{Binding PauseCommand}" InputGesture="Space" />
+                    <MenuItem Header="{x:Static app:Strings.Queue}">
+                      <MenuItem Header="{x:Static app:Strings.MoveTop}" Command="{Binding MoveTopCommand}" InputGesture="Ctrl+Home" />
+                      <MenuItem Header="{x:Static app:Strings.MoveUp}" Command="{Binding MoveUpCommand}" InputGesture="Ctrl+Up" />
+                      <MenuItem Header="{x:Static app:Strings.MoveDown}" Command="{Binding MoveDownCommand}" InputGesture="Ctrl+Down" />
+                      <MenuItem Header="{x:Static app:Strings.MoveBottom}" Command="{Binding MoveBottomCommand}" InputGesture="Ctrl+End" />
+                      <Separator />
+                      <MenuItem Header="{x:Static app:Strings.MoveToNight}" Command="{Binding MoveToNightCommand}" />
+                    </MenuItem>
+                    <MenuItem Header="{x:Static app:Strings.MoveToQueue}" ItemsSource="{Binding QueueTargets}">
+                      <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="vm:QueueTarget">
+                          <Setter Property="Header" Value="{Binding Label}" />
+                          <Setter Property="Command" Value="{Binding Command}" />
+                        </ControlTheme>
+                      </MenuItem.ItemContainerTheme>
+                    </MenuItem>
+                    <MenuItem Header="{x:Static app:Strings.RefreshLink}" Command="{Binding RefreshLinkCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.SpeedLimitTitle}" Command="{Binding SpeedLimitCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.CopyUrl}" Command="{Binding CopyUrlCommand}" />
+                    <MenuItem Header="{x:Static app:Strings.TagsEllipsis}" Command="{Binding EditTagsCommand}" />
+                    <Separator />
+                    <MenuItem Header="{x:Static app:Strings.Delete}" Command="{Binding DeleteCommand}" InputGesture="Delete" />
+                    <MenuItem Header="{x:Static app:Strings.DeleteWithFiles}" Command="{Binding DeleteWithFilesCommand}" />
+                  </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                  <DataGridTemplateColumn Width="32" CanUserResize="False" CanUserSort="False" CanUserReorder="False" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <Panel>
+                          <!-- selected row: accent bar on the left edge -->
+                          <Border Classes="selbar" Width="2" HorizontalAlignment="Left" Background="{DynamicResource SystemControlHighlightAccentBrush}" />
+                          <CheckBox Classes="rowCheck" IsChecked="{Binding IsChecked}" HorizontalAlignment="Center" MinWidth="0" MinHeight="0" Padding="0"
+                                    AutomationProperties.Name="{x:Static app:Strings.SelectRow}" />
+                        </Panel>
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTemplateColumn Header="{x:Static app:Strings.ColName}" Width="*" MinWidth="170" SortMemberPath="Name" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <!-- Grid, not StackPanel: the name needs a bounded width for the "…" trimming -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9" Margin="0,0,8,0" VerticalAlignment="Center">
+                          <c:Icon Data="{Binding Icon}" Size="15" StrokeThickness="1.8" Foreground="{Binding IconBrush}" />
+                          <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" />
+                          <TextBlock Grid.Column="2" Classes="cell" Text="{Binding TagsText}" FontSize="11.5" Foreground="{DynamicResource CatCustomBrush}"
+                                     IsVisible="{Binding TagsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                        </Grid>
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTemplateColumn Header="{x:Static app:Strings.ColSize}" Width="84" SortMemberPath="SizeBytes" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <TextBlock Classes="cell" Text="{Binding SizeText}" HorizontalAlignment="Right" Margin="0,0,8,0" Foreground="{DynamicResource Text2Brush}" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTemplateColumn Header="{x:Static app:Strings.ColProgress}" Width="150" SortMemberPath="Progress" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <Grid ColumnDefinitions="*,40" Margin="8,0,4,0" VerticalAlignment="Center">
+                          <c:Bar Value="{Binding Progress}" Indeterminate="{Binding Indeterminate}"
+                                 Classes.error="{Binding IsError}" Classes.done="{Binding IsDone}" Classes.seed="{Binding IsSeeding}" Classes.idle="{Binding IsIdle}" />
+                          <TextBlock Grid.Column="1" Classes="cell" Text="{Binding PercentText}" HorizontalAlignment="Right" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+                        </Grid>
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTemplateColumn Header="{x:Static app:Strings.ColSpeed}" Width="90" SortMemberPath="SpeedValue" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <TextBlock Classes="cell" Text="{Binding SpeedText}" Foreground="{Binding SpeedBrush}" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTemplateColumn Header="{x:Static app:Strings.ColStatus}" Width="156" SortMemberPath="StateOrder" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <TextBlock Classes="cell" Margin="8,0,4,0" Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" ToolTip.Tip="{Binding StatusText}" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                  <DataGridTemplateColumn Header="{x:Static app:Strings.ColAdded}" Width="96" SortMemberPath="AddedAt" x:DataType="vm:DownloadItemViewModel">
+                    <DataGridTemplateColumn.CellTemplate>
+                      <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                        <TextBlock Classes="cell" Text="{Binding AddedText}" HorizontalAlignment="Right" Margin="0,0,10,0" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+                      </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                  </DataGridTemplateColumn>
+                </DataGrid.Columns>
+              </DataGrid>
+
+              <!-- nothing to show -->
+              <StackPanel IsVisible="{Binding IsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8" Margin="24,40">
+                <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource AccentSoftBrush}" HorizontalAlignment="Center">
+                  <c:Icon Data="{StaticResource IcLogo}" Size="22" StrokeThickness="2" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" HorizontalAlignment="Center" />
+                </Border>
+                <TextBlock Text="{x:Static app:Strings.EmptyTitle}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                <TextBlock Text="{x:Static app:Strings.EmptyBody}" Classes="subtle" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="380" TextWrapping="Wrap" />
+                <Button Classes="accent" HorizontalAlignment="Center" Margin="0,6,0,0" Command="{Binding AddUrlCommand}" Content="{x:Static app:Strings.NewDownload}" />
+              </StackPanel>
+
+              <!-- undo toast -->
+              <Border IsVisible="{Binding ToastVisible}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,12" Padding="14,4,4,4" CornerRadius="8"
+                      Background="{DynamicResource ToastBrush}" BoxShadow="0 6 20 0 #40000000">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <TextBlock Text="{Binding ToastText}" VerticalAlignment="Center" Foreground="#F2F3F5" />
+                  <Button Classes="tool" MinHeight="28" Padding="10,0" Command="{Binding UndoCommand}" Content="{x:Static app:Strings.Undo}"
+                          Foreground="{DynamicResource SystemControlHighlightAccentBrush}" FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+            </Panel>
+
+            <GridSplitter x:Name="DetailSplitter" Grid.Row="1" Height="5" Background="Transparent" ResizeDirection="Rows" IsVisible="{Binding ShowDetail}" />
+
+            <!-- ============ Detail panel: one line of facts, a progress strip, then tabs ============ -->
+            <Border x:Name="DetailPanel" Grid.Row="2" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" IsVisible="{Binding ShowDetail}">
+              <DockPanel Margin="12,6,8,4" DataContext="{Binding Detail}" x:DataType="vm:DetailViewModel">
+                <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" MinHeight="28">
+                  <c:Icon Data="{Binding Item.Icon}" Size="16" Foreground="{Binding Item.IconBrush}" />
+                  <SelectableTextBlock Grid.Column="1" Text="{Binding Item.Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Item.Name}" />
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Item.PercentText}" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Headline}" Classes="subtle" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="1" Margin="6,0,0,0">
+                    <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).PrimaryActionCommand}"
+                            ToolTip.Tip="{Binding PrimaryLabel}" AutomationProperties.Name="{Binding PrimaryLabel}">
+                      <c:Icon Data="{Binding PrimaryIcon}" Size="14" />
+                    </Button>
+                    <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenFolderCommand}"
+                            ToolTip.Tip="{x:Static app:Strings.OpenFolder}" AutomationProperties.Name="{x:Static app:Strings.OpenFolder}">
+                      <c:Icon Data="{StaticResource IcFolder}" Size="14" />
+                    </Button>
+                    <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CopyUrlCommand}"
+                            ToolTip.Tip="{x:Static app:Strings.CopyUrl}" AutomationProperties.Name="{x:Static app:Strings.CopyUrl}">
+                      <c:Icon Data="{StaticResource IcLink}" Size="14" />
+                    </Button>
+                    <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenDetailsCommand}"
+                            ToolTip.Tip="{x:Static app:Strings.ProgressWindow}" AutomationProperties.Name="{x:Static app:Strings.ProgressWindow}">
+                      <c:Icon Data="{StaticResource IcExternal}" Size="14" />
+                    </Button>
+                    <Button Classes="tool" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ToggleDetailCommand}"
+                            ToolTip.Tip="{x:Static app:Strings.ToggleDetail}" AutomationProperties.Name="{x:Static app:Strings.ToggleDetail}">
+                      <c:Icon Data="{StaticResource IcClose}" Size="13" />
+                    </Button>
+                  </StackPanel>
+                </Grid>
+
+                <!-- progress: the HTTP segment map, the torrent piece map, or a plain bar -->
+                <Panel DockPanel.Dock="Top" Margin="0,4,0,6">
+                  <c:SegmentMap IsVisible="{Binding ShowSegments}" Height="5" Segments="{Binding Segments}" Total="{Binding TotalBytes}" />
+                  <c:PieceBar IsVisible="{Binding ShowPieces}" Height="8" Have="{Binding PieceHave}" Available="{Binding PieceAvailable}" ToolTip.Tip="{Binding PieceTip}" />
+                  <c:Bar Height="5" Value="{Binding Item.Progress}" Indeterminate="{Binding Item.Indeterminate}"
+                         Classes.error="{Binding Item.IsError}" Classes.done="{Binding Item.IsDone}" Classes.seed="{Binding Item.IsSeeding}" Classes.idle="{Binding Item.IsIdle}">
+                    <c:Bar.IsVisible>
+                      <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!ShowSegments" />
+                        <Binding Path="!ShowPieces" />
+                      </MultiBinding>
+                    </c:Bar.IsVisible>
+                  </c:Bar>
+                </Panel>
+
+                <!-- error -->
+                <Border DockPanel.Dock="Top" IsVisible="{Binding Item.IsError}" CornerRadius="6" Padding="10,6" Margin="0,0,4,6" Background="{DynamicResource ErrSoftBrush}">
+                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <c:Icon Data="{StaticResource IcAlert}" Size="15" Foreground="{DynamicResource ErrBrush}" />
+                    <TextBlock Grid.Column="1" Text="{Binding ErrorText}" Foreground="{DynamicResource ErrTextBrush}" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                      <Button Classes="accent" MinHeight="26" Height="26" Padding="10,0" FontSize="12" Content="{x:Static app:Strings.RefreshLink}"
+                              Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RefreshLinkCommand}" IsVisible="{Binding IsHttp}" />
+                      <Button MinHeight="26" Height="26" Padding="10,0" FontSize="12" Content="{x:Static app:Strings.OpenInBrowser}"
+                              Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenInBrowserCommand}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+
+                <ListBox DockPanel.Dock="Top" Classes="tabs" ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}" Margin="-8,0,0,0">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DetailTab"><TextBlock Text="{Binding Label}" /></DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Border DockPanel.Dock="Top" Classes="hline" Margin="0,0,4,6" />
+
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                  <StackPanel>
+                    <!-- info: two columns of facts -->
+                    <ItemsControl ItemsSource="{Binding Info}" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=info}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="2" ColumnSpacing="24" /></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:InfoRow">
+                          <Grid ColumnDefinitions="110,*" Margin="0,0,0,6">
+                            <TextBlock Classes="k" Text="{Binding Label}" />
+                            <SelectableTextBlock Grid.Column="1" Classes="v" Text="{Binding Value}" TextWrapping="Wrap" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- speed: the last minute as a graph, with current / average / peak -->
+                    <Grid ColumnDefinitions="170,*" ColumnSpacing="16" Height="116" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=speed}">
+                      <StackPanel Spacing="5" VerticalAlignment="Center">
+                        <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedNow}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding Item.SpeedText}" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" /></Grid>
+                        <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedAverage}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding AvgSpeedText}" /></Grid>
+                        <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="k" Text="{x:Static app:Strings.SpeedPeak}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding PeakSpeedText}" /></Grid>
+                        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsTorrent}"><TextBlock Classes="k" Text="{x:Static app:Strings.ProfileUp}" /><TextBlock Grid.Column="1" Classes="v" Text="{Binding Item.UpSpeedText}" Foreground="{DynamicResource InfoTextBrush}" /></Grid>
+                        <ListBox Classes="seg" ItemsSource="{Binding SpeedPeriods}" SelectedIndex="{Binding SpeedPeriod}" HorizontalAlignment="Left" Margin="0,2,0,0"
+                                 AutomationProperties.Name="{x:Static app:Strings.SpeedGraph}" />
+                      </StackPanel>
+                      <c:SpeedGraph Grid.Column="1" ShowScale="True" Values="{Binding SpeedHistory}" UpValues="{Binding UpHistoryValues}" Capacity="{Binding SpeedCapacity}"
+                                    AutomationProperties.Name="{x:Static app:Strings.SpeedGraph}" />
+                    </Grid>
+
+                    <!-- files -->
+                    <StackPanel IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=files}">
+                      <TextBlock IsVisible="{Binding FilesPending}" Text="{x:Static app:Strings.MagnetNoFiles}" Classes="subtle" TextWrapping="Wrap" />
+                      <!-- virtualized against the panel's scroll viewport, so only visible rows exist (row template in App.axaml) -->
+                      <ItemsControl ItemsSource="{Binding FileTree.Rows}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                      </ItemsControl>
+                    </StackPanel>
+
+                    <!-- peers -->
+                    <StackPanel IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=peers}">
+                      <TextBlock IsVisible="{Binding NoPeers}" Text="{x:Static app:Strings.NoPeers}" Classes="subtle" Margin="0,4" />
+                      <ItemsControl ItemsSource="{Binding Peers}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:PeerRow">
+                            <Border MinHeight="28" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+                              <Grid ColumnDefinitions="*,140,120,80,Auto" ColumnSpacing="14">
+                                <TextBlock Classes="cell" Text="{Binding Address}" FontSize="12" />
+                                <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Client}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+                                <ProgressBar Grid.Column="2" Value="{Binding Have}" Height="4" Classes="seed" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="3" Classes="cell" Text="{Binding Down}" FontSize="12" HorizontalAlignment="Right" />
+                                <Button Grid.Column="4" Classes="tool" Width="24" Height="24" Padding="0"
+                                        Command="{Binding $parent[ItemsControl].((vm:DetailViewModel)DataContext).BanPeerCommand}" CommandParameter="{Binding}"
+                                        ToolTip.Tip="{x:Static app:Strings.BanPeer}" AutomationProperties.Name="{x:Static app:Strings.BanPeer}">
+                                  <c:Icon Data="{StaticResource IcBan}" Size="12" />
+                                </Button>
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+
+                    <!-- trackers -->
+                    <ItemsControl ItemsSource="{Binding Trackers}" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=trackers}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TrackerRow">
+                          <Border MinHeight="28" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                              <Ellipse Width="6" Height="6" Fill="{DynamicResource OkBrush}" IsVisible="{Binding Ok}" VerticalAlignment="Center" />
+                              <Ellipse Width="6" Height="6" Fill="{DynamicResource IdleBrush}" IsVisible="{Binding !Ok}" VerticalAlignment="Center" />
+                              <TextBlock Grid.Column="1" Classes="cell" Text="{Binding Url}" FontSize="12" ToolTip.Tip="{Binding Url}" />
+                              <TextBlock Grid.Column="2" Classes="cell" Text="{Binding Status}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" />
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- torrent options -->
+                    <StackPanel MaxWidth="640" HorizontalAlignment="Left" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=options}">
+                      <c:SettingRow Title="{x:Static app:Strings.TorrentDownLimitItem}" Description="{x:Static app:Strings.ZeroIsGlobal}">
+                        <NumericUpDown Value="{Binding TorrentDownKb}" Minimum="0" Maximum="10000000" Increment="100" FormatString="0" Width="110" />
+                      </c:SettingRow>
+                      <c:SettingRow Title="{x:Static app:Strings.TorrentUpLimitItem}" Description="{x:Static app:Strings.ZeroIsGlobal}">
+                        <NumericUpDown Value="{Binding TorrentUpKb}" Minimum="0" Maximum="10000000" Increment="100" FormatString="0" Width="110" />
+                      </c:SettingRow>
+                      <c:SettingRow Title="{x:Static app:Strings.Sequential}">
+                        <ToggleSwitch IsChecked="{Binding Sequential}" OnContent="" OffContent="" MinWidth="0" />
+                      </c:SettingRow>
+                      <c:SettingRow Title="{x:Static app:Strings.SeedOverride}" Description="{x:Static app:Strings.SeedOverrideDesc}">
+                        <ToggleSwitch IsChecked="{Binding SeedOverride}" OnContent="" OffContent="" MinWidth="0" />
+                      </c:SettingRow>
+                      <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="14,8,14,0" IsVisible="{Binding SeedOverride}">
+                        <NumericUpDown Value="{Binding SeedRatio}" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.0"
+                                       ToolTip.Tip="{x:Static app:Strings.SeedRatio}" AutomationProperties.Name="{x:Static app:Strings.SeedRatio}" />
+                        <NumericUpDown Grid.Column="1" Value="{Binding SeedMinutes}" Minimum="0" Maximum="100000" Increment="10" FormatString="0"
+                                       ToolTip.Tip="{x:Static app:Strings.SeedMinutes}" AutomationProperties.Name="{x:Static app:Strings.SeedMinutes}" />
+                      </Grid>
+                    </StackPanel>
+
+                    <!-- HTTP connections -->
+                    <ItemsControl MaxWidth="760" HorizontalAlignment="Left" ItemsSource="{Binding Connections}" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=conns}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ConnRow">
+                          <Grid ColumnDefinitions="26,*,120" ColumnSpacing="10" Margin="0,0,0,7">
+                            <TextBlock Text="{Binding Number}" FontSize="11.5" Foreground="{DynamicResource FaintBrush}" VerticalAlignment="Center" />
+                            <ProgressBar Grid.Column="1" Value="{Binding Percent}" Height="4" Foreground="{Binding Brush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="{Binding Text}" FontSize="11.5" Foreground="{DynamicResource Text2Brush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- log -->
+                    <ItemsControl ItemsSource="{Binding Item.Log}" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=log}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LogLine">
+                          <Grid ColumnDefinitions="44,*" ColumnSpacing="8" Margin="0,0,0,5">
+                            <TextBlock Text="{Binding Time}" FontSize="12" Foreground="{DynamicResource FaintBrush}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="12" Foreground="{Binding Brush}" TextWrapping="Wrap" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- headers -->
+                    <ItemsControl ItemsSource="{Binding Headers}" IsVisible="{Binding TabKey, Converter={x:Static vm:Is.Equal}, ConverterParameter=headers}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:InfoRow">
+                          <Grid ColumnDefinitions="200,*" ColumnSpacing="12" Margin="0,0,0,4">
+                            <TextBlock Classes="subtle" Text="{Binding Label}" FontFamily="{StaticResource MonoFont}" FontSize="11" TextTrimming="CharacterEllipsis" />
+                            <SelectableTextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" FontSize="11" FontFamily="{StaticResource MonoFont}" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </ScrollViewer>
+              </DockPanel>
+            </Border>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- ============ Status bar ============ -->
+      <Grid x:Name="StatusBar" Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="14" Margin="14,0,8,0">
+        <TextBlock Text="{Binding Summary}" Foreground="{DynamicResource SubtleBrush}" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" ToolTip.Tip="{Binding DiskPath}">
+          <c:Icon Data="{StaticResource IcFolder}" Size="12" Foreground="{DynamicResource FaintBrush}" />
+          <TextBlock Text="{Binding DiskFreeText}" Foreground="{DynamicResource SubtleBrush}" />
+        </StackPanel>
+        <Button Grid.Column="2" Classes="tool" Command="{Binding OpenScheduleCommand}" ToolTip.Tip="{x:Static app:Strings.NightQueueTip}" Margin="-6,0,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <c:Icon Data="{StaticResource IcClock}" Size="12" Foreground="{DynamicResource FaintBrush}" />
+            <TextBlock Text="{Binding QueueText}" Foreground="{DynamicResource SubtleBrush}" />
+          </StackPanel>
+        </Button>
+        <Button Grid.Column="3" Classes="tool" IsVisible="{Binding IsHeld}" Command="{Binding OpenScheduleCommand}" HorizontalAlignment="Left"
+                ToolTip.Tip="{x:Static app:Strings.HoldTip}" AutomationProperties.Name="{Binding HoldText}">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <c:Icon Data="{StaticResource IcPause}" Size="12" StrokeThickness="2" Foreground="{DynamicResource WarnBrush}" />
+            <TextBlock Text="{Binding HoldText}" Foreground="{DynamicResource WarnTextBrush}" />
+          </StackPanel>
+        </Button>
+        <TextBlock Grid.Column="4" Text="{Binding DhtText}" Foreground="{DynamicResource FaintBrush}" />
+        <TextBlock Grid.Column="5" Text="{Binding TotalDown}" Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Grid.Column="6" Text="{Binding TotalUp}" Foreground="{DynamicResource InfoTextBrush}" />
+        <!-- one button for everything: pause all while something runs, otherwise resume all -->
+        <Button Grid.Column="7" Classes="tool" Command="{Binding ToggleAllCommand}" ToolTip.Tip="{Binding ToggleAllTip}" AutomationProperties.Name="{Binding ToggleAllTip}">
+          <c:Icon Data="{Binding ToggleAllIcon}" Size="12" StrokeThickness="2" />
+        </Button>
+        <Button Grid.Column="8" Classes="tool" ToolTip.Tip="{x:Static app:Strings.ProfileTip}" AutomationProperties.Name="{x:Static app:Strings.ProfileTip}">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <c:Icon Data="{StaticResource IcGauge}" Size="13" />
+            <TextBlock Text="{Binding ProfileText}" />
+            <c:Icon Data="{StaticResource IcUp}" Size="10" StrokeThickness="2" Foreground="{DynamicResource FaintBrush}" />
+          </StackPanel>
+          <Button.Flyout>
+            <MenuFlyout Placement="TopEdgeAlignedRight" ItemsSource="{Binding ProfileChoices}">
+              <MenuFlyout.ItemContainerTheme>
+                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}" x:DataType="vm:ProfileChoice">
+                  <Setter Property="Header" Value="{Binding Label}" />
+                  <Setter Property="ToggleType" Value="{Binding ToggleType}" />
+                  <Setter Property="IsChecked" Value="{Binding IsActive}" />
+                  <Setter Property="Command" Value="{Binding Command}" />
+                </ControlTheme>
+              </MenuFlyout.ItemContainerTheme>
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+      </Grid>
+    </Grid>
+
+    <!-- ============ Command palette (Ctrl+K) ============ -->
+    <v:CommandPalette DataContext="{Binding Palette}" x:DataType="vm:CommandPaletteViewModel" IsVisible="{Binding IsOpen}" />
+  </Panel>
+</Window>

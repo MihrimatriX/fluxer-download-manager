@@ -1,0 +1,123 @@
+# Every push: tests + installer as a build artifact.
+# Tag v* (e.g. v1.0.0): also publishes a GitHub release with the installer and the Velopack update feed.
+name: build
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      HAS_SIGNING: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT != '' }}
+      HAS_AMO: ${{ secrets.AMO_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Version
+        id: ver
+        shell: pwsh
+        run: |
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') }
+               else { ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Test
+        shell: pwsh
+        run: |
+          dotnet test --project tests/Fluxer.Core.Tests
+          if ($LASTEXITCODE) { exit 1 }
+          dotnet test --project tests/Fluxer.Integration.Tests
+          if ($LASTEXITCODE) { exit 1 }
+          cd extension; npm ci --no-audit --no-fund; npm test
+
+      # Signing turns on once the repository has these secrets (Settings → Secrets and variables → Actions):
+      # AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, ARTIFACT_SIGNING_ENDPOINT,
+      # ARTIFACT_SIGNING_ACCOUNT, ARTIFACT_SIGNING_PROFILE. Without them the build is unsigned.
+      - name: Signing metadata
+        if: env.HAS_SIGNING == 'true'
+        shell: pwsh
+        env:
+          SIGN_ENDPOINT: ${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}
+          SIGN_ACCOUNT: ${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}
+          SIGN_PROFILE: ${{ secrets.ARTIFACT_SIGNING_PROFILE }}
+        run: |
+          @{ Endpoint = $env:SIGN_ENDPOINT; CodeSigningAccountName = $env:SIGN_ACCOUNT; CertificateProfileName = $env:SIGN_PROFILE } |
+            ConvertTo-Json | Set-Content "$env:RUNNER_TEMP/signing.json"
+          "FLUXER_AZURE_SIGN_FILE=$env:RUNNER_TEMP/signing.json" >> $env:GITHUB_ENV
+
+      - name: Pack
+        shell: pwsh
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        run: ./build/pack.ps1 -Version ${{ steps.ver.outputs.version }}
+
+      - name: Extension store package
+        shell: pwsh
+        run: cd extension; npm run store
+
+      # Firefox only installs signed add-ons for good. With AMO_API_KEY / AMO_API_SECRET (addons.mozilla.org →
+      # Manage API Keys) a tag also gets a Mozilla-signed, unlisted .xpi. AMO takes each version once, so tags only.
+      - name: Sign Firefox add-on
+        if: github.ref_type == 'tag' && env.HAS_AMO == 'true'
+        shell: pwsh
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: |
+          cd extension
+          npx --yes web-ext@8 sign --channel unlisted --source-dir dist-firefox --artifacts-dir web-ext-artifacts --api-key $env:AMO_API_KEY --api-secret $env:AMO_API_SECRET
+          if ($LASTEXITCODE) { exit 1 }
+          $xpi = Get-ChildItem web-ext-artifacts -Filter *.xpi | Select-Object -First 1
+          $v = (Get-Content dist-firefox/manifest.json | ConvertFrom-Json).version
+          Move-Item $xpi.FullName "store/fluxer-extension-firefox-$v.xpi"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fluxer-extension-${{ steps.ver.outputs.version }}
+          path: |
+            extension/store/*.zip
+            extension/store/*.xpi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fluxer-${{ steps.ver.outputs.version }}
+          path: artifacts/releases/*
+
+      # The tag's "## <version> — <date>" section of CHANGELOG.md; empty if there is none.
+      - name: Release notes
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: awk -v v="${{ steps.ver.outputs.version }}" '/^## /{ if (on) exit; on = ($2 == v); next } on' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+
+      - name: Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/releases/*
+            extension/store/*.zip
+            extension/store/*.xpi
+          body_path: ${{ runner.temp }}/notes.md
+          generate_release_notes: true
+          # v1.1.0-beta.1 → pre-release: only installs that turned on "Beta versions" pick it up.
+          prerelease: ${{ contains(github.ref_name, '-') }}

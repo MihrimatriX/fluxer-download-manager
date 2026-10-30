@@ -1,0 +1,684 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:Fluxer.App.Controls"
+             xmlns:vm="using:Fluxer.App.ViewModels"
+             x:Class="Fluxer.App.App"
+             Name="Fluxer"
+             RequestedThemeVariant="Dark">
+  <!-- Fluxer's own look: flat graphite (dark) or paper (light) surfaces, hairline edges, the logo blue as accent,
+       and compact controls. A window is "chrome" (MainBrush) around one content surface (SurfaceBrush). -->
+  <Application.Resources>
+    <ResourceDictionary>
+      <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+      <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+      <x:Double x:Key="RowHeight">32</x:Double>
+      <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+      <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+      <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas</FontFamily>
+
+      <!-- Line icons, 24×24, stroked -->
+      <StreamGeometry x:Key="IcAll">M4 6h16M4 12h16M4 18h16</StreamGeometry>
+      <StreamGeometry x:Key="IcVideo">M3 6h13v12H3zM16 10l5-3v10l-5-3</StreamGeometry>
+      <StreamGeometry x:Key="IcMusic">M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M20 16a3 3 0 1 1-6 0a3 3 0 1 1 6 0</StreamGeometry>
+      <StreamGeometry x:Key="IcDoc">M6 3h8l4 4v14H6zM14 3v4h4M9 13h6M9 17h6</StreamGeometry>
+      <StreamGeometry x:Key="IcArchive">M4 4h16v4H4zM5 8v12h14V8M10 12h4</StreamGeometry>
+      <StreamGeometry x:Key="IcApp">M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10</StreamGeometry>
+      <StreamGeometry x:Key="IcTorrent">M6 4v8a6 6 0 0 0 12 0V4M6 8h4M14 8h4</StreamGeometry>
+      <StreamGeometry x:Key="IcFolder">M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z</StreamGeometry>
+      <StreamGeometry x:Key="IcFile">M6 3h8l4 4v14H6zM14 3v4h4</StreamGeometry>
+      <StreamGeometry x:Key="IcPlay">M7 4.5l12 7.5-12 7.5z</StreamGeometry>
+      <StreamGeometry x:Key="IcPause">M9 5v14M15 5v14</StreamGeometry>
+      <StreamGeometry x:Key="IcTrash">M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3</StreamGeometry>
+      <StreamGeometry x:Key="IcUp">M6 15l6-6 6 6</StreamGeometry>
+      <StreamGeometry x:Key="IcDown">M6 9l6 6 6-6</StreamGeometry>
+      <StreamGeometry x:Key="IcBack">M15 6l-6 6 6 6</StreamGeometry>
+      <StreamGeometry x:Key="IcNext">M9 6l6 6-6 6</StreamGeometry>
+      <StreamGeometry x:Key="IcClock">M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 7v5l3 2</StreamGeometry>
+      <StreamGeometry x:Key="IcPanel">M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM3 14h18</StreamGeometry>
+      <StreamGeometry x:Key="IcPlus">M12 5v14M5 12h14</StreamGeometry>
+      <StreamGeometry x:Key="IcSearch">M4 11a7 7 0 1 0 14 0a7 7 0 1 0-14 0M20 20l-3.5-3.5</StreamGeometry>
+      <StreamGeometry x:Key="IcGauge">M4 16a8 8 0 0 1 16 0M12 16l4-5</StreamGeometry>
+      <StreamGeometry x:Key="IcCopy">M10 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zM16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2</StreamGeometry>
+      <StreamGeometry x:Key="IcClose">M6 6l12 12M18 6L6 18</StreamGeometry>
+      <StreamGeometry x:Key="IcSortDown">M12 5v14M6 13l6 6 6-6</StreamGeometry>
+      <StreamGeometry x:Key="IcLogo">M12 4v11M7 10l5 5 5-5M6 20h12</StreamGeometry>
+      <StreamGeometry x:Key="IcMore">M4.6 12a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0-2.8 0M10.6 12a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0-2.8 0M16.6 12a1.4 1.4 0 1 0 2.8 0a1.4 1.4 0 1 0-2.8 0</StreamGeometry>
+      <StreamGeometry x:Key="IcPin">M9 4h6l-1 6 3 3H7l3-3zM12 13v7</StreamGeometry>
+      <StreamGeometry x:Key="IcGlobe">M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18</StreamGeometry>
+      <StreamGeometry x:Key="IcSliders">M4 7h9M17 7h3M4 17h3M11 17h9M13 7a2 2 0 1 0 4 0a2 2 0 1 0-4 0M7 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0</StreamGeometry>
+      <StreamGeometry x:Key="IcCommand">M9 9V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V9</StreamGeometry>
+      <StreamGeometry x:Key="IcLink">M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1</StreamGeometry>
+      <StreamGeometry x:Key="IcExternal">M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5</StreamGeometry>
+      <StreamGeometry x:Key="IcRefresh">M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7</StreamGeometry>
+      <StreamGeometry x:Key="IcTag">M3 12V4h8l10 10-8 8zM7.5 8a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0</StreamGeometry>
+      <StreamGeometry x:Key="IcHash">M5 9h15M4 15h15M10 3L8 21M16 3l-2 18</StreamGeometry>
+      <StreamGeometry x:Key="IcBolt">M13 3L5 14h6l-1 7 8-11h-6z</StreamGeometry>
+      <StreamGeometry x:Key="IcVolume">M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12</StreamGeometry>
+      <StreamGeometry x:Key="IcSun">M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4</StreamGeometry>
+      <StreamGeometry x:Key="IcMoon">M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z</StreamGeometry>
+      <StreamGeometry x:Key="IcCheck">M5 12l5 5 9-10</StreamGeometry>
+      <StreamGeometry x:Key="IcAlert">M12 8v5M12 16.5v.01M10.3 4.2L2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z</StreamGeometry>
+      <StreamGeometry x:Key="IcBroom">M14 4l-4 9M6 13h8l2 7H4zM9 17v3M12 17v3</StreamGeometry>
+      <StreamGeometry x:Key="IcLock">M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4</StreamGeometry>
+      <StreamGeometry x:Key="IcChart">M5 20V11M12 20V5M19 20v-6M3 20h18</StreamGeometry>
+      <StreamGeometry x:Key="IcPlug">M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4</StreamGeometry>
+      <StreamGeometry x:Key="IcBan">M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M5.6 5.6l12.8 12.8</StreamGeometry>
+      <StreamGeometry x:Key="IcGear">M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z</StreamGeometry>
+
+      <ResourceDictionary.ThemeDictionaries>
+        <!-- ===== Dark: graphite ===== -->
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="MainBrush" Color="#121418" />
+          <SolidColorBrush x:Key="SurfaceBrush" Color="#191C21" />
+          <SolidColorBrush x:Key="CardBrush" Color="#1F2329" />
+          <SolidColorBrush x:Key="PopupBrush" Color="#22262D" />
+          <SolidColorBrush x:Key="ToastBrush" Color="#2A2F37" />
+          <SolidColorBrush x:Key="ScrimBrush" Color="#8C000000" />
+          <SolidColorBrush x:Key="TextBrush" Color="#E6E8EC" />
+          <SolidColorBrush x:Key="Text2Brush" Color="#C2C7D0" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#8E95A2" />
+          <SolidColorBrush x:Key="FaintBrush" Color="#6A717E" />
+          <SolidColorBrush x:Key="PanelEdgeBrush" Color="#1AFFFFFF" />
+          <SolidColorBrush x:Key="CardEdgeBrush" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="DividerBrush" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="RowLineBrush" Color="#0AFFFFFF" />
+          <SolidColorBrush x:Key="WellBrush" Color="#33000000" />
+          <SolidColorBrush x:Key="TrackBrush" Color="#1AFFFFFF" />
+          <SolidColorBrush x:Key="HoverBrush" Color="#0FFFFFFF" />
+          <SolidColorBrush x:Key="PressedBrush" Color="#08FFFFFF" />
+          <SolidColorBrush x:Key="SelectedBrush" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="SoftButtonBrush" Color="#0FFFFFFF" />
+          <SolidColorBrush x:Key="ChipBrush" Color="#0AFFFFFF" />
+          <SolidColorBrush x:Key="KbdBrush" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="OkBrush" Color="#3FB68B" />
+          <SolidColorBrush x:Key="ErrBrush" Color="#F06A6A" />
+          <SolidColorBrush x:Key="ErrTextBrush" Color="#FF9C94" />
+          <SolidColorBrush x:Key="ErrSoftBrush" Color="#1FF06A6A" />
+          <SolidColorBrush x:Key="InfoBrush" Color="#4FA3F7" />
+          <SolidColorBrush x:Key="InfoTextBrush" Color="#8CC2FA" />
+          <SolidColorBrush x:Key="IdleBrush" Color="#5C6370" />
+          <SolidColorBrush x:Key="WarnBrush" Color="#E3A73C" />
+          <SolidColorBrush x:Key="WarnTextBrush" Color="#F2C46D" />
+          <!-- file type tints (list icons, progress window tile) -->
+          <SolidColorBrush x:Key="CatVideoBrush" Color="#A78BFA" />
+          <SolidColorBrush x:Key="CatMusicBrush" Color="#F472B6" />
+          <SolidColorBrush x:Key="CatDocumentsBrush" Color="#60A5FA" />
+          <SolidColorBrush x:Key="CatArchivesBrush" Color="#FBBF24" />
+          <SolidColorBrush x:Key="CatProgramsBrush" Color="#34D399" />
+          <SolidColorBrush x:Key="CatTorrentBrush" Color="#22D3EE" />
+          <SolidColorBrush x:Key="CatOtherBrush" Color="#A3AAB6" />
+          <SolidColorBrush x:Key="CatCustomBrush" Color="#F59E9E" />
+          <Color x:Key="ShadowColor">#66000000</Color>
+
+          <!-- Fluent controls -->
+          <SolidColorBrush x:Key="TextControlBackground" Color="#0DFFFFFF" />
+          <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#0A0C0F" />
+          <SolidColorBrush x:Key="TextControlBorderBrush" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#2EFFFFFF" />
+          <SolidColorBrush x:Key="TextControlForeground" Color="#E6E8EC" />
+          <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#E6E8EC" />
+          <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#E6E8EC" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#6A717E" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#6A717E" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#6A717E" />
+          <SolidColorBrush x:Key="ComboBoxBackground" Color="#0DFFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#08FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#2EFFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#22262D" />
+          <SolidColorBrush x:Key="ButtonBackground" Color="#12FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#1CFFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#0AFFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#08FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBorderBrush" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#14FFFFFF" />
+          <SolidColorBrush x:Key="ButtonForeground" Color="#E6E8EC" />
+          <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#C2C7D0" />
+          <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#22262D" />
+          <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#22262D" />
+          <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="ToolTipBackground" Color="#2A2F37" />
+          <SolidColorBrush x:Key="ToolTipBorderBrush" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="ToolTipForeground" Color="#E6E8EC" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked" Color="#0DFFFFFF" />
+          <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUnchecked" Color="#4DFFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#0DFFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#4DFFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#AEB4BE" />
+          <SolidColorBrush x:Key="SliderTrackFill" Color="#1FFFFFFF" />
+          <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="ExpanderContentBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="DataGridRowSelectedBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <SolidColorBrush x:Key="DataGridRowSelectedHoveredBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <Color x:Key="DataGridRowHoveredBackgroundColor">#0AFFFFFF</Color>
+          <SolidColorBrush x:Key="DataGridGridLinesBrush" Color="#0AFFFFFF" />
+        </ResourceDictionary>
+
+        <!-- ===== Light: paper ===== -->
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="MainBrush" Color="#EEF0F3" />
+          <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="CardBrush" Color="#F7F8FA" />
+          <SolidColorBrush x:Key="PopupBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToastBrush" Color="#23272E" />
+          <SolidColorBrush x:Key="ScrimBrush" Color="#47000000" />
+          <SolidColorBrush x:Key="TextBrush" Color="#15181D" />
+          <SolidColorBrush x:Key="Text2Brush" Color="#3A404A" />
+          <SolidColorBrush x:Key="SubtleBrush" Color="#5E6570" />
+          <SolidColorBrush x:Key="FaintBrush" Color="#8A909B" />
+          <SolidColorBrush x:Key="PanelEdgeBrush" Color="#1A000000" />
+          <SolidColorBrush x:Key="CardEdgeBrush" Color="#14000000" />
+          <SolidColorBrush x:Key="DividerBrush" Color="#14000000" />
+          <SolidColorBrush x:Key="RowLineBrush" Color="#0A000000" />
+          <SolidColorBrush x:Key="WellBrush" Color="#0A000000" />
+          <SolidColorBrush x:Key="TrackBrush" Color="#14000000" />
+          <SolidColorBrush x:Key="HoverBrush" Color="#0A000000" />
+          <SolidColorBrush x:Key="PressedBrush" Color="#05000000" />
+          <SolidColorBrush x:Key="SelectedBrush" Color="#0F000000" />
+          <SolidColorBrush x:Key="SoftButtonBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ChipBrush" Color="#08000000" />
+          <SolidColorBrush x:Key="KbdBrush" Color="#0D000000" />
+          <SolidColorBrush x:Key="OkBrush" Color="#16875A" />
+          <SolidColorBrush x:Key="ErrBrush" Color="#D33A3A" />
+          <SolidColorBrush x:Key="ErrTextBrush" Color="#B42323" />
+          <SolidColorBrush x:Key="ErrSoftBrush" Color="#14D33A3A" />
+          <SolidColorBrush x:Key="InfoBrush" Color="#1F6FD1" />
+          <SolidColorBrush x:Key="InfoTextBrush" Color="#1A5FB4" />
+          <SolidColorBrush x:Key="IdleBrush" Color="#A3A9B3" />
+          <SolidColorBrush x:Key="WarnBrush" Color="#C98A0B" />
+          <SolidColorBrush x:Key="WarnTextBrush" Color="#8A5D00" />
+          <SolidColorBrush x:Key="CatVideoBrush" Color="#7C3AED" />
+          <SolidColorBrush x:Key="CatMusicBrush" Color="#DB2777" />
+          <SolidColorBrush x:Key="CatDocumentsBrush" Color="#2563EB" />
+          <SolidColorBrush x:Key="CatArchivesBrush" Color="#B45309" />
+          <SolidColorBrush x:Key="CatProgramsBrush" Color="#059669" />
+          <SolidColorBrush x:Key="CatTorrentBrush" Color="#0891B2" />
+          <SolidColorBrush x:Key="CatOtherBrush" Color="#5E6570" />
+          <SolidColorBrush x:Key="CatCustomBrush" Color="#D9485F" />
+          <Color x:Key="ShadowColor">#26000000</Color>
+
+          <SolidColorBrush x:Key="TextControlBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBorderBrush" Color="#26000000" />
+          <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#38000000" />
+          <SolidColorBrush x:Key="ComboBoxBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#F7F8FA" />
+          <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#26000000" />
+          <SolidColorBrush x:Key="ButtonBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#F4F5F7" />
+          <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#EEF0F3" />
+          <SolidColorBrush x:Key="ButtonBorderBrush" Color="#21000000" />
+          <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#2E000000" />
+          <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#1F000000" />
+          <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToolTipBackground" Color="#23272E" />
+          <SolidColorBrush x:Key="ToolTipForeground" Color="#F2F3F5" />
+          <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="ExpanderContentBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="DataGridRowSelectedBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <SolidColorBrush x:Key="DataGridRowSelectedHoveredBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <SolidColorBrush x:Key="DataGridRowSelectedUnfocusedBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <SolidColorBrush x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundBrush" Color="{DynamicResource SystemAccentColor}" />
+          <Color x:Key="DataGridRowHoveredBackgroundColor">#08000000</Color>
+          <SolidColorBrush x:Key="DataGridGridLinesBrush" Color="#0A000000" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+
+      <!-- expanders: a plain, slim header line instead of a boxed panel -->
+      <x:Double x:Key="ExpanderMinHeight">32</x:Double>
+      <x:Double x:Key="ExpanderChevronButtonSize">24</x:Double>
+      <Thickness x:Key="ExpanderHeaderPadding">0,0,2,0</Thickness>
+      <Thickness x:Key="ExpanderHeaderBorderThickness">0</Thickness>
+      <Thickness x:Key="ExpanderContentDownBorderThickness">0</Thickness>
+      <Thickness x:Key="ExpanderContentPadding">0,6,0,0</Thickness>
+      <SolidColorBrush x:Key="ExpanderHeaderBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="ExpanderContentBorderBrush" Color="Transparent" />
+
+      <!-- list rows: a tint of the accent when selected (plus a bar on the row's left edge) -->
+      <x:Double x:Key="DataGridRowSelectedBackgroundOpacity">0.16</x:Double>
+      <x:Double x:Key="DataGridRowSelectedHoveredBackgroundOpacity">0.2</x:Double>
+      <x:Double x:Key="DataGridRowSelectedUnfocusedBackgroundOpacity">0.12</x:Double>
+      <x:Double x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundOpacity">0.16</x:Double>
+      <SolidColorBrush x:Key="DataGridFillerColumnGridLinesBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="DataGridCellFocusVisualPrimaryBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="DataGridCellFocusVisualSecondaryBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="Transparent" />
+
+      <ControlTheme x:Key="{x:Type c:SettingRow}" TargetType="c:SettingRow">
+        <Setter Property="BorderBrush" Value="{DynamicResource RowLineBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Padding="14,8" MinHeight="46" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel VerticalAlignment="Center" Margin="0,0,20,0" Spacing="1">
+                  <TextBlock Text="{TemplateBinding Title}" TextWrapping="Wrap" />
+                  <TextBlock Text="{TemplateBinding Description}" FontSize="11.5" TextWrapping="Wrap"
+                             Foreground="{DynamicResource SubtleBrush}"
+                             IsVisible="{TemplateBinding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                </StackPanel>
+                <ContentPresenter Grid.Column="1" Content="{TemplateBinding Content}" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.DataTemplates>
+    <!-- One torrent tree row (folder or file): the add-torrent dialog and the detail panel's Files tab (both virtualized). -->
+    <DataTemplate DataType="vm:TorrentNode" x:DataType="vm:TorrentNode">
+      <Border MinHeight="28" BorderBrush="{DynamicResource RowLineBrush}" BorderThickness="0,0,0,1">
+        <Grid ColumnDefinitions="20,Auto,*,Auto" ColumnSpacing="6" Margin="{Binding Indent}">
+          <Button Classes="icon" Width="20" Height="20" Padding="0" FontSize="10" IsVisible="{Binding IsFolder}"
+                  Content="{Binding Chevron}" Command="{Binding ToggleExpandCommand}" AutomationProperties.Name="{Binding Name}" />
+          <CheckBox Grid.Column="1" IsChecked="{Binding IsSelected}" IsThreeState="False" MinWidth="0" Padding="0" AutomationProperties.Name="{Binding Name}" />
+          <!-- folders: the whole name opens and closes them -->
+          <Button Grid.Column="2" Classes="tool" Padding="0" MinHeight="0" CornerRadius="4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                  IsVisible="{Binding IsFolder}" Command="{Binding ToggleExpandCommand}">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+              <c:Icon Data="{StaticResource IcFolder}" Size="14" Foreground="{DynamicResource CatArchivesBrush}" />
+              <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12" FontWeight="Medium" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}" />
+            </Grid>
+          </Button>
+          <Grid Grid.Column="2" ColumnDefinitions="Auto,*" ColumnSpacing="8" IsVisible="{Binding !IsFolder}">
+            <c:Icon Data="{StaticResource IcFile}" Size="14" Foreground="{DynamicResource SubtleBrush}" />
+            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="12" ToolTip.Tip="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </Grid>
+          <TextBlock Grid.Column="3" Text="{Binding Meta}" FontSize="12" Foreground="{DynamicResource SubtleBrush}" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+    <Style Selector="Window">
+      <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="Background" Value="{DynamicResource MainBrush}" />
+    </Style>
+
+    <!-- ===== Text ===== -->
+    <Style Selector="TextBlock.icon">
+      <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.subtle">
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.faint">
+      <Setter Property="Foreground" Value="{DynamicResource FaintBrush}" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <!-- small group labels -->
+    <Style Selector="TextBlock.caps">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.section">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+      <Setter Property="Margin" Value="2,0,0,6" />
+    </Style>
+
+    <!-- ===== Buttons ===== -->
+    <Style Selector="Button">
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Padding" Value="12,4" />
+      <Setter Property="MinHeight" Value="30" />
+    </Style>
+    <!-- flat toolbar buttons (icon, optionally with a label) -->
+    <Style Selector="Button.tool, ToggleButton.tool">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="MinWidth" Value="30" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+    </Style>
+    <Style Selector="Button.tool:pointerover /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="Button.tool:pressed /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource PressedBrush}" />
+    </Style>
+    <Style Selector="Button.tool:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.tool:disabled">
+      <Setter Property="Opacity" Value="0.4" />
+    </Style>
+    <!-- a checked tool toggle: accent icon on a faint fill -->
+    <Style Selector="ToggleButton.tool:checked /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.tool:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SelectedBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
+    <Style Selector="Button.icon">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="5" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+    </Style>
+    <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+    <!-- bordered secondary button (detail actions, folder pickers) -->
+    <Style Selector="Button.soft">
+      <Setter Property="Background" Value="{DynamicResource SoftButtonBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PanelEdgeBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.accent">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
+    <!-- caption buttons we draw (Appearance.CaptionButtons) -->
+    <Style Selector="Button.caption">
+      <Setter Property="Width" Value="44" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="Foreground" Value="{DynamicResource Text2Brush}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Focusable" Value="False" />
+    </Style>
+    <Style Selector="Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+    <Style Selector="Button.caption.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#C42B1C" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- ===== Surfaces ===== -->
+    <!-- the content area of a window -->
+    <Style Selector="Border.surface">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PanelEdgeBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <!-- a group inside a surface (settings groups, detail cards) -->
+    <Style Selector="Border.card, Border.panel">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardEdgeBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Border.well">
+      <Setter Property="Background" Value="{DynamicResource WellBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="Border.field">
+      <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="Border.hline">
+      <Setter Property="Height" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
+    </Style>
+    <Style Selector="Border.vsep">
+      <Setter Property="Width" Value="1" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="Margin" Value="6,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
+    </Style>
+    <Style Selector="Border.kbd">
+      <Setter Property="Background" Value="{DynamicResource KbdBrush}" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Padding" Value="5,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.kbd > TextBlock">
+      <Setter Property="FontSize" Value="10.5" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="Border.badge">
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Padding" Value="5,1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge > TextBlock">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- ===== Inputs ===== -->
+    <Style Selector="TextBox">
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="8,4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <!-- borderless text inside another frame (link box, palette, tray quick add) -->
+    <Style Selector="TextBox.bare, TextBox.bare:pointerover, TextBox.bare:focus">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="TextBox.bare /template/ Border#PART_BorderElement, TextBox.bare:pointerover /template/ Border#PART_BorderElement, TextBox.bare:focus /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="10,4,0,4" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="MinHeight" Value="30" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="MinHeight" Value="26" />
+    </Style>
+    <Style Selector="MenuFlyoutPresenter, ContextMenu">
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="4" />
+      <Setter Property="Background" Value="{DynamicResource PopupBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PanelEdgeBrush}" />
+    </Style>
+    <Style Selector="MenuItem">
+      <Setter Property="Padding" Value="10,5" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="FlyoutPresenter">
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="{DynamicResource PopupBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PanelEdgeBrush}" />
+    </Style>
+    <Style Selector="ToolTip">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="CornerRadius" Value="5" />
+    </Style>
+    <Style Selector="DataGrid /template/ Rectangle#PART_ColumnHeadersAndRowsSeparator">
+      <Setter Property="Fill" Value="{DynamicResource DividerBrush}" />
+    </Style>
+    <Style Selector="ProgressBar">
+      <Setter Property="MinHeight" Value="4" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="2" />
+      <Setter Property="Background" Value="{DynamicResource TrackBrush}" />
+    </Style>
+    <Style Selector="c|Bar">
+      <Setter Property="Height" Value="4" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Background" Value="{DynamicResource TrackBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+    </Style>
+    <Style Selector="c|Bar.error"><Setter Property="Foreground" Value="{DynamicResource ErrBrush}" /></Style>
+    <Style Selector="c|Bar.done"><Setter Property="Foreground" Value="{DynamicResource OkBrush}" /></Style>
+    <Style Selector="c|Bar.seed"><Setter Property="Foreground" Value="{DynamicResource InfoBrush}" /></Style>
+    <Style Selector="c|Bar.idle"><Setter Property="Foreground" Value="{DynamicResource IdleBrush}" /></Style>
+    <Style Selector="ProgressBar.error"><Setter Property="Foreground" Value="{DynamicResource ErrBrush}" /></Style>
+    <Style Selector="ProgressBar.done"><Setter Property="Foreground" Value="{DynamicResource OkBrush}" /></Style>
+    <Style Selector="ProgressBar.seed"><Setter Property="Foreground" Value="{DynamicResource InfoBrush}" /></Style>
+    <Style Selector="ProgressBar.idle"><Setter Property="Foreground" Value="{DynamicResource IdleBrush}" /></Style>
+
+    <!-- ===== Tab strips: text with an accent underline (detail tabs, state filters) ===== -->
+    <Style Selector="ListBox.tabs">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="ItemsPanel">
+        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="ListBox.tabs > ListBoxItem">
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="ListBox.tabs > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBox.tabs > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.tabs > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="BoxShadow" Value="{DynamicResource UnderlineShadow}" />
+    </Style>
+    <Style Selector="ListBox.tabs > ListBoxItem:selected">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- ===== Motion (windows get the "motion" class unless the user turned animations off) ===== -->
+    <Style Selector="Window.motion Button /template/ ContentPresenter#PART_ContentPresenter, Window.motion ToggleButton /template/ ContentPresenter#PART_ContentPresenter, Window.motion ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.12" />
+          <BrushTransition Property="Foreground" Duration="0:0:0.12" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion DataGridRow /template/ Rectangle#BackgroundRectangle">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion ProgressBar">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Value" Duration="0:0:0.35" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion c|Bar">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Value" Duration="0:0:0.35" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <!-- pages fade in instead of popping -->
+    <Style Selector="Window.motion :is(Control).page">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.15" Easing="CubicEaseOut" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector=":is(Control).page">
+      <Setter Property="RenderTransform" Value="none" />
+    </Style>
+    <Style Selector=":is(Control).page.hidden">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+      <!-- out of the Tab order and the accessibility tree while faded out -->
+      <Setter Property="IsEnabled" Value="False" />
+      <Setter Property="RenderTransform" Value="translateY(6px)" />
+    </Style>
+      <!-- segmented choice in a well (theme, speed graph period) -->
+    <Style Selector="ListBox.seg">
+      <Setter Property="Background" Value="{DynamicResource WellBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="ItemsPanel">
+        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="2" /></ItemsPanelTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem">
+      <Setter Property="Padding" Value="12,0" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SubtleBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+    <Style Selector="ListBox.seg > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBox.seg > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+      <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+    </Style>
+</Application.Styles>
+</Application>

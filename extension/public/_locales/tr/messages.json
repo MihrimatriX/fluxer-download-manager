@@ -1,0 +1,374 @@
+{
+  "extName": {
+    "message": "Fluxer"
+  },
+  "extDescription": {
+    "message": "Tarayıcı indirmelerini, bağlantıları ve sayfa kaynaklarını Fluxer indirme yöneticisine gönderir."
+  },
+  "menuDownload": {
+    "message": "Fluxer ile indir"
+  },
+  "menuGrab": {
+    "message": "Sayfadaki dosyaları/resimleri yakala"
+  },
+  "menuSendPage": {
+    "message": "Bu sayfayı Fluxer'a gönder"
+  },
+  "fallbackUnreachable": {
+    "message": "Fluxer'a ulaşılamadı. İndirme tarayıcıda devam ediyor."
+  },
+  "fallbackFailed": {
+    "message": "Fluxer bu indirmeyi alamadı. İndirme tarayıcıda devam ediyor."
+  },
+  "fallbackIncognito": {
+    "message": "Fluxer bu indirmeyi alamadı. Tarayıcıda indirmek için Alt tuşunu basılı tutup bağlantıya yeniden tıklayın."
+  },
+  "sendUnreachable": {
+    "message": "Fluxer'a ulaşılamadı. Uygulamanın kurulu olduğundan emin olun."
+  },
+  "sendFailed": {
+    "message": "Fluxer bu isteği kabul edemedi."
+  },
+  "updateRequired": {
+    "message": "Fluxer ile bu eklentinin sürümleri uyumsuz. Lütfen eklentiyi veya uygulamayı güncelleyin."
+  },
+  "unsupportedUrl": {
+    "message": "Bu adres Fluxer'a gönderilemez."
+  },
+  "pageNotReady": {
+    "message": "Bu sayfa okunamadı. Sayfayı yenileyip tekrar deneyin."
+  },
+  "nothingFound": {
+    "message": "Bu sayfada dosya veya resim bulunamadı."
+  },
+  "popupChecking": {
+    "message": "Denetleniyor…"
+  },
+  "popupConnected": {
+    "message": "Uygulama bağlı"
+  },
+  "popupUnreachable": {
+    "message": "Uygulamaya ulaşılamıyor"
+  },
+  "popupUpdateRequired": {
+    "message": "Güncelleme gerekli"
+  },
+  "popupActive": {
+    "message": "Aktif"
+  },
+  "popupQueued": {
+    "message": "Sırada"
+  },
+  "popupSpeed": {
+    "message": "Hız"
+  },
+  "popupNoDownloads": {
+    "message": "Aktif indirme yok."
+  },
+  "popupSettings": {
+    "message": "Ayarlar"
+  },
+  "popupCaptureEnabled": {
+    "message": "Tarayıcı indirmelerini yakala"
+  },
+  "popupMinSize": {
+    "message": "Bundan küçük dosyaları tarayıcıya bırak (MiB)"
+  },
+  "popupAltHint": {
+    "message": "Fluxer'ı atlamak için bağlantıya Alt tuşu basılıyken tıklayın."
+  },
+  "perSecond": {
+    "message": "/sn"
+  },
+  "tabDownloads": {
+    "message": "İndirmeler"
+  },
+  "tabPage": {
+    "message": "Bu sayfa"
+  },
+  "tabSettings": {
+    "message": "Ayarlar"
+  },
+  "openApp": {
+    "message": "Fluxer'ı aç"
+  },
+  "pauseAll": {
+    "message": "Tümünü duraklat"
+  },
+  "resumeAll": {
+    "message": "Tümünü sürdür"
+  },
+  "emptyDownloads": {
+    "message": "Henüz indirme yok. Bir indirme bağlantısına tıklayın ya da \"Bu sayfa\" sekmesini kullanın."
+  },
+  "state_downloading": {
+    "message": "İndiriliyor"
+  },
+  "state_seeding": {
+    "message": "Paylaşılıyor"
+  },
+  "state_queued": {
+    "message": "Sırada"
+  },
+  "state_paused": {
+    "message": "Duraklatıldı"
+  },
+  "state_completed": {
+    "message": "Tamamlandı"
+  },
+  "state_failed": {
+    "message": "Hata"
+  },
+  "actPause": {
+    "message": "Duraklat"
+  },
+  "actResume": {
+    "message": "Sürdür"
+  },
+  "actOpen": {
+    "message": "Dosyayı aç"
+  },
+  "actFolder": {
+    "message": "Klasörde göster"
+  },
+  "actRemove": {
+    "message": "Listeden kaldır (dosya kalır)"
+  },
+  "actDetails": {
+    "message": "İlerleme penceresi için tıklayın"
+  },
+  "pageUnsupported": {
+    "message": "Fluxer yalnızca web sayfalarıyla (http/https) çalışabilir."
+  },
+  "pageVideoTitle": {
+    "message": "Bu sayfadaki videoyu indir"
+  },
+  "pageVideoHint": {
+    "message": "YouTube, Vimeo, X ve 1000'den fazla site — kaliteyi Fluxer'da seçin."
+  },
+  "pageVideoButton": {
+    "message": "İndir"
+  },
+  "mediaFound": {
+    "message": "Yakalanan medya"
+  },
+  "mediaEmpty": {
+    "message": "Henüz yok. Videoyu oynatın; Fluxer akışı oynarken yakalar."
+  },
+  "mediaFile": {
+    "message": "Video/ses dosyası"
+  },
+  "mediaStream": {
+    "message": "Akış (tek dosyada birleştirilir)"
+  },
+  "mediaDownload": {
+    "message": "İndir"
+  },
+  "batchTitle": {
+    "message": "Bu sayfadaki dosyalar"
+  },
+  "batchEmpty": {
+    "message": "Bu sayfada indirilebilir dosya bulunamadı."
+  },
+  "batchSend": {
+    "message": "Seçilenleri indir"
+  },
+  "selectedCount": {
+    "message": "$1 seçili"
+  },
+  "selectAll": {
+    "message": "Tümü"
+  },
+  "search": {
+    "message": "Ada veya adrese göre süz"
+  },
+  "cat_all": {
+    "message": "Tümü"
+  },
+  "cat_video": {
+    "message": "Video"
+  },
+  "cat_audio": {
+    "message": "Ses"
+  },
+  "cat_archive": {
+    "message": "Arşiv"
+  },
+  "cat_document": {
+    "message": "Belge"
+  },
+  "cat_program": {
+    "message": "Program"
+  },
+  "cat_image": {
+    "message": "Resim"
+  },
+  "cat_torrent": {
+    "message": "Torrent"
+  },
+  "cat_other": {
+    "message": "Diğer"
+  },
+  "sentOk": {
+    "message": "Fluxer'a gönderildi"
+  },
+  "sentBatch": {
+    "message": "$1 dosya Fluxer'a gönderildi"
+  },
+  "settingSkipTypes": {
+    "message": "Bu dosya türlerini tarayıcıya bırak"
+  },
+  "settingSkipTypesHint": {
+    "message": "Uzantılar, virgülle ayrılmış."
+  },
+  "settingSkipTypesPlaceholder": {
+    "message": "pdf, jpg"
+  },
+  "settingVideoButton": {
+    "message": "Videolarda indirme düğmesi"
+  },
+  "settingVideoButtonHint": {
+    "message": "Fareyle bir videonun üzerine gelince \"Fluxer ile indir\" düğmesi çıkar."
+  },
+  "settingBadge": {
+    "message": "Simgede medya sayısı"
+  },
+  "settingBadgeHint": {
+    "message": "Fluxer'ın açık sekmede kaç video yakaladığı."
+  },
+  "videoButton": {
+    "message": "Fluxer ile indir"
+  },
+  "videoButtonTip": {
+    "message": "Bu videoyu Fluxer'a gönder"
+  },
+  "videoButtonSending": {
+    "message": "Gönderiliyor…"
+  },
+  "videoButtonSent": {
+    "message": "Fluxer'a gönderildi ✓"
+  },
+  "videoButtonFailed": {
+    "message": "Fluxer bunu alamadı"
+  },
+  "videoButtonUnreachable": {
+    "message": "Fluxer çalışmıyor"
+  },
+  "appNotRunning": {
+    "message": "Fluxer çalışmıyor. Başlat menüsünden ya da aşağıdaki \"Fluxer'ı aç\" düğmesiyle açın."
+  },
+  "menuNight": {
+    "message": "Gece kuyruğuna ekle"
+  },
+  "menuAllLinks": {
+    "message": "Sayfadaki tüm bağlantıları Fluxer'a gönder"
+  },
+  "toastTitle": {
+    "message": "Fluxer bir indirme yakaladı"
+  },
+  "toastClose": {
+    "message": "Kapat"
+  },
+  "toastSend": {
+    "message": "Fluxer ile indir"
+  },
+  "toastKeep": {
+    "message": "Tarayıcıda bırak"
+  },
+  "toastHint": {
+    "message": "$1 sn içinde Fluxer'da otomatik başlar · Alt tuşuna basılı tutarak indirirsen tarayıcıda kalır"
+  },
+  "captureTitle": {
+    "message": "İndirmeleri yakala"
+  },
+  "captureHintOn": {
+    "message": "$1 MB üstü dosyalar Fluxer'a gider"
+  },
+  "captureHintAll": {
+    "message": "Tüm dosyalar Fluxer'a gider"
+  },
+  "captureHintOff": {
+    "message": "Kapalı · tarayıcı kendi indirir"
+  },
+  "captureHintSite": {
+    "message": "Bu sitede kapalı"
+  },
+  "siteOff": {
+    "message": "Bu sitede kapat"
+  },
+  "siteOn": {
+    "message": "Bu sitede aç"
+  },
+  "summary": {
+    "message": "$1 etkin · $2 sırada · $3"
+  },
+  "etaSec": {
+    "message": "$1 sn kaldı"
+  },
+  "etaMin": {
+    "message": "$1 dk kaldı"
+  },
+  "etaHour": {
+    "message": "$1 sa kaldı"
+  },
+  "kindMedia": {
+    "message": "Video"
+  },
+  "sentToday": {
+    "message": "Bu tarayıcıdan bugün $1 dosya Fluxer'a gönderildi."
+  },
+  "pasteLink": {
+    "message": "Bağlantı yapıştır"
+  },
+  "clipboardFailed": {
+    "message": "Pano okunamadı."
+  },
+  "clipboardNoLink": {
+    "message": "Panoda bağlantı yok."
+  },
+  "batchDownloadN": {
+    "message": "$1 dosyayı indir"
+  },
+  "batchPick": {
+    "message": "Dosya seç"
+  },
+  "back": {
+    "message": "Geri"
+  },
+  "skewExtensionOld": {
+    "message": "Fluxer bu eklentiden yeni. Yeni özellikler için eklentiyi güncelleyin."
+  },
+  "skewAppOld": {
+    "message": "Bu eklenti Fluxer'dan yeni. Fluxer'ı Ayarlar → Gelişmiş'ten güncelleyin."
+  },
+  "quickPlaceholder": {
+    "message": "Bir bağlantı yapıştırın ya da yazın"
+  },
+  "quickAdd": {
+    "message": "İndir"
+  },
+  "quickInvalid": {
+    "message": "http, https ya da magnet ile başlayan bir bağlantı girin."
+  },
+  "capturePause": {
+    "message": "1 sa duraklat"
+  },
+  "capturePauseTip": {
+    "message": "İndirmeleri bir saatliğine tarayıcıda bırak"
+  },
+  "captureResume": {
+    "message": "Sürdür"
+  },
+  "captureResumeTip": {
+    "message": "İndirmeleri şimdi yeniden Fluxer'a ver"
+  },
+  "captureHintPaused": {
+    "message": "Duraklatıldı, bitiş: $1 · tarayıcı kendisi indirir"
+  },
+  "toastHold": {
+    "message": "Bekle: geri sayımı durdur"
+  },
+  "toastHeld": {
+    "message": "Geri sayım durdu. Nereden ineceğini seçin."
+  }
+}

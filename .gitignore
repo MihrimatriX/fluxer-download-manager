@@ -1,0 +1,11 @@
+bin/
+obj/
+node_modules/
+extension/dist/
+extension/dist-firefox/
+extension/store/
+artifacts/
+Releases/
+*.user
+.vs/
+*.pem
