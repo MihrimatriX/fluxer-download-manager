@@ -1,4 +1,7 @@
 # Publishes site/ to GitHub Pages. One-time setup: Settings → Pages → Source: "GitHub Actions".
+# If configure-pages fails with "Get Pages site failed ... Not Found", Pages is switched off for the
+# repository: redo that setting, then run this workflow from the Actions tab. The default GITHUB_TOKEN
+# can't turn Pages on by itself (configure-pages' `enablement` needs a PAT or a GitHub App token).
 # Vercel serves the same folder: import the repo and set Root Directory to "site" (no build step).
 name: pages
 
@@ -25,9 +28,9 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

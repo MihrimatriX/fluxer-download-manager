@@ -122,7 +122,8 @@
       "demo demo side speed"
       "demo demo side links"
       "theme theme theme torrent"
-      "video ext av update";
+      "video ext av update"
+      "remote plugins extract auto";
   }
   .tile { position: relative; overflow: hidden; padding: 26px; border-radius: 20px; background: var(--tile); border: 1px solid var(--line); }
   .tile h3 { margin: 0; font-size: 1.12rem; font-weight: 600; letter-spacing: -.01em; }
@@ -139,6 +140,10 @@
   .t-ext { grid-area: ext; }
   .t-av { grid-area: av; }
   .t-update { grid-area: update; }
+  .t-remote { grid-area: remote; }
+  .t-plugins { grid-area: plugins; }
+  .t-extract { grid-area: extract; }
+  .t-auto { grid-area: auto; }
 
   /* Segment demo */
   .demo { margin: auto 0 0; padding-top: 28px; } /* figure's default 40px side margin off */
@@ -207,13 +212,13 @@
   @media (max-width: 1000px) {
     .bento {
       grid-template-columns: repeat(2, 1fr);
-      grid-template-areas: "demo demo" "side speed" "side links" "theme theme" "torrent video" "ext av" "update update";
+      grid-template-areas: "demo demo" "side speed" "side links" "theme theme" "torrent video" "ext av" "remote plugins" "extract auto" "update update";
     }
     .t-theme { grid-template-columns: 1fr; }
     .steps { grid-template-columns: 1fr; }
   }
   @media (max-width: 640px) {
-    .bento { grid-template-columns: 1fr; grid-template-areas: "demo" "side" "speed" "links" "theme" "torrent" "video" "ext" "av" "update"; }
+    .bento { grid-template-columns: 1fr; grid-template-areas: "demo" "side" "speed" "links" "theme" "torrent" "video" "ext" "av" "update" "remote" "plugins" "extract" "auto"; }
     .hero { padding-top: 56px; }
     section { margin-top: 96px; }
     nav .hide-sm { display: none; }
@@ -306,8 +311,8 @@
       <article class="tile t-side">
         <h3><span lang="tr">Komut paleti, filtreler ve kuyruklar</span><span lang="en">Command palette, filters and queues</span></h3>
         <p>
-          <span lang="tr">Liste duruma ve dosya türüne göre tek satırda süzülür. Ctrl+K her komutu tek bir arama kutusunda toplar. Ana kuyruk aynı anda kaç indirmenin çalışacağını belirler; gece kuyruğu seçtiğin saatte başlar, varsayılan olarak 01:00'de.</span>
-          <span lang="en">One row filters the list by state and file type. Ctrl+K gathers every command in one search box. The main queue decides how many run at once, and the night queue starts at the hour you pick, 01:00 by default.</span>
+          <span lang="tr">Liste duruma, dosya türüne ve etikete göre tek satırda süzülür. Ctrl+K her komutu tek bir arama kutusunda toplar. Ana kuyruk aynı anda kaç indirmenin çalışacağını belirler; gece kuyruğu seçtiğin saatte başlar, varsayılan olarak 01:00'de. Kendi kuyruklarını da saatiyle, günleriyle ve sınırıyla ekleyebilirsin.</span>
+          <span lang="en">One row filters the list by state, file type and tag. Ctrl+K gathers every command in one search box. The main queue decides how many run at once, and the night queue starts at the hour you pick, 01:00 by default. You can add your own queues with their own hours, days and limits.</span>
         </p>
         <div class="shot">
           <img lang="tr" src="img/palette-tr.png" width="236" height="456" loading="lazy" alt="Komut paleti">
@@ -317,7 +322,7 @@
 
       <article class="tile t-speed">
         <h3><span lang="tr">Hız profilleri</span><span lang="en">Speed profiles</span></h3>
-        <p><span lang="tr">Haftalık bir plan kurarsan Fluxer gün içinde profiller arasında kendisi geçer.</span><span lang="en">Set up a weekly schedule and Fluxer switches profiles during the day.</span></p>
+        <p><span lang="tr">Haftalık bir plan kurarsan Fluxer gün içinde profiller arasında kendisi geçer. İstersen sen başka bir programla çalışırken yavaşlar, pil azalınca bekler.</span><span lang="en">Set up a weekly schedule and Fluxer switches profiles during the day. It can also slow down while you work in another program and hold off when the battery runs low.</span></p>
         <div class="profiles" id="profiles">
           <button type="button" aria-pressed="true" data-i="0"><span lang="tr">Sınırsız</span><span lang="en">Unlimited</span></button>
           <button type="button" aria-pressed="false" data-i="1"><span lang="tr">Dengeli</span><span lang="en">Balanced</span></button>
@@ -335,7 +340,7 @@
       <article class="tile t-theme">
         <div>
           <h3><span lang="tr">Açık ve koyu tema</span><span lang="en">Light and dark themes</span></h3>
-          <p><span lang="tr">Fluxer Windows'un temasını izler ya da seçtiğin temada kalır. Arayüz Türkçe ve İngilizce.</span><span lang="en">Fluxer follows the Windows theme or stays on the one you pick. The interface is in English and Turkish.</span></p>
+          <p><span lang="tr">Grafit koyu ya da kâğıt beyazı açık tema. Ayarlar'daki anahtarla ya da komut paletinden geçilir. Arayüz Türkçe ve İngilizce.</span><span lang="en">Graphite dark or paper-white light. Switch with the toggle in Settings or from the command palette. The interface is in English and Turkish.</span></p>
           <p class="hint"><span lang="tr">Karşılaştırmak için sürükle.</span><span lang="en">Drag to compare.</span></p>
         </div>
         <div class="compare" id="compare">
@@ -351,7 +356,7 @@
       <article class="tile t-torrent">
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15"/><path d="m5 8 4 4"/><path d="m12 15 4 4"/></svg></div>
         <h3><span lang="tr">Torrent</span><span lang="en">Torrents</span></h3>
-        <p><span lang="tr">Magnet linkleri ve .torrent dosyaları; DHT, eş değişimi, UPnP. RSS beslemelerindeki yeni torrentler kendiliğinden eklenir.</span><span lang="en">Magnet links and .torrent files with DHT, peer exchange and UPnP. New torrents from RSS feeds are added on their own.</span></p>
+        <p><span lang="tr">Magnet linkleri ve .torrent dosyaları; DHT, eş değişimi, UPnP. RSS beslemelerindeki yeni torrentler kendiliğinden eklenir. Ek tracker listesi, eş engelleme listesi ve Torznab araması (Jackett, Prowlarr) da var.</span><span lang="en">Magnet links and .torrent files with DHT, peer exchange and UPnP. New torrents from RSS feeds are added on their own. There's also an extra tracker list, a peer block list and Torznab search (Jackett, Prowlarr).</span></p>
       </article>
 
       <article class="tile t-video">
@@ -376,6 +381,30 @@
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></div>
         <h3><span lang="tr">Kendini günceller</span><span lang="en">Updates itself</span></h3>
         <p><span lang="tr">Yeni sürüm arka planda iner, uygulamadan çıkarken kurulur.</span><span lang="en">New versions download in the background and install when you quit.</span></p>
+      </article>
+
+      <article class="tile t-remote">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg></div>
+        <h3><span lang="tr">Uzaktan erişim</span><span lang="en">Remote access</span></h3>
+        <p><span lang="tr">Açarsan REST API, aria2 uyumlu JSON-RPC ve telefondan açılan bir web sayfası. AriaNg ve "aria2'ye gönder" eklentileri olduğu gibi çalışır; her çağrı API anahtarı ister.</span><span lang="en">Turn it on for a REST API, aria2-compatible JSON-RPC and a web page for your phone. AriaNg and "send to aria2" extensions work as they are, and every call needs an API key.</span></p>
+      </article>
+
+      <article class="tile t-plugins">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg></div>
+        <h3><span lang="tr">JavaScript eklentileri</span><span lang="en">JavaScript plugins</span></h3>
+        <p><span lang="tr">Küçük betikler indirme eklendiğinde, bittiğinde ya da hata verdiğinde çalışır. Her biri sen açana kadar kapalı kalır ve yalnızca onayladığın izinleri kullanır.</span><span lang="en">Small scripts run when a download is added, finishes or fails. Each stays off until you turn it on and uses only the permissions you approved.</span></p>
+      </article>
+
+      <article class="tile t-extract">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="5" rx="1.5"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg></div>
+        <h3><span lang="tr">Arşivleri açar</span><span lang="en">Unpacks archives</span></h3>
+        <p><span lang="tr">İstersen biten zip, rar, 7z ve tar arşivleri, parçalı setler dahil, kendiliğinden açılır. Şifreliler için parola listesi tutulur; yanlış parola yarım klasör bırakmaz.</span><span lang="en">Finished zip, rar, 7z and tar archives, split sets included, can unpack on their own. A password list covers protected ones, and a wrong password never leaves half a folder behind.</span></p>
+      </article>
+
+      <article class="tile t-auto">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <h3><span lang="tr">Otomasyon ve istatistik</span><span lang="en">Automation and stats</span></h3>
+        <p><span lang="tr">İndirme bitince bir program ya da webhook çalışır (Home Assistant, n8n, Discord). Günlük, haftalık ve aylık toplamlar, 12 aylık ısı haritasıyla.</span><span lang="en">Run a program or a webhook when a download finishes (Home Assistant, n8n, Discord). Daily, weekly and monthly totals, with a 12-month heatmap.</span></p>
       </article>
     </div>
   </section>
