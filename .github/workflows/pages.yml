@@ -1,7 +1,6 @@
-# Publishes site/ to GitHub Pages. One-time setup: Settings → Pages → Source: "GitHub Actions".
-# If configure-pages fails with "Get Pages site failed ... Not Found", Pages is switched off for the
-# repository: redo that setting, then run this workflow from the Actions tab. The default GITHUB_TOKEN
-# can't turn Pages on by itself (configure-pages' `enablement` needs a PAT or a GitHub App token).
+# Publishes site/ to GitHub Pages through the gh-pages branch: each run replaces that branch with one commit
+# holding site/, and GitHub serves it (Settings → Pages → Source: "Deploy from a branch", gh-pages, / (root))
+# with its own "pages build and deployment" run. Needs only the default GITHUB_TOKEN.
 # Vercel serves the same folder: import the repo and set Root Directory to "site" (no build step).
 name: pages
 
@@ -12,25 +11,26 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: site
-      - id: deploy
-        uses: actions/deploy-pages@v5
+
+      - name: Push site/ to gh-pages
+        working-directory: site
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          touch .nojekyll
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "Site from ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:$TOKEN@github.com/$GITHUB_REPOSITORY.git" gh-pages
